@@ -18,8 +18,14 @@ from semantic_code_intelligence.utils.logging import setup_logging
     default=False,
     help="Enable verbose output.",
 )
+@click.option(
+    "--pipe",
+    is_flag=True,
+    default=False,
+    help="Pipeline mode — plain text output, no colors or spinners.",
+)
 @click.pass_context
-def cli(ctx: click.Context, verbose: bool) -> None:
+def cli(ctx: click.Context, verbose: bool, pipe: bool) -> None:
     """Codex - Local semantic code search and AI-assisted code understanding.
 
     A CLI tool that indexes codebases, performs semantic search, and provides
@@ -27,6 +33,7 @@ def cli(ctx: click.Context, verbose: bool) -> None:
     """
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
+    ctx.obj["pipe"] = pipe
     setup_logging(verbose=verbose)
 
 

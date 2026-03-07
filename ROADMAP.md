@@ -259,29 +259,65 @@ Cross-cutting improvements to plugins, reasoning, security, and IDE integration.
 
 **Total: 682 tests, all passing.**
 
+### Phase 13: Open Source Readiness & Developer Experience ✅
+Transformed CodexA into a community-ready open source project with auto-documentation, developer workflow tooling, and plugin scaffolding.
+
+#### OSS Foundation
+- **LICENSE** (MIT), **CONTRIBUTING.md**, **SECURITY.md**
+- GitHub CI workflow (`.github/workflows/ci.yml`) — pytest on Python 3.11/3.12/3.13, ubuntu + windows matrix
+- Issue templates (bug report, feature request) and PR template
+- Enhanced `pyproject.toml`: classifiers, keywords, project URLs, readme
+
+#### Auto-Documentation Generator (`semantic_code_intelligence/docs/`)
+- `generate_cli_reference()`: walks Click command tree → Markdown with arguments, options tables, help text
+- `generate_plugin_reference()`: documents all 13 hooks, base class API, metadata schema, lifecycle
+- `generate_bridge_reference()`: endpoints, request kinds, AgentRequest/AgentResponse schemas
+- `generate_tool_reference()`: tool registry with descriptions and usage examples
+- `generate_all_docs()`: batch-generates all references into a `docs/` directory
+
+#### New CLI Commands
+- `codex docs`: auto-generate Markdown documentation (`--section cli|plugins|bridge|tools|all`, `--json`)
+- `codex doctor`: environment health check — Python version, dependencies, project status (`--json`)
+- `codex plugin new <name>`: scaffold a new plugin from template (`--hooks`, `--author`, `--description`)
+- `codex plugin list`: discover and list installed plugins (`--json`)
+- `codex plugin info <name>`: show plugin details
+
+#### CLI Ergonomics
+- `--pipe` global flag for pipeline-friendly output (no Rich formatting)
+- Version bumped to `0.13.0`
+- 17 top-level CLI commands total
+
+#### Sample Plugins
+- `search_annotator.py`: POST_SEARCH hook example — annotates results with metadata
+- `code_quality.py`: CUSTOM_VALIDATION hook example — flags TODOs, print statements
+
+- **80 new tests (682 → 762)** | 17 CLI commands total
+
+**Total: 762 tests, all passing.**
+
 ---
 
 ## Upcoming Phases
 
-### Phase 13: Web UI & REST API
+### Phase 14: Web UI & REST API
 - FastAPI/Flask REST API server wrapping existing services
 - Browser-based search interface with syntax-highlighted results
 - Interactive call graph visualization (Mermaid / D3.js)
 - Code exploration with symbol navigation
 
-### Phase 14: CI/CD Integration
+### Phase 15: CI/CD Integration
 - GitHub Actions workflow for automated analysis on PR
 - Pre-commit hooks for local analysis
 - Generate changed-symbol reports on each commit
 - AI-powered review context injected into PR comments
 
-### Phase 15: Code Quality Metrics
+### Phase 16: Code Quality Metrics
 - Cyclomatic complexity calculation per function
 - Duplicate code detection across the codebase
 - Dead code identification (unreferenced symbols)
 - Maintainability index and trend tracking
 
-### Phase 16: Advanced AI Workflows
+### Phase 17: Advanced AI Workflows
 - Multi-turn conversation memory with session persistence
 - Autonomous multi-step code investigation chains
 - Cross-repo refactoring suggestions
@@ -292,11 +328,13 @@ Cross-cutting improvements to plugins, reasoning, security, and IDE integration.
 ## Architecture
 
 ```
-codex CLI (Click) — 14 commands
+codex CLI (Click) — 17 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
   ├── workspace (init · add · remove · list · index · search)
+  ├── docs / doctor
+  ├── plugin (new · list · info)
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -334,8 +372,12 @@ codex CLI (Click) — 14 commands
   │     BridgeServer (HTTP) · ContextProvider · VSCodeBridge
   │     StreamChunk (SSE streaming) · Extension manifest
   │
+  ├── Auto-Documentation Engine
+  │     CLI ref · Plugin ref · Bridge ref · Tool ref → Markdown
+  │
   └── Plugin SDK
         PluginBase · PluginHook (13 hooks) · PluginManager
+        Plugin scaffold · Sample plugins · Discovery
 ```
 
 ## Tech Stack
@@ -348,5 +390,5 @@ codex CLI (Click) — 14 commands
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
 | Vector Search | FAISS (IndexFlatIP) |
 | Code Parsing | tree-sitter 0.25+ (11 language grammars) |
-| Testing | pytest + pytest-cov (682 tests) |
+| Testing | pytest + pytest-cov (762 tests) |
 | Python | 3.12+ |

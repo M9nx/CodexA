@@ -584,9 +584,9 @@ from semantic_code_intelligence.cli.router import register_commands
 
 class TestRouterPhase8:
     def test_register_commands_count(self):
-        """Router should register exactly 14 commands."""
+        """Router should register exactly 17 commands."""
         import click
 
         group = click.Group()
         register_commands(group)
-        assert len(group.commands) == 14
+        assert len(group.commands) == 17

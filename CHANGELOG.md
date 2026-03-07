@@ -77,3 +77,35 @@ All notable changes to CodexA are documented in this file.
 - **VSCode Extension Interface**: `VSCodeBridge` adapting output to VS Code shapes (hover, diagnostics, completions, code-actions); `generate_extension_manifest()` helper
 - **New CLI Commands**: `codex serve` (start bridge server), `codex context` (generate structured context for piping); 13 commands total
 - Tests for all new modules
+
+### Phase 10: Multi-Repository Workspace Intelligence
+- **Workspace Model**: `RepoEntry`, `WorkspaceManifest`, `Workspace` class with load/save persistence
+- Per-repo vector indexes under `.codex/repos/<name>/`, merged cross-repo search
+- **6 CLI subcommands**: `codex workspace init|add|remove|list|index|search`
+- 52 new tests (516 → 568), 14 CLI commands
+
+### Phase 11: Multi-Language Parsing Expansion
+- **6 new tree-sitter grammars**: TypeScript, TSX, C++, C#, Ruby, PHP
+- `_LANGUAGE_FACTORY` for non-standard APIs, enhanced `_find_name()` for C++/Ruby/PHP
+- Ruby import filtering, semantic chunker integration for all new languages
+- 65 new tests (568 → 633), 11 languages total
+
+### Phase 12: Platform Enhancements
+- **Plugin hooks**: `ON_STREAM`, `CUSTOM_VALIDATION` (13 hooks total)
+- **Reasoning improvements**: context pruning, priority scoring, explainability metadata
+- **Security patterns**: path traversal, hardcoded secrets, XSS, insecure crypto, insecure HTTP, SSL bypass (17 total)
+- **VSCode streaming**: `StreamChunk`, SSE formatting, `build_streaming_context()`
+- 49 new tests (633 → 682)
+
+## [0.13.0] — 2026-03-07
+
+### Phase 13: Open Source Readiness & Developer Experience
+- **OSS Foundation**: MIT LICENSE, CONTRIBUTING.md, SECURITY.md
+- **GitHub CI**: `.github/workflows/ci.yml` — pytest matrix (Python 3.11-3.13, Ubuntu + Windows)
+- **GitHub Templates**: bug report, feature request, PR template
+- **Auto-Documentation Generator**: `generate_cli_reference()`, `generate_plugin_reference()`, `generate_bridge_reference()`, `generate_tool_reference()`, `generate_all_docs()`
+- **New CLI Commands**: `codex docs` (auto-generate Markdown docs), `codex doctor` (environment health check), `codex plugin new|list|info` (plugin scaffold & management)
+- **CLI Ergonomics**: `--pipe` global flag for pipeline-friendly output, version bump to 0.13.0
+- **Sample Plugins**: `search_annotator.py` (POST_SEARCH), `code_quality.py` (CUSTOM_VALIDATION)
+- **Enhanced pyproject.toml**: classifiers, keywords, project URLs, readme metadata
+- 80 new tests (682 → 762), 17 CLI commands total

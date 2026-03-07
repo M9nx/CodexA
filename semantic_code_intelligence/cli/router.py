@@ -18,6 +18,9 @@ from semantic_code_intelligence.cli.commands.suggest_cmd import suggest_cmd
 from semantic_code_intelligence.cli.commands.serve_cmd import serve_cmd
 from semantic_code_intelligence.cli.commands.context_cmd import context_cmd
 from semantic_code_intelligence.cli.commands.workspace_cmd import workspace_cmd
+from semantic_code_intelligence.cli.commands.docs_cmd import docs_cmd
+from semantic_code_intelligence.cli.commands.doctor_cmd import doctor_cmd
+from semantic_code_intelligence.cli.commands.plugin_cmd import plugin_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -40,3 +43,6 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(serve_cmd)
     cli.add_command(context_cmd)
     cli.add_command(workspace_cmd)
+    cli.add_command(docs_cmd)
+    cli.add_command(doctor_cmd)
+    cli.add_command(plugin_cmd)
