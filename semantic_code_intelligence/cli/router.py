@@ -7,6 +7,10 @@ import click
 from semantic_code_intelligence.cli.commands.init_cmd import init_cmd
 from semantic_code_intelligence.cli.commands.index_cmd import index_cmd
 from semantic_code_intelligence.cli.commands.search_cmd import search_cmd
+from semantic_code_intelligence.cli.commands.explain_cmd import explain_cmd
+from semantic_code_intelligence.cli.commands.summary_cmd import summary_cmd
+from semantic_code_intelligence.cli.commands.watch_cmd import watch_cmd
+from semantic_code_intelligence.cli.commands.deps_cmd import deps_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -18,3 +22,7 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(init_cmd)
     cli.add_command(index_cmd)
     cli.add_command(search_cmd)
+    cli.add_command(explain_cmd)
+    cli.add_command(summary_cmd)
+    cli.add_command(watch_cmd)
+    cli.add_command(deps_cmd)
