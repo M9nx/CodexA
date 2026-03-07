@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "semantic-code-intelligence"
+version = "0.1.0"
+description = "Local semantic code search and AI-assisted code understanding"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+    "click>=8.1.0",
+    "pydantic>=2.0.0",
+    "rich>=13.0.0",
+    "sentence-transformers>=2.2.0",
+    "faiss-cpu>=1.7.4",
+    "tree-sitter>=0.21.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[project.scripts]
+codex = "semantic_code_intelligence.cli.main:main"
+
+[tool.pytest.ini_options]
+testpaths = ["semantic_code_intelligence/tests"]
+pythonpath = ["."]
+addopts = "-v --tb=short"
