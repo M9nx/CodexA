@@ -120,3 +120,14 @@ All notable changes to CodexA are documented in this file.
 - **New CLI Commands**: `codex web` (start web server), `codex viz` (generate Mermaid diagrams with `--json`, `--output`)
 - **Auto-Documentation**: `generate_web_reference()` → `WEB.md`
 - 74 new tests (762 → 836), 19 CLI commands total
+
+## [0.15.0] — 2026-03-07
+
+### Phase 15: CI/CD & Contribution Safety Pipeline
+- **Quality Analyzers** (`ci/quality.py`): Cyclomatic complexity scoring (14 decision patterns), dead code detection (call graph + body heuristic), duplicate logic detection (trigram Jaccard similarity), aggregate `QualityReport` with `analyze_project()`
+- **PR Intelligence** (`ci/pr.py`): `build_change_summary()` per-file symbol diff, `analyze_impact()` blast-radius via call graph traversal, `suggest_reviewers()` domain-based heuristic, `compute_risk()` 0-100 composite score with factors, `generate_pr_report()` full advisory report
+- **CI Templates** (`ci/templates.py`): `generate_analysis_workflow()` (full GitHub Actions), `generate_safety_workflow()` (lightweight safety-only), `generate_precommit_config()` (`.pre-commit-config.yaml`)
+- **Pre-commit Hooks** (`ci/hooks.py`): `run_precommit_check()` with SafetyValidator + CUSTOM_VALIDATION plugin dispatch
+- **New CLI Commands**: `codex quality` (complexity/dead-code/duplicates/safety with `--json`, `--pipe`, `--safety-only`), `codex pr-summary` (change summary/impact/reviewers/risk with `--json`, `--pipe`, `--files`), `codex ci-gen` (template generation: analysis/safety/precommit with `--output`, `--python-version`)
+- **Auto-Documentation**: `generate_ci_reference()` → `CI.md`
+- 79 new tests (836 → 915), 22 CLI commands total

@@ -334,34 +334,51 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 **Total: 836 tests, all passing.**
 
+### Phase 15: CI/CD & Contribution Safety Pipeline ✅
+
+| Feature | Status |
+|---|---|
+| Cyclomatic complexity analysis (14 decision patterns) | ✅ |
+| Dead code detection (call graph + body heuristic) | ✅ |
+| Duplicate logic detection (trigram Jaccard similarity) | ✅ |
+| Aggregate quality report (`analyze_project()`) | ✅ |
+| PR change summary (per-file symbol diff) | ✅ |
+| PR impact analysis (blast-radius via call graph) | ✅ |
+| Reviewer suggestion (domain-based heuristic) | ✅ |
+| Risk scoring (0-100 composite with factors) | ✅ |
+| GitHub Actions workflow templates (analysis, safety) | ✅ |
+| Pre-commit config generation | ✅ |
+| Pre-commit hook support (safety + plugin dispatch) | ✅ |
+| `codex quality` CLI command | ✅ |
+| `codex pr-summary` CLI command | ✅ |
+| `codex ci-gen` CLI command | ✅ |
+| Auto-documentation: `CI.md` | ✅ |
+| 79 new tests, backward compatible | ✅ |
+
+**Total: 915 tests, all passing.**
+
 ---
 
 ## Upcoming Phases
 
-### Phase 15: CI/CD Integration
-- GitHub Actions workflow for automated analysis on PR
-- Pre-commit hooks for local analysis
-- Generate changed-symbol reports on each commit
-- AI-powered review context injected into PR comments
-
-### Phase 16: Code Quality Metrics
-- Cyclomatic complexity calculation per function
-- Duplicate code detection across the codebase
-- Dead code identification (unreferenced symbols)
-- Maintainability index and trend tracking
-
-### Phase 17: Advanced AI Workflows
+### Phase 16: Advanced AI Workflows
 - Multi-turn conversation memory with session persistence
 - Autonomous multi-step code investigation chains
 - Cross-repo refactoring suggestions
 - Streaming LLM responses with real-time plugin hooks
+
+### Phase 17: Code Quality Metrics & Trends
+- Maintainability index and trend tracking
+- Historical metric snapshots and trend visualization
+- Configurable quality thresholds and policies
+- Quality gate enforcement in CI pipelines
 
 ---
 
 ## Architecture
 
 ```
-codex CLI (Click) — 19 commands
+codex CLI (Click) — 22 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
@@ -369,6 +386,7 @@ codex CLI (Click) — 19 commands
   ├── docs / doctor
   ├── plugin (new · list · info)
   ├── web / viz
+  ├── quality / pr-summary / ci-gen
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
