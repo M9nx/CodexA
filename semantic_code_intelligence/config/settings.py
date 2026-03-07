@@ -135,6 +135,31 @@ class LLMConfig(BaseModel):
     )
 
 
+class QualityConfig(BaseModel):
+    """Configuration for code quality metrics and gate enforcement."""
+
+    complexity_threshold: int = Field(
+        default=10,
+        description="Minimum cyclomatic complexity to flag.",
+    )
+    min_maintainability: float = Field(
+        default=40.0,
+        description="Minimum maintainability index for quality gates.",
+    )
+    max_issues: int = Field(
+        default=20,
+        description="Maximum allowed quality issues for gates.",
+    )
+    snapshot_on_index: bool = Field(
+        default=False,
+        description="Automatically save a quality snapshot on indexing.",
+    )
+    history_limit: int = Field(
+        default=50,
+        description="Maximum number of snapshots to retain.",
+    )
+
+
 class AppConfig(BaseModel):
     """Top-level application configuration."""
 
@@ -146,6 +171,7 @@ class AppConfig(BaseModel):
     search: SearchConfig = Field(default_factory=SearchConfig)
     index: IndexConfig = Field(default_factory=IndexConfig)
     llm: LLMConfig = Field(default_factory=LLMConfig)
+    quality: QualityConfig = Field(default_factory=QualityConfig)
     verbose: bool = Field(default=False, description="Enable verbose output.")
 
     @classmethod

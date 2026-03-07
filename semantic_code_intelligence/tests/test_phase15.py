@@ -689,7 +689,7 @@ class TestRouterPhase15:
 
         group = click.Group("test")
         register_commands(group)
-        assert len(group.commands) == 25
+        assert len(group.commands) == 27
 
     def test_quality_command_registered(self):
         from semantic_code_intelligence.cli.main import cli
@@ -708,12 +708,12 @@ class TestRouterPhase15:
 
 
 class TestVersionBump:
-    """Test version is 0.16.0."""
+    """Test version is 0.17.0."""
 
     def test_version_is_015(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.16.0"
+        assert __version__ == "0.17.0"
 
 
 class TestCIModuleStructure:

@@ -85,7 +85,8 @@ def refactor_cmd(
         validator = SafetyValidator()
         report = validator.validate(result.refactored_code)
         if not report.safe:
-            console.print("[bold red]⚠ Safety issues detected in refactored code:[/bold red]")
+            from semantic_code_intelligence.utils.logging import _ICON_WARNING
+            console.print(f"[bold red]{_ICON_WARNING} Safety issues detected in refactored code:[/bold red]")
             for issue in report.issues:
                 console.print(f"  L{issue.line_number}: {issue.description}")
             console.print()

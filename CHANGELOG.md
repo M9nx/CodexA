@@ -2,6 +2,24 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.17.0] — Phase 17: Code Quality Metrics & Trends
+
+### Added
+- **Maintainability index** — per-file and project-wide MI (0-100) based on SEI formula
+- **FileMetrics / ProjectMetrics** — LOC, comment ratio, complexity aggregation
+- **Quality snapshots** — save timestamped metric captures via WorkspaceMemory
+- **Trend analysis** — linear regression over historical snapshots (improving/stable/degrading)
+- **Quality policies & gates** — configurable thresholds with CI-friendly enforcement
+- **`codex metrics`** — compute metrics, save snapshots, view history, track trends
+- **`codex gate`** — enforce quality gates with `--strict` exit-code support
+- **QualityConfig** — new configuration section in `.codex/config.json`
+- **QUALITY_METRICS.md** — auto-generated documentation for metrics features
+- Updated CI reference docs with new commands
+- 27 CLI commands (up from 25)
+
+### Fixed
+- Unicode encoding crash on Windows cp1252 consoles (ASCII fallback for log icons)
+
 ## [0.1.0] — 2026-03-07
 
 ### Phase 1: CLI Framework

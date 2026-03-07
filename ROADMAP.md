@@ -386,17 +386,17 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 ## Upcoming Phases
 
 ### Phase 17: Code Quality Metrics & Trends
-- Maintainability index and trend tracking
-- Historical metric snapshots and trend visualization
-- Configurable quality thresholds and policies
-- Quality gate enforcement in CI pipelines
+- Maintainability index and trend tracking ✅
+- Historical metric snapshots and trend visualization ✅
+- Configurable quality thresholds and policies ✅
+- Quality gate enforcement in CI pipelines ✅
 
 ---
 
 ## Architecture
 
 ```
-codex CLI (Click) — 25 commands
+codex CLI (Click) — 27 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
@@ -406,6 +406,7 @@ codex CLI (Click) — 25 commands
   ├── web / viz
   ├── quality / pr-summary / ci-gen
   ├── chat / investigate / cross-refactor
+  ├── metrics / gate
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore

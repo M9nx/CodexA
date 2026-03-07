@@ -29,6 +29,8 @@ from semantic_code_intelligence.cli.commands.ci_gen_cmd import ci_gen_cmd
 from semantic_code_intelligence.cli.commands.chat_cmd import chat_cmd
 from semantic_code_intelligence.cli.commands.investigate_cmd import investigate_cmd
 from semantic_code_intelligence.cli.commands.cross_refactor_cmd import cross_refactor_cmd
+from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
+from semantic_code_intelligence.cli.commands.gate_cmd import gate_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -62,3 +64,5 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(chat_cmd)
     cli.add_command(investigate_cmd)
     cli.add_command(cross_refactor_cmd)
+    cli.add_command(metrics_cmd)
+    cli.add_command(gate_cmd)
