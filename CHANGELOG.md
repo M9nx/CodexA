@@ -69,3 +69,11 @@ All notable changes to CodexA are documented in this file.
 - **Plugin AI Hooks**: `PRE_AI` and `POST_AI` added to `PluginHook` (11 hooks total)
 - **LLMConfig**: provider, model, api_key, base_url, temperature, max_tokens — integrated into `AppConfig`
 - 62 new tests (453 cumulative)
+
+### Phase 9: External AI Cooperation Layer
+- **Agent Cooperation Protocol**: `AgentRequest`/`AgentResponse` JSON protocol, `RequestKind` enum (10 types), `BridgeCapabilities` manifest for external tool discovery
+- **Context Injection API**: `ContextProvider` with 8 methods — `context_for_query()`, `context_for_symbol()`, `context_for_file()`, `context_for_repo()`, `validate_code()`, `get_dependencies()`, `get_call_graph()`, `find_references()`
+- **HTTP Bridge Server**: `BridgeServer` using stdlib `http.server` (zero deps) with REST endpoints, CORS, background thread support, direct `dispatch()` method
+- **VSCode Extension Interface**: `VSCodeBridge` adapting output to VS Code shapes (hover, diagnostics, completions, code-actions); `generate_extension_manifest()` helper
+- **New CLI Commands**: `codex serve` (start bridge server), `codex context` (generate structured context for piping); 13 commands total
+- Tests for all new modules

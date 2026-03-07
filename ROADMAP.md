@@ -148,36 +148,76 @@ Transformed CodexA from a semantic code search engine into a **full AI coding as
 
 **Total: 453 tests, all passing.**
 
+### Phase 9: External AI Cooperation Layer ✅
+Designed CodexA as a **lightweight AI developer assistant** that integrates and cooperates with existing IDE AI systems (GitHub Copilot ecosystem). The main goal is augmentation, not replacement — CodexA functions as an intelligent context provider, semantic analyzer, and safe suggestion engine.
+
+#### Agent Cooperation Protocol
+- `RequestKind` enum: 10 request types (semantic_search, explain_symbol, explain_file, get_context, get_dependencies, get_call_graph, summarize_repo, find_references, validate_code, list_capabilities)
+- `AgentRequest` / `AgentResponse`: model-neutral JSON request/response dataclasses with serialization roundtrip
+- `BridgeCapabilities`: self-describing manifest for external tool discovery
+
+#### Context Injection API
+- `ContextProvider`: structured context generation for external AI pipelines
+- `context_for_query()`: semantic search results ready for LLM prompt injection
+- `context_for_symbol()`: rich symbol context with explanations, call graph, dependencies
+- `context_for_file()`: file-level symbols, explanations, and dependency map
+- `context_for_repo()`: repository-wide summary for project onboarding
+- `validate_code()`, `get_dependencies()`, `get_call_graph()`, `find_references()`
+
+#### Lightweight HTTP Bridge Server
+- `BridgeServer`: stdlib `http.server` based — zero external dependencies
+- `GET /` → capabilities manifest, `POST /request` → route AgentRequest, `GET /health` → status
+- CORS headers for IDE extension consumption
+- Background thread support: `start_background()` / `stop()`
+- Direct `dispatch()` method for in-process usage (no HTTP round-trip)
+
+#### VSCode Extension Interface
+- `VSCodeBridge`: formatting layer adapting ContextProvider output to VS Code shapes
+- `hover()`: markdown hover tooltips for symbols
+- `diagnostics()`: SafetyValidator issues → VS Code Diagnostic format
+- `completions()`: semantic search → CompletionItem list
+- `code_actions()`: safety issues → quick-fix code actions
+- `generate_extension_manifest()`: package.json fragment for companion extension
+
+#### New CLI Commands
+- `codex serve`: start the bridge server with configurable host/port
+- `codex context <mode> [target]`: generate structured context (query/symbol/file/repo) for piping to external tools
+- All commands support `--json` output mode
+
+- **Tests for all new modules** | 13 CLI commands total
+
+**Total: 453+ tests, all passing.**
+
 ---
 
 ## Upcoming Phases
 
-### Phase 9: Multi-Repo Support
+### Phase 10: Multi-Repo Support
 - Index and search across multiple repositories
 - Per-repo configuration with merged search results
 - Cross-repo symbol resolution and dependency tracking
 - Workspace-level summary aggregation
 
-### Phase 10: Additional Languages
+### Phase 11: Additional Languages
 - TypeScript (`.ts`, `.tsx`)
 - C++ (`.cpp`, `.hpp`, `.cc`, `.h`)
 - C# (`.cs`)
 - Ruby (`.rb`)
 - PHP (`.php`)
 
-### Phase 11: Web UI
+### Phase 12: Web UI
 - FastAPI/Flask REST API server
 - Browser-based search interface
 - Interactive call graph visualization (Mermaid / D3.js)
 - Code exploration with syntax highlighting and symbol navigation
 
-### Phase 12: CI/CD Integration
+### Phase 13: CI/CD Integration
 - GitHub Actions workflow for automated analysis on PR
 - Pre-commit hooks for local analysis
 - Generate changed-symbol reports on each commit
 - AI-powered review context injected into PR comments
 
-### Phase 13: Code Quality Metrics
+### Phase 14: Code Quality Metrics
 - Cyclomatic complexity calculation per function
 - Duplicate code detection across the codebase
 - Dead code identification (unreferenced symbols)
