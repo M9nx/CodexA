@@ -494,7 +494,7 @@ class TestRouterPhase14:
         """Router should register exactly 19 commands."""
         group = click.Group()
         register_commands(group)
-        assert len(group.commands) == 22
+        assert len(group.commands) == 25
 
     def test_web_command_registered(self):
         group = click.Group()
@@ -515,7 +515,7 @@ class TestRouterPhase14:
 class TestVersionBump:
     def test_version_is_014(self):
         from semantic_code_intelligence import __version__
-        assert __version__ == "0.15.0"
+        assert __version__ == "0.16.0"
 
 
 # =========================================================================

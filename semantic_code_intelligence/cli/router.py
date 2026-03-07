@@ -26,6 +26,9 @@ from semantic_code_intelligence.cli.commands.viz_cmd import viz_cmd
 from semantic_code_intelligence.cli.commands.quality_cmd import quality_cmd
 from semantic_code_intelligence.cli.commands.pr_summary_cmd import pr_summary_cmd
 from semantic_code_intelligence.cli.commands.ci_gen_cmd import ci_gen_cmd
+from semantic_code_intelligence.cli.commands.chat_cmd import chat_cmd
+from semantic_code_intelligence.cli.commands.investigate_cmd import investigate_cmd
+from semantic_code_intelligence.cli.commands.cross_refactor_cmd import cross_refactor_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -56,3 +59,6 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(quality_cmd)
     cli.add_command(pr_summary_cmd)
     cli.add_command(ci_gen_cmd)
+    cli.add_command(chat_cmd)
+    cli.add_command(investigate_cmd)
+    cli.add_command(cross_refactor_cmd)

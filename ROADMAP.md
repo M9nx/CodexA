@@ -359,13 +359,31 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ---
 
-## Upcoming Phases
+### Phase 16: Advanced AI Workflows ✅
 
-### Phase 16: Advanced AI Workflows
-- Multi-turn conversation memory with session persistence
-- Autonomous multi-step code investigation chains
-- Cross-repo refactoring suggestions
-- Streaming LLM responses with real-time plugin hooks
+| Feature | Status |
+|---|---|
+| Multi-turn conversation memory with session persistence | ✅ |
+| ConversationSession (uuid-based, serializable, turn-limited) | ✅ |
+| SessionStore (file-backed `.codex/sessions/`, path-safe) | ✅ |
+| Autonomous multi-step code investigation chains | ✅ |
+| InvestigationChain (LLM planner loop, search/analyze/deps) | ✅ |
+| Cross-repo refactoring suggestions (trigram Jaccard) | ✅ |
+| LLM-powered refactoring advice generation | ✅ |
+| Streaming LLM responses (Ollama, OpenAI, Mock, fallback) | ✅ |
+| Real-time plugin hooks (ON_STREAM dispatch) | ✅ |
+| StreamEvent with SSE serialization | ✅ |
+| `codex chat` CLI command (session resume, list, max-turns) | ✅ |
+| `codex investigate` CLI command (step-by-step display) | ✅ |
+| `codex cross-refactor` CLI command (threshold, suggestions) | ✅ |
+| Auto-documentation: `AI_WORKFLOWS.md` | ✅ |
+| 64 new tests, backward compatible | ✅ |
+
+**Total: 979 tests, all passing.**
+
+---
+
+## Upcoming Phases
 
 ### Phase 17: Code Quality Metrics & Trends
 - Maintainability index and trend tracking
@@ -378,7 +396,7 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 ## Architecture
 
 ```
-codex CLI (Click) — 22 commands
+codex CLI (Click) — 25 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
@@ -387,6 +405,7 @@ codex CLI (Click) — 22 commands
   ├── plugin (new · list · info)
   ├── web / viz
   ├── quality / pr-summary / ci-gen
+  ├── chat / investigate / cross-refactor
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -417,6 +436,10 @@ codex CLI (Click) — 22 commands
   ├── LLM Integration
   │     LLMProvider (OpenAI · Ollama · Mock)
   │     ReasoningEngine (ask · review · refactor · suggest)
+  │     ConversationSession · SessionStore (multi-turn persistence)
+  │     InvestigationChain (autonomous multi-step reasoning)
+  │     stream_chat (Ollama/OpenAI/Mock with plugin hooks)
+  │     analyze_cross_repo (cross-repo refactoring)
   │     Context pruning · priority scoring · explainability
   │     SafetyValidator (17 patterns)
   │
@@ -433,7 +456,7 @@ codex CLI (Click) — 22 commands
   │     Mermaid Visualization (call graph, deps, workspace, symbol map)
   │
   └── Plugin SDK
-        PluginBase · PluginHook (13 hooks) · PluginManager
+        PluginBase · PluginHook (14 hooks) · PluginManager
         Plugin scaffold · Sample plugins · Discovery
 ```
 
@@ -447,5 +470,5 @@ codex CLI (Click) — 22 commands
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
 | Vector Search | FAISS (IndexFlatIP) |
 | Code Parsing | tree-sitter 0.25+ (11 language grammars) |
-| Testing | pytest + pytest-cov (762 tests) |
+| Testing | pytest + pytest-cov (979 tests) |
 | Python | 3.12+ |

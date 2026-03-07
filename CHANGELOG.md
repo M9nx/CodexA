@@ -121,6 +121,17 @@ All notable changes to CodexA are documented in this file.
 - **Auto-Documentation**: `generate_web_reference()` → `WEB.md`
 - 74 new tests (762 → 836), 19 CLI commands total
 
+## [0.16.0] — 2026-03-07
+
+### Phase 16: Advanced AI Workflows
+- **Conversation Memory** (`llm/conversation.py`): `ConversationSession` with uuid-based IDs, role-typed messages, turn counting, `get_messages_for_llm(max_turns)` for context window management, JSON serialization round-trip; `SessionStore` for file-backed persistence under `.codex/sessions/` with path traversal prevention, list/delete/get-or-create operations
+- **Investigation Chains** (`llm/investigation.py`): `InvestigationChain` with LLM planner loop — structured JSON prompting for thought/action/action_input, three built-in actions (search, analyze, deps), automatic conclusion forcing at step limit, `SessionMemory` chain tracking, fallback parsing for non-JSON LLM responses
+- **Cross-Repo Refactoring** (`llm/cross_refactor.py`): `analyze_cross_repo()` with per-repo symbol indexing, cross-repo duplicate detection via trigram Jaccard similarity (reuses `ci/quality.py` internals), optional LLM-powered refactoring advice generation, workspace-aware multi-repo analysis
+- **Streaming LLM** (`llm/streaming.py`): `stream_chat()` unified API with provider-specific streamers (Ollama native HTTP streaming, OpenAI SDK streaming, MockProvider word-by-word simulation), `StreamEvent` with SSE serialization, `PluginHook.ON_STREAM` dispatch for real-time plugin hooks, graceful fallback for unknown providers
+- **New CLI Commands**: `codex chat` (multi-turn with `--session`, `--list-sessions`, `--max-turns`, `--json`, `--pipe`), `codex investigate` (autonomous investigation with `--max-steps`, `--json`, `--pipe`), `codex cross-refactor` (cross-repo analysis with `--threshold`, `--json`, `--pipe`)
+- **Auto-Documentation**: `generate_ai_workflows_reference()` → `AI_WORKFLOWS.md`
+- 64 new tests (915 → 979), 25 CLI commands total
+
 ## [0.15.0] — 2026-03-07
 
 ### Phase 15: CI/CD & Contribution Safety Pipeline
