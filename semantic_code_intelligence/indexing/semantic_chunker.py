@@ -271,9 +271,9 @@ def semantic_chunk_code(
 ) -> list[SemanticChunk]:
     """Split code into semantically meaningful chunks using AST analysis.
 
-    For supported languages (Python, JS, Java, Go, Rust), uses tree-sitter
-    to identify symbol boundaries and produces chunks aligned to function,
-    class, and method definitions.
+    For supported languages (Python, JS, TypeScript, Java, Go, Rust, C++,
+    C#, Ruby, PHP), uses tree-sitter to identify symbol boundaries and
+    produces chunks aligned to function, class, and method definitions.
 
     For unsupported languages, falls back to line-boundary chunking and
     wraps the result as SemanticChunk objects.

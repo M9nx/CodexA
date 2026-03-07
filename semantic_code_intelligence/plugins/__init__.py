@@ -48,6 +48,12 @@ class PluginHook(str, Enum):
     # File event hooks
     ON_FILE_CHANGE = "on_file_change"
 
+    # Streaming hooks (Phase 12)
+    ON_STREAM = "on_stream"  # fired for streaming LLM token chunks
+
+    # Validation hooks (Phase 12)
+    CUSTOM_VALIDATION = "custom_validation"  # user-defined code validation rules
+
     # Custom hooks
     CUSTOM = "custom"
 

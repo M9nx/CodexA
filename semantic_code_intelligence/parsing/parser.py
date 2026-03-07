@@ -16,9 +16,22 @@ logger = get_logger("parsing")
 _LANGUAGE_MODULES: dict[str, str] = {
     "python": "tree_sitter_python",
     "javascript": "tree_sitter_javascript",
+    "typescript": "tree_sitter_typescript",
+    "tsx": "tree_sitter_typescript",
     "java": "tree_sitter_java",
     "go": "tree_sitter_go",
     "rust": "tree_sitter_rust",
+    "cpp": "tree_sitter_cpp",
+    "csharp": "tree_sitter_c_sharp",
+    "ruby": "tree_sitter_ruby",
+    "php": "tree_sitter_php",
+}
+
+# Languages that require a special factory function name (not just `language()`)
+_LANGUAGE_FACTORY: dict[str, str] = {
+    "typescript": "language_typescript",
+    "tsx": "language_tsx",
+    "php": "language_php",
 }
 
 # Extension to language mapping
@@ -26,36 +39,63 @@ EXTENSION_TO_LANGUAGE: dict[str, str] = {
     ".py": "python",
     ".js": "javascript",
     ".jsx": "javascript",
+    ".ts": "typescript",
+    ".tsx": "tsx",
     ".java": "java",
     ".go": "go",
     ".rs": "rust",
+    ".cpp": "cpp",
+    ".cc": "cpp",
+    ".hpp": "cpp",
+    ".h": "cpp",
+    ".cs": "csharp",
+    ".rb": "ruby",
+    ".php": "php",
 }
 
 # Node types that represent function definitions per language
 FUNCTION_NODE_TYPES: dict[str, set[str]] = {
     "python": {"function_definition"},
     "javascript": {"function_declaration", "arrow_function", "method_definition"},
+    "typescript": {"function_declaration", "arrow_function", "method_definition"},
+    "tsx": {"function_declaration", "arrow_function", "method_definition"},
     "java": {"method_declaration", "constructor_declaration"},
     "go": {"function_declaration", "method_declaration"},
     "rust": {"function_item"},
+    "cpp": {"function_definition"},
+    "csharp": {"method_declaration", "constructor_declaration"},
+    "ruby": {"method", "singleton_method"},
+    "php": {"function_definition", "method_declaration"},
 }
 
 # Node types that represent class/struct definitions per language
 CLASS_NODE_TYPES: dict[str, set[str]] = {
     "python": {"class_definition"},
     "javascript": {"class_declaration"},
+    "typescript": {"class_declaration", "interface_declaration", "enum_declaration"},
+    "tsx": {"class_declaration", "interface_declaration", "enum_declaration"},
     "java": {"class_declaration", "interface_declaration", "enum_declaration"},
     "go": {"type_declaration"},
     "rust": {"struct_item", "enum_item", "impl_item", "trait_item"},
+    "cpp": {"class_specifier", "struct_specifier", "enum_specifier"},
+    "csharp": {"class_declaration", "interface_declaration", "struct_declaration", "enum_declaration"},
+    "ruby": {"class", "module"},
+    "php": {"class_declaration", "interface_declaration", "trait_declaration", "enum_declaration"},
 }
 
 # Node types for import statements
 IMPORT_NODE_TYPES: dict[str, set[str]] = {
     "python": {"import_statement", "import_from_statement"},
     "javascript": {"import_statement"},
+    "typescript": {"import_statement"},
+    "tsx": {"import_statement"},
     "java": {"import_declaration"},
     "go": {"import_declaration"},
     "rust": {"use_declaration"},
+    "cpp": {"preproc_include"},
+    "csharp": {"using_directive"},
+    "ruby": {"call"},  # require/require_relative detected via name filter
+    "php": {"namespace_use_declaration"},
 }
 
 # Cache for loaded languages
@@ -112,7 +152,9 @@ def get_language(lang_name: str) -> tree_sitter.Language | None:
     try:
         import importlib
         mod = importlib.import_module(module_name)
-        lang = tree_sitter.Language(mod.language())
+        factory_name = _LANGUAGE_FACTORY.get(lang_name, "language")
+        factory = getattr(mod, factory_name)
+        lang = tree_sitter.Language(factory())
         _language_cache[lang_name] = lang
         return lang
     except (ImportError, AttributeError, Exception) as e:
@@ -136,9 +178,19 @@ def _get_node_text(node: tree_sitter.Node, source: bytes) -> str:
 
 def _find_name(node: tree_sitter.Node, source: bytes) -> str:
     """Find the name identifier within a definition node."""
+    _NAME_TYPES = {
+        "identifier", "property_identifier", "type_identifier",
+        "field_identifier", "constant", "name",  # constant=Ruby, name=PHP
+    }
     for child in node.children:
-        if child.type in ("identifier", "property_identifier", "type_identifier", "field_identifier"):
+        if child.type in _NAME_TYPES:
             return _get_node_text(child, source)
+    # C++: name may be inside a declarator child (e.g. function_declarator)
+    for child in node.children:
+        if child.type.endswith("_declarator"):
+            for sub in child.children:
+                if sub.type in _NAME_TYPES:
+                    return _get_node_text(sub, source)
     return "<anonymous>"
 
 
@@ -246,9 +298,18 @@ def _extract_symbols_recursive(
             continue  # already recursed into children
 
         elif actual.type in import_types:
+            text = _get_node_text(actual, source).strip()
+            # Ruby: only treat require/require_relative calls as imports
+            if language == "ruby" and actual.type == "call":
+                method_name = _find_name(actual, source)
+                if method_name not in ("require", "require_relative"):
+                    symbols.extend(
+                        _extract_symbols_recursive(child, source, file_path, language, parent_class)
+                    )
+                    continue
             symbols.append(
                 Symbol(
-                    name=_get_node_text(actual, source).strip(),
+                    name=text,
                     kind="import",
                     file_path=file_path,
                     start_line=actual.start_point[0] + 1,

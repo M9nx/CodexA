@@ -17,6 +17,7 @@ from semantic_code_intelligence.cli.commands.refactor_cmd import refactor_cmd
 from semantic_code_intelligence.cli.commands.suggest_cmd import suggest_cmd
 from semantic_code_intelligence.cli.commands.serve_cmd import serve_cmd
 from semantic_code_intelligence.cli.commands.context_cmd import context_cmd
+from semantic_code_intelligence.cli.commands.workspace_cmd import workspace_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -38,3 +39,4 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(suggest_cmd)
     cli.add_command(serve_cmd)
     cli.add_command(context_cmd)
+    cli.add_command(workspace_cmd)

@@ -17,14 +17,31 @@ logger = get_logger("llm.safety")
 
 # Patterns that should never appear in AI-generated code destined for execution.
 _DANGEROUS_PATTERNS: list[tuple[str, str]] = [
+    # Command execution
     (r"\bos\.system\s*\(", "os.system() call — use subprocess with shell=False instead"),
+    (r"subprocess\..*shell\s*=\s*True", "subprocess with shell=True — potential command injection"),
+    (r"\brm\s+-rf\s+/", "Destructive rm -rf / command"),
+    # Dynamic code execution
     (r"\beval\s*\(", "eval() call — avoid dynamic code execution"),
     (r"\bexec\s*\(", "exec() call — avoid dynamic code execution"),
     (r"\b__import__\s*\(", "Dynamic __import__() — use explicit imports"),
-    (r"subprocess\..*shell\s*=\s*True", "subprocess with shell=True — potential command injection"),
-    (r"\brm\s+-rf\s+/", "Destructive rm -rf / command"),
+    # SQL injection risk
     (r"DROP\s+TABLE|DROP\s+DATABASE", "SQL DROP statement — potential data loss"),
     (r"TRUNCATE\s+TABLE", "SQL TRUNCATE statement — potential data loss"),
+    # Path traversal
+    (r"\.\./\.\./", "Path traversal pattern — potential directory escape"),
+    # Hardcoded secrets (Phase 12)
+    (r"""(?:password|secret|api_key|token)\s*=\s*["'][^"']{8,}["']""",
+     "Hardcoded secret — use environment variables or a secrets manager"),
+    # XSS risk (Phase 12)
+    (r"innerHTML\s*=", "innerHTML assignment — potential XSS vulnerability"),
+    (r"document\.write\s*\(", "document.write() — potential XSS vulnerability"),
+    # Insecure crypto (Phase 12)
+    (r"\bMD5\s*\(|\bmd5\s*\(", "MD5 hash — use SHA-256 or stronger for security"),
+    (r"\bSHA1\s*\(|\bsha1\s*\(", "SHA-1 hash — use SHA-256 or stronger for security"),
+    # Insecure network (Phase 12)
+    (r"http://(?!localhost|127\.0\.0\.1)", "Insecure HTTP URL — use HTTPS instead"),
+    (r"verify\s*=\s*False", "SSL verification disabled — potential MITM vulnerability"),
 ]
 
 

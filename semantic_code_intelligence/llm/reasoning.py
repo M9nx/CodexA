@@ -47,6 +47,7 @@ class AskResult:
     answer: str
     context_snippets: list[dict[str, Any]] = field(default_factory=list)
     llm_response: LLMResponse | None = None
+    explainability: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -54,6 +55,7 @@ class AskResult:
             "answer": self.answer,
             "context_snippets": self.context_snippets,
             "usage": self.llm_response.usage if self.llm_response else {},
+            "explainability": self.explainability,
         }
 
 
@@ -65,6 +67,7 @@ class ReviewResult:
     issues: list[dict[str, Any]] = field(default_factory=list)
     summary: str = ""
     llm_response: LLMResponse | None = None
+    explainability: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -72,6 +75,7 @@ class ReviewResult:
             "issues": self.issues,
             "summary": self.summary,
             "usage": self.llm_response.usage if self.llm_response else {},
+            "explainability": self.explainability,
         }
 
 
@@ -84,6 +88,7 @@ class RefactorResult:
     refactored_code: str = ""
     explanation: str = ""
     llm_response: LLMResponse | None = None
+    explainability: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -92,6 +97,7 @@ class RefactorResult:
             "refactored_code": self.refactored_code,
             "explanation": self.explanation,
             "usage": self.llm_response.usage if self.llm_response else {},
+            "explainability": self.explainability,
         }
 
 
@@ -102,12 +108,14 @@ class SuggestResult:
     target: str
     suggestions: list[dict[str, Any]] = field(default_factory=list)
     llm_response: LLMResponse | None = None
+    explainability: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "target": self.target,
             "suggestions": self.suggestions,
             "usage": self.llm_response.usage if self.llm_response else {},
+            "explainability": self.explainability,
         }
 
 
@@ -121,17 +129,21 @@ class ReasoningEngine:
     This is the central orchestrator for all AI workflows in CodexA.
     """
 
+    DEFAULT_MAX_CONTEXT_CHARS = 6000
+
     def __init__(
         self,
         provider: LLMProvider,
         project_root: Path,
         *,
         builder: ContextBuilder | None = None,
+        max_context_chars: int | None = None,
     ) -> None:
         self._provider = provider
         self._root = project_root.resolve()
         self._builder = builder or ContextBuilder()
         self._indexed = False
+        self._max_ctx = max_context_chars or self.DEFAULT_MAX_CONTEXT_CHARS
 
     def _ensure_indexed(self) -> None:
         """Lazy-index the project for symbol/context lookups."""
@@ -180,6 +192,53 @@ class ReasoningEngine:
             parts.append(exp.render())
         return "\n\n".join(parts)
 
+    # --- context pruning & scoring (Phase 12) ---
+
+    @staticmethod
+    def _score_snippet(snippet: dict[str, Any], query_lower: str) -> float:
+        """Compute a priority score for a context snippet.
+
+        Combines the semantic search score with a keyword-overlap bonus.
+        """
+        base = float(snippet.get("score", 0.0))
+        content = snippet.get("content", snippet.get("chunk", "")).lower()
+        # Keyword overlap bonus: fraction of query words found in snippet
+        words = [w for w in query_lower.split() if len(w) > 2]
+        if words:
+            found = sum(1 for w in words if w in content)
+            base += 0.1 * (found / len(words))
+        return round(base, 4)
+
+    def _prune_context(
+        self,
+        snippets: list[dict[str, Any]],
+        query: str,
+        max_chars: int | None = None,
+    ) -> list[dict[str, Any]]:
+        """Score, rank, and prune snippets to stay within token budget.
+
+        Returns a subset of *snippets* sorted by priority score (descending),
+        trimmed so total character count stays within *max_chars*.
+        """
+        limit = max_chars or self._max_ctx
+        query_lower = query.lower()
+        scored = [
+            (self._score_snippet(s, query_lower), s)
+            for s in snippets
+        ]
+        scored.sort(key=lambda t: t[0], reverse=True)
+
+        kept: list[dict[str, Any]] = []
+        total = 0
+        for score, snip in scored:
+            text = snip.get("content", snip.get("chunk", ""))
+            if total + len(text) > limit and kept:
+                break
+            snip["priority_score"] = score
+            kept.append(snip)
+            total += len(text)
+        return kept
+
     # --- public AI workflows ---
 
     def ask(self, question: str, *, top_k: int = 5) -> AskResult:
@@ -187,7 +246,8 @@ class ReasoningEngine:
 
         Gathers semantic search results and repo context, then asks the LLM.
         """
-        snippets = self._search_context(question, top_k=top_k)
+        raw_snippets = self._search_context(question, top_k=top_k)
+        snippets = self._prune_context(raw_snippets, question)
         self._ensure_indexed()
         repo_summary = summarize_repository(self._builder).render()
 
@@ -222,6 +282,12 @@ class ReasoningEngine:
             answer=resp.content,
             context_snippets=snippets,
             llm_response=resp,
+            explainability={
+                "snippets_before_pruning": len(raw_snippets),
+                "snippets_after_pruning": len(snippets),
+                "context_chars": sum(len(s.get("content", "")) for s in snippets),
+                "method": "semantic_search+pruning",
+            },
         )
 
     def review(self, file_path: str) -> ReviewResult:

@@ -210,3 +210,62 @@ def generate_extension_manifest(
             },
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Streaming context (Phase 12)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class StreamChunk:
+    """A single chunk in a streaming response from VSCode bridge."""
+
+    kind: str  # "token", "context", "done", "error"
+    content: str = ""
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"kind": self.kind, "content": self.content, "metadata": self.metadata}
+
+    def to_sse(self) -> str:
+        """Format as a Server-Sent Event line."""
+        return f"data: {json.dumps(self.to_dict())}\n\n"
+
+
+def build_streaming_context(
+    query: str,
+    provider: ContextProvider,
+    *,
+    top_k: int = 5,
+) -> list[StreamChunk]:
+    """Build a sequence of StreamChunks suitable for SSE delivery.
+
+    Produces an initial context chunk (with search results) followed by a
+    done chunk.  This can be extended to interleave LLM token chunks when
+    streaming LLM responses are available.
+    """
+    chunks: list[StreamChunk] = []
+
+    # 1. Emit context from semantic search
+    ctx = provider.context_for_query(query=query, top_k=top_k)
+    results = ctx.get("results", [])
+    chunks.append(StreamChunk(
+        kind="context",
+        content=f"Found {len(results)} relevant snippets.",
+        metadata={"result_count": len(results), "query": query},
+    ))
+
+    # 2. Emit each search result as a token-shaped chunk
+    for r in results:
+        chunks.append(StreamChunk(
+            kind="token",
+            content=r.get("content", r.get("snippet", "")),
+            metadata={
+                "file_path": r.get("file_path", ""),
+                "score": r.get("score", 0),
+            },
+        ))
+
+    # 3. Done sentinel
+    chunks.append(StreamChunk(kind="done", content="", metadata={}))
+    return chunks

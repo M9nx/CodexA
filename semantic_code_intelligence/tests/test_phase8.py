@@ -524,7 +524,7 @@ class TestPluginAIHooks:
 
     def test_all_hooks_count(self):
         # Expect 11 hooks: 3 indexing + 2 search + 2 analysis + 2 AI + 1 file + 1 custom
-        assert len(PluginHook) == 11
+        assert len(PluginHook) == 13
 
 
 # ---------------------------------------------------------------------------
@@ -584,9 +584,9 @@ from semantic_code_intelligence.cli.router import register_commands
 
 class TestRouterPhase8:
     def test_register_commands_count(self):
-        """Router should register exactly 13 commands."""
+        """Router should register exactly 14 commands."""
         import click
 
         group = click.Group()
         register_commands(group)
-        assert len(group.commands) == 13
+        assert len(group.commands) == 14
