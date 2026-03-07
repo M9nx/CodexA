@@ -126,7 +126,8 @@ class TestSearchCommand:
             cli, ["search", "test query", "--path", str(tmp_path)]
         )
         assert result.exit_code == 0
-        assert "test query" in result.output
+        # Without an index, shows empty index warning
+        assert "empty" in result.output.lower() or "no results" in result.output.lower()
 
     def test_search_json_output(self, runner: CliRunner, tmp_path: Path):
         runner.invoke(cli, ["init", str(tmp_path)])

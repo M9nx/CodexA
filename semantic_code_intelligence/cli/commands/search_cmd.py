@@ -8,6 +8,8 @@ from pathlib import Path
 import click
 
 from semantic_code_intelligence.config.settings import AppConfig, load_config
+from semantic_code_intelligence.services.search_service import search_codebase
+from semantic_code_intelligence.search.formatter import format_results_json, format_results_rich
 from semantic_code_intelligence.utils.logging import (
     get_logger,
     print_error,
@@ -60,8 +62,6 @@ def search_cmd(
         codex search "database connection handling" --json
 
         codex search "error handling" -k 5
-
-    This is a Phase 1 stub. Full search is implemented in Phase 3.
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
@@ -76,20 +76,22 @@ def search_cmd(
     config = load_config(root)
     result_count = top_k or config.search.top_k
 
-    logger.debug("Search query: %s, top_k: %d", query, result_count)
-
-    # Phase 1 stub - actual search will be implemented in Phase 3
-    if json_mode:
-        result = {
-            "query": query,
-            "top_k": result_count,
-            "results": [],
-            "message": "Search index is empty. Run 'codex index' to build the index.",
-        }
-        click.echo(json.dumps(result, indent=2))
-    else:
-        print_info(f'Searching for: "{query}" (top {result_count} results)')
-        print_warning(
-            "Search index is empty. Run 'codex index' to build the index."
+    try:
+        results = search_codebase(
+            query=query,
+            project_root=root,
+            top_k=result_count,
         )
-        print_info("Full semantic search will be available in Phase 3.")
+    except FileNotFoundError:
+        if json_mode:
+            click.echo(format_results_json(query, [], result_count))
+        else:
+            print_warning(
+                "Search index is empty. Run 'codex index' to build the index."
+            )
+        return
+
+    if json_mode:
+        click.echo(format_results_json(query, results, result_count))
+    else:
+        format_results_rich(query, results)
