@@ -106,6 +106,35 @@ class IndexConfig(BaseModel):
     )
 
 
+class LLMConfig(BaseModel):
+    """Configuration for LLM provider integration."""
+
+    provider: str = Field(
+        default="mock",
+        description="LLM provider name: 'openai', 'ollama', or 'mock'.",
+    )
+    model: str = Field(
+        default="gpt-3.5-turbo",
+        description="Model name to use with the provider.",
+    )
+    api_key: str = Field(
+        default="",
+        description="API key for remote providers (e.g. OpenAI).",
+    )
+    base_url: str = Field(
+        default="",
+        description="Custom base URL for the LLM API endpoint.",
+    )
+    temperature: float = Field(
+        default=0.2,
+        description="Sampling temperature for LLM responses.",
+    )
+    max_tokens: int = Field(
+        default=2048,
+        description="Maximum tokens for LLM response generation.",
+    )
+
+
 class AppConfig(BaseModel):
     """Top-level application configuration."""
 
@@ -116,6 +145,7 @@ class AppConfig(BaseModel):
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     search: SearchConfig = Field(default_factory=SearchConfig)
     index: IndexConfig = Field(default_factory=IndexConfig)
+    llm: LLMConfig = Field(default_factory=LLMConfig)
     verbose: bool = Field(default=False, description="Enable verbose output.")
 
     @classmethod

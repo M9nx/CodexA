@@ -59,3 +59,13 @@ All notable changes to CodexA are documented in this file.
 - **Plugin Architecture SDK**: `PluginBase`, `PluginHook` (9 hook points), `PluginManager` with discovery, activation, and chained hook dispatch
 - **Scalability**: `BatchProcessor`, `MemoryAwareEmbedder`, `ParallelScanner` for memory-safe batch processing and concurrent I/O
 - 119 new tests (391 cumulative)
+
+### Phase 8: AI Coding Assistant Platform
+- **LLM Provider Abstraction**: `LLMProvider` ABC with `OpenAIProvider`, `OllamaProvider`, `MockProvider`; `LLMMessage`/`LLMResponse` structured types
+- **AI Reasoning Engine**: `ReasoningEngine` orchestrating semantic search + LLM; `ask()`, `review()`, `refactor()`, `suggest()` workflows with structured result types
+- **Context & Memory**: `SessionMemory` (in-process), `WorkspaceMemory` (persistent `.codex/memory.json`), multi-step reasoning chains
+- **Safety Validator**: `SafetyValidator` scans LLM output for dangerous patterns (eval, exec, shell injection, SQL injection); extensible pattern system
+- **New CLI Commands**: `codex ask`, `codex review`, `codex refactor`, `codex suggest` (all with `--json` support)
+- **Plugin AI Hooks**: `PRE_AI` and `POST_AI` added to `PluginHook` (11 hooks total)
+- **LLMConfig**: provider, model, api_key, base_url, temperature, max_tokens — integrated into `AppConfig`
+- 62 new tests (453 cumulative)

@@ -41,6 +41,10 @@ class PluginHook(str, Enum):
     PRE_ANALYSIS = "pre_analysis"
     POST_ANALYSIS = "post_analysis"
 
+    # AI hooks
+    PRE_AI = "pre_ai"
+    POST_AI = "post_ai"
+
     # File event hooks
     ON_FILE_CHANGE = "on_file_change"
 

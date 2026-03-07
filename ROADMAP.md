@@ -99,16 +99,58 @@ Transformed CodexA from a CLI tool into a **developer semantic intelligence plat
 
 **Total: 391 tests, all passing.**
 
+### Phase 8: AI Coding Assistant Platform ✅
+Transformed CodexA from a semantic code search engine into a **full AI coding assistant / agent platform**.
+
+#### LLM Provider Abstraction Layer
+- `LLMProvider` abstract base class with `complete()`, `chat()`, `is_available()`
+- `LLMMessage` / `LLMResponse` structured data types with serialization
+- `OpenAIProvider`: OpenAI Chat Completions API integration (GPT-3.5/4)
+- `OllamaProvider`: Ollama local model server integration (stdlib HTTP, no extra deps)
+- `MockProvider`: deterministic mock for testing with response queuing and call history
+
+#### AI Reasoning Engine
+- `ReasoningEngine`: orchestrates semantic search + parsed symbols + LLM conversations
+- `ask()`: natural-language Q&A about the codebase with context snippets
+- `review()`: AI-powered code review returning structured issues + summary
+- `refactor()`: AI-assisted refactoring with explanation and safety validation
+- `suggest()`: intelligent suggestions with "why" reasoning and priority levels
+- Structured result types: `AskResult`, `ReviewResult`, `RefactorResult`, `SuggestResult`
+
+#### Context & Memory Management
+- `SessionMemory`: in-process memory with keyword search, recency, and max-entry eviction
+- `WorkspaceMemory`: persistent memory stored in `.codex/memory.json` with cross-session caching
+- `MemoryEntry` / `ReasoningStep` data types with full serialization
+- Multi-step reasoning chains: `start_chain()`, `add_step()`, `get_chain()`
+
+#### Safety & Validation Layer
+- `SafetyValidator`: scans LLM-generated code for dangerous patterns (eval, exec, os.system, shell injection, SQL injection, etc.)
+- `SafetyReport` / `SafetyIssue` structured output with line numbers and severity
+- Extensible pattern system with custom pattern injection
+- Integrated into `codex refactor` workflow
+
+#### Expanded CLI Commands
+- `codex ask <question>`: natural-language Q&A about the codebase
+- `codex review <file>`: AI-powered code review with severity levels
+- `codex refactor <file>`: AI-assisted refactoring with safety checks
+- `codex suggest <target>`: intelligent suggestions with priority and rationale
+- All commands support `--json` output mode
+
+#### Plugin AI Hooks
+- Added `PRE_AI` and `POST_AI` hooks to `PluginHook` enum (11 hooks total)
+- Enables plugins to intercept and transform AI requests/responses
+
+#### Configuration Extension
+- `LLMConfig`: provider, model, api_key, base_url, temperature, max_tokens
+- Integrated into `AppConfig` with full serialization roundtrip
+
+- **62 new tests (453 total)**
+
+**Total: 453 tests, all passing.**
+
 ---
 
 ## Upcoming Phases
-
-### Phase 8: LLM Integration
-- Connect to OpenAI, Ollama, or other LLM APIs
-- Use `generate_ai_context()` as prompt context for code Q&A
-- `codex ask <question>` — natural language questions about the codebase
-- `codex review` — AI-powered code review suggestions
-- `codex refactor <symbol>` — AI-assisted refactoring proposals
 
 ### Phase 9: Multi-Repo Support
 - Index and search across multiple repositories
@@ -147,7 +189,8 @@ Transformed CodexA from a CLI tool into a **developer semantic intelligence plat
 
 ```
 codex CLI (Click)
-  ├── init / index / search / explain / summary / context / graph
+  ├── init / index / search / explain / summary / watch / deps
+  ├── ask / review / refactor / suggest  [NEW: Phase 8]
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -164,9 +207,18 @@ codex CLI (Click)
   │     ContextBuilder → ContextWindow
   │     CallGraph (reference edges)
   │     DependencyMap (import tracking)
+  │     SessionMemory / WorkspaceMemory (cross-session caching)
   │
-  └── AI Features
-        RepoSummary · generate_ai_context() · explain_symbol() · explain_file()
+  ├── AI Features
+  │     RepoSummary · generate_ai_context() · explain_symbol() · explain_file()
+  │
+  ├── LLM Integration  [NEW: Phase 8]
+  │     LLMProvider (OpenAI · Ollama · Mock)
+  │     ReasoningEngine (ask · review · refactor · suggest)
+  │     SafetyValidator (dangerous pattern detection)
+  │
+  └── Plugin SDK
+        PluginBase · PluginHook (11 hooks) · PluginManager
 ```
 
 ## Tech Stack
