@@ -188,49 +188,115 @@ Designed CodexA as a **lightweight AI developer assistant** that integrates and 
 
 **Total: 453+ tests, all passing.**
 
+### Phase 10: Multi-Repository Workspace Intelligence ✅
+Introduced first-class multi-repository workspace support — manage, index, and search across multiple repos from a single workspace root.
+
+#### Workspace Model
+- `RepoEntry` dataclass: name, path, last_indexed timestamp, file_count, vector_count
+- `WorkspaceManifest`: versioned JSON manifest at `.codex/workspace.json`
+- `Workspace` class: load/save persistence, add/remove/get repo management
+- Per-repo vector indexes stored under `.codex/repos/<name>/`
+- Merged cross-repo search with score-sorted results
+
+#### Workspace CLI
+- `codex workspace init`: initialize a workspace
+- `codex workspace add <name> <path>`: register a repository
+- `codex workspace remove <name>`: unregister a repository
+- `codex workspace list`: show all repos (Rich table or `--json`)
+- `codex workspace index`: index one (`--repo`) or all repos with `--force` option
+- `codex workspace search <query>`: cross-repo semantic search with `--repo` filtering
+- All commands support `--path` for workspace root and `--json` output
+
+- **52 new tests (516 → 568)** | 14 CLI commands total | Commit `01019db`
+
+### Phase 11: Multi-Language Parsing Expansion ✅
+Expanded tree-sitter parsing from 5 to **11 languages**, covering the most popular ecosystems.
+
+#### New Language Grammars
+- **TypeScript** (`.ts`): functions, arrow functions, classes, interfaces, enums, imports
+- **TSX** (`.tsx`): full TypeScript + JSX support
+- **C++** (`.cpp`, `.cc`, `.hpp`, `.h`): functions, classes, structs, enums, `#include` directives
+- **C#** (`.cs`): methods, constructors, classes, interfaces, structs, enums, `using` directives
+- **Ruby** (`.rb`): methods, singleton methods, classes, modules, `require`/`require_relative` imports
+- **PHP** (`.php`): functions, methods, classes, interfaces, traits, enums, `use` declarations
+
+#### Parser Improvements
+- `_LANGUAGE_FACTORY` dict for grammars with non-standard factory functions (TypeScript, TSX, PHP)
+- Enhanced `_find_name()`: handles C++ declarator nesting, Ruby `constant` nodes, PHP `name` nodes
+- Ruby import filtering: only `require` and `require_relative` calls treated as imports (not `include`, `puts`, etc.)
+- Semantic chunker automatically supports all new languages via `parse_file()` delegation
+
+- **65 new tests (568 → 633)** | Commit `01019db`
+
+### Phase 12: Platform Enhancements ✅
+Cross-cutting improvements to plugins, reasoning, security, and IDE integration.
+
+#### Plugin SDK Evolution
+- `ON_STREAM` hook: intercept streaming LLM token chunks in real-time
+- `CUSTOM_VALIDATION` hook: user-defined code validation rules via plugins
+- 13 total hooks (up from 11)
+
+#### Reasoning Engine Improvements
+- **Context pruning**: `_prune_context()` trims snippets to stay within configurable `max_context_chars`
+- **Priority scoring**: `_score_snippet()` combines semantic similarity with keyword-overlap bonus
+- **Explainability metadata**: all result types (`AskResult`, `ReviewResult`, `RefactorResult`, `SuggestResult`) include an `explainability` dict tracking snippet counts, context size, and method used
+
+#### Security Validator Enhancements
+- Path traversal detection (`../../`)
+- Hardcoded secrets (password, api_key, token, secret literals)
+- XSS risks (`innerHTML`, `document.write`)
+- Insecure cryptography (MD5, SHA-1)
+- Insecure HTTP (non-localhost `http://` URLs)
+- SSL verification bypass (`verify=False`)
+- 17 total patterns (up from 8)
+
+#### VSCode Streaming Context
+- `StreamChunk` dataclass: kind (`token`, `context`, `done`, `error`), content, metadata
+- `to_sse()`: Server-Sent Event formatting for HTTP streaming
+- `build_streaming_context()`: builds a sequence of SSE-ready chunks from semantic search results
+
+- **49 new tests (633 → 682)** | Commit `01019db`
+
+**Total: 682 tests, all passing.**
+
 ---
 
 ## Upcoming Phases
 
-### Phase 10: Multi-Repo Support
-- Index and search across multiple repositories
-- Per-repo configuration with merged search results
-- Cross-repo symbol resolution and dependency tracking
-- Workspace-level summary aggregation
-
-### Phase 11: Additional Languages
-- TypeScript (`.ts`, `.tsx`)
-- C++ (`.cpp`, `.hpp`, `.cc`, `.h`)
-- C# (`.cs`)
-- Ruby (`.rb`)
-- PHP (`.php`)
-
-### Phase 12: Web UI
-- FastAPI/Flask REST API server
-- Browser-based search interface
+### Phase 13: Web UI & REST API
+- FastAPI/Flask REST API server wrapping existing services
+- Browser-based search interface with syntax-highlighted results
 - Interactive call graph visualization (Mermaid / D3.js)
-- Code exploration with syntax highlighting and symbol navigation
+- Code exploration with symbol navigation
 
-### Phase 13: CI/CD Integration
+### Phase 14: CI/CD Integration
 - GitHub Actions workflow for automated analysis on PR
 - Pre-commit hooks for local analysis
 - Generate changed-symbol reports on each commit
 - AI-powered review context injected into PR comments
 
-### Phase 14: Code Quality Metrics
+### Phase 15: Code Quality Metrics
 - Cyclomatic complexity calculation per function
 - Duplicate code detection across the codebase
 - Dead code identification (unreferenced symbols)
 - Maintainability index and trend tracking
+
+### Phase 16: Advanced AI Workflows
+- Multi-turn conversation memory with session persistence
+- Autonomous multi-step code investigation chains
+- Cross-repo refactoring suggestions
+- Streaming LLM responses with real-time plugin hooks
 
 ---
 
 ## Architecture
 
 ```
-codex CLI (Click)
+codex CLI (Click) — 14 commands
   ├── init / index / search / explain / summary / watch / deps
-  ├── ask / review / refactor / suggest  [NEW: Phase 8]
+  ├── ask / review / refactor / suggest
+  ├── serve / context
+  ├── workspace (init · add · remove · list · index · search)
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -239,8 +305,9 @@ codex CLI (Click)
   ├── Search Pipeline
   │     Query → Embedding → FAISS similarity → Rich / JSON formatter
   │
-  ├── Parsing Engine (tree-sitter)
-  │     Python · JavaScript · Java · Go · Rust
+  ├── Parsing Engine (tree-sitter) — 11 languages
+  │     Python · JavaScript · TypeScript · TSX · Java · Go · Rust
+  │     C++ · C# · Ruby · PHP
   │     └── Symbols: functions, classes, methods, imports, parameters, decorators
   │
   ├── Context Engine
@@ -249,16 +316,26 @@ codex CLI (Click)
   │     DependencyMap (import tracking)
   │     SessionMemory / WorkspaceMemory (cross-session caching)
   │
+  ├── Multi-Repo Workspace
+  │     Workspace → RepoEntry · WorkspaceManifest
+  │     Per-repo indexing (.codex/repos/<name>/)
+  │     Merged cross-repo search
+  │
   ├── AI Features
   │     RepoSummary · generate_ai_context() · explain_symbol() · explain_file()
   │
-  ├── LLM Integration  [NEW: Phase 8]
+  ├── LLM Integration
   │     LLMProvider (OpenAI · Ollama · Mock)
   │     ReasoningEngine (ask · review · refactor · suggest)
-  │     SafetyValidator (dangerous pattern detection)
+  │     Context pruning · priority scoring · explainability
+  │     SafetyValidator (17 patterns)
+  │
+  ├── Bridge / IDE Integration
+  │     BridgeServer (HTTP) · ContextProvider · VSCodeBridge
+  │     StreamChunk (SSE streaming) · Extension manifest
   │
   └── Plugin SDK
-        PluginBase · PluginHook (11 hooks) · PluginManager
+        PluginBase · PluginHook (13 hooks) · PluginManager
 ```
 
 ## Tech Stack
@@ -270,6 +347,6 @@ codex CLI (Click)
 | Logging / Output | Rich |
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
 | Vector Search | FAISS (IndexFlatIP) |
-| Code Parsing | tree-sitter 0.25+ |
-| Testing | pytest + pytest-cov |
+| Code Parsing | tree-sitter 0.25+ (11 language grammars) |
+| Testing | pytest + pytest-cov (682 tests) |
 | Python | 3.12+ |
