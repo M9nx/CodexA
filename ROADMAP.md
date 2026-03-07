@@ -295,15 +295,48 @@ Transformed CodexA into a community-ready open source project with auto-document
 
 **Total: 762 tests, all passing.**
 
+### Phase 14: Web Interface & Developer Accessibility Layer ✅
+Added an optional lightweight web interface with REST API, browser UI, and Mermaid visualization — zero external dependencies.
+
+#### REST API (`semantic_code_intelligence/web/api.py`)
+- `APIHandler` wrapping `ContextProvider` with developer-friendly JSON endpoints
+- GET: `/health`, `/api/search`, `/api/symbols`, `/api/deps`, `/api/callgraph`, `/api/summary`
+- POST: `/api/ask` (natural-language questions), `/api/analyze` (validate/explain code)
+- CORS headers on all responses, query-string helpers
+
+#### Visualization (`semantic_code_intelligence/web/visualize.py`)
+- `render_call_graph()`: caller → callee Mermaid flowchart from call edges
+- `render_dependency_graph()`: file dependency flowchart with dedup
+- `render_workspace_graph()`: hub-and-spoke workspace diagram
+- `render_symbol_map()`: class diagram from symbols (classes, methods, standalone functions)
+- Helpers: `_sanitize_id()`, `_sanitize_class_id()`, `_short_label()`
+
+#### Web UI (`semantic_code_intelligence/web/ui.py`)
+- Server-rendered HTML with inline CSS (dark GitHub-style theme) and vanilla JavaScript
+- 4 pages: Search, Symbols, Workspace, Visualize
+- No build step, no npm, no framework dependencies
+
+#### Combined Server (`semantic_code_intelligence/web/server.py`)
+- `WebServer` merging API + UI on a single port (default 8080)
+- `start()`, `start_background()`, `stop()` lifecycle
+- Uses Python stdlib `http.server` — zero external deps
+
+#### New CLI Commands
+- `codex web [--host HOST] [--port PORT] [--path PATH]` — start web server
+- `codex viz KIND [--target T] [--output FILE] [--json] [--path PATH]` — generate Mermaid diagrams
+
+#### Documentation
+- `generate_web_reference()` added to auto-doc generator → `WEB.md`
+- Version bumped to `0.14.0`
+- 19 top-level CLI commands total
+
+- **74 new tests (762 → 836)** | 19 CLI commands total
+
+**Total: 836 tests, all passing.**
+
 ---
 
 ## Upcoming Phases
-
-### Phase 14: Web UI & REST API
-- FastAPI/Flask REST API server wrapping existing services
-- Browser-based search interface with syntax-highlighted results
-- Interactive call graph visualization (Mermaid / D3.js)
-- Code exploration with symbol navigation
 
 ### Phase 15: CI/CD Integration
 - GitHub Actions workflow for automated analysis on PR
@@ -328,13 +361,14 @@ Transformed CodexA into a community-ready open source project with auto-document
 ## Architecture
 
 ```
-codex CLI (Click) — 17 commands
+codex CLI (Click) — 19 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
   ├── workspace (init · add · remove · list · index · search)
   ├── docs / doctor
   ├── plugin (new · list · info)
+  ├── web / viz
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -373,7 +407,12 @@ codex CLI (Click) — 17 commands
   │     StreamChunk (SSE streaming) · Extension manifest
   │
   ├── Auto-Documentation Engine
-  │     CLI ref · Plugin ref · Bridge ref · Tool ref → Markdown
+  │     CLI ref · Plugin ref · Bridge ref · Tool ref · Web ref → Markdown
+  │
+  ├── Web Interface (optional)
+  │     WebServer (stdlib http.server) · APIHandler · UIHandler
+  │     REST API (search, symbols, deps, callgraph, summary, ask, analyze)
+  │     Mermaid Visualization (call graph, deps, workspace, symbol map)
   │
   └── Plugin SDK
         PluginBase · PluginHook (13 hooks) · PluginManager

@@ -109,3 +109,14 @@ All notable changes to CodexA are documented in this file.
 - **Sample Plugins**: `search_annotator.py` (POST_SEARCH), `code_quality.py` (CUSTOM_VALIDATION)
 - **Enhanced pyproject.toml**: classifiers, keywords, project URLs, readme metadata
 - 80 new tests (682 → 762), 17 CLI commands total
+
+## [0.14.0] — 2026-03-07
+
+### Phase 14: Web Interface & Developer Accessibility Layer
+- **REST API** (`web/api.py`): `APIHandler` with GET endpoints (`/health`, `/api/search`, `/api/symbols`, `/api/deps`, `/api/callgraph`, `/api/summary`) and POST endpoints (`/api/ask`, `/api/analyze`); CORS headers, query-string helpers
+- **Visualization** (`web/visualize.py`): Mermaid diagram generators — `render_call_graph()`, `render_dependency_graph()`, `render_workspace_graph()`, `render_symbol_map()`
+- **Web UI** (`web/ui.py`): Server-rendered HTML with dark theme, vanilla JS; pages: Search, Symbols, Workspace, Visualize
+- **Combined Server** (`web/server.py`): `WebServer` merging API + UI on single port (default 8080); stdlib `http.server`, zero deps
+- **New CLI Commands**: `codex web` (start web server), `codex viz` (generate Mermaid diagrams with `--json`, `--output`)
+- **Auto-Documentation**: `generate_web_reference()` → `WEB.md`
+- 74 new tests (762 → 836), 19 CLI commands total

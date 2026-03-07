@@ -307,6 +307,92 @@ def generate_tool_reference() -> str:
     return "\n".join(lines)
 
 
+def generate_web_reference() -> str:
+    """Generate Markdown documentation for the Web API and visualization layer."""
+    lines: list[str] = [
+        "# Web Interface Reference",
+        "",
+        "Auto-generated from the CodexA web module.",
+        "",
+        "## Overview",
+        "",
+        "CodexA ships an **optional** lightweight web interface (`codex web`) that",
+        "bundles a REST API and a browser UI on a single port (default 8080).",
+        "No external frameworks are required — the server uses Python's `http.server`.",
+        "",
+        "## REST API Endpoints",
+        "",
+        "| Method | Path | Description |",
+        "|--------|------|-------------|",
+        "| GET | `/health` | Server health / project metadata |",
+        "| GET | `/api/search?q=&top_k=&threshold=` | Semantic code search |",
+        "| GET | `/api/symbols?file=&kind=` | Symbol table browser |",
+        "| GET | `/api/deps?file=` | File dependency graph |",
+        "| GET | `/api/callgraph?symbol=` | Call graph edges |",
+        "| GET | `/api/summary` | Project summary |",
+        "| POST | `/api/ask` | Ask a natural-language question |",
+        "| POST | `/api/analyze` | Validate or explain a code snippet |",
+        "",
+        "### POST `/api/ask` body",
+        "",
+        "```json",
+        "{",
+        '  "question": "How does authentication work?",',
+        '  "top_k": 5',
+        "}",
+        "```",
+        "",
+        "### POST `/api/analyze` body",
+        "",
+        "```json",
+        "{",
+        '  "code": "def hello(): ...",',
+        '  "mode": "validate"',
+        "}",
+        "```",
+        "",
+        "## Visualization (Mermaid)",
+        "",
+        "The `codex viz` command and `/api/viz/{kind}` endpoint produce",
+        "Mermaid-compatible diagram source text.",
+        "",
+        "| Kind | Description |",
+        "|------|-------------|",
+        "| `callgraph` | Caller → callee flowchart |",
+        "| `deps` | File dependency flowchart |",
+        "| `symbols` | Class diagram of symbols |",
+        "| `workspace` | Hub-and-spoke project map |",
+        "",
+        "### Example output",
+        "",
+        "````mermaid",
+        "flowchart LR",
+        '    main["main"] --> auth["auth"]',
+        '    auth["auth"] --> db["db"]',
+        "````",
+        "",
+        "## Web UI Pages",
+        "",
+        "| Path | Page |",
+        "|------|------|",
+        "| `/` | Search interface |",
+        "| `/symbols` | Symbol browser |",
+        "| `/workspace` | Project overview |",
+        "| `/viz` | Visualization viewer |",
+        "",
+        "The UI is server-rendered HTML with inline CSS (dark theme) and",
+        "vanilla JavaScript — no build step or npm required.",
+        "",
+        "## CLI Commands",
+        "",
+        "- `codex web [--host HOST] [--port PORT] [--path PATH]` — start the web server",
+        "- `codex viz KIND [--target T] [--output FILE] [--json] [--path PATH]` — generate a diagram",
+        "",
+    ]
+
+    return "\n".join(lines)
+
+
 def generate_all_docs(output_dir: Path) -> list[str]:
     """Generate all documentation files into the output directory.
 
@@ -346,6 +432,14 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         tool_md = generate_tool_reference()
         (output_dir / "TOOLS.md").write_text(tool_md, encoding="utf-8")
         generated.append("TOOLS.md")
+    except Exception:
+        pass
+
+    # Web / API reference
+    try:
+        web_md = generate_web_reference()
+        (output_dir / "WEB.md").write_text(web_md, encoding="utf-8")
+        generated.append("WEB.md")
     except Exception:
         pass
 

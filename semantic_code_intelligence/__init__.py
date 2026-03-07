@@ -1,4 +1,4 @@
 """Semantic Code Intelligence - Local semantic code search and AI-assisted code understanding."""
 
-__version__ = "0.13.0"
+__version__ = "0.14.0"
 __app_name__ = "codex"
