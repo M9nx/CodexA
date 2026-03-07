@@ -50,68 +50,92 @@
 
 **Total: 272 tests, all passing.**
 
+### Phase 7: Platform Evolution ✅
+Transformed CodexA from a CLI tool into a **developer semantic intelligence platform**.
+
+#### AST-Aware Semantic Chunking
+- `SemanticChunk` dataclass extending `CodeChunk` with symbol metadata
+- `semantic_chunk_code()` / `semantic_chunk_file()`: split code along function/class/method boundaries using tree-sitter
+- Automatic sub-splitting for oversized symbols, uncovered-block collection
+- Falls back to line-based chunking for unsupported languages
+- Semantic labels (e.g. `[python] function authenticate(user, password)`) for embedding quality
+
+#### Enhanced Embedding Pipeline
+- `preprocess_code_for_embedding()`: prepend semantic labels, collapse blanks, normalize formatting
+- `generate_semantic_embeddings()`: recommended entry point (preprocess → encode)
+- `generate_query_embedding()`: light preprocessing for search queries
+
+#### Background Intelligence Subsystem
+- `FileWatcher`: polling-based file change detection with hash comparison
+- `AsyncIndexer`: queue-based background indexing with completion callbacks
+- `IndexingDaemon`: combines watcher + indexer into a single start/stop API
+- `codex watch` CLI command with configurable poll interval
+
+#### AI Tool Interaction Layer
+- `ToolResult` structured response protocol for LLM agents
+- `ToolRegistry` with 8 tools: `semantic_search`, `explain_symbol`, `explain_file`, `summarize_repo`, `find_references`, `get_dependencies`, `get_call_graph`, `get_context`
+- `TOOL_DEFINITIONS` schema manifest for tool discovery
+- Lazy ContextBuilder initialization, per-file and directory indexing
+
+#### Expanded CLI Commands
+- `codex explain <symbol>`: structural explanation of symbols or entire files
+- `codex summary`: repository summary with language breakdown
+- `codex deps [target]`: dependency/import map (single file or whole project)
+- `codex watch`: background daemon for automatic re-indexing on file changes
+- All commands support `--json` output mode
+
+#### Plugin Architecture SDK
+- `PluginBase` abstract class with `metadata()`, `activate()`, `deactivate()`, `on_hook()`
+- `PluginHook` enum: `PRE_INDEX`, `POST_INDEX`, `ON_CHUNK`, `PRE_SEARCH`, `POST_SEARCH`, `PRE_ANALYSIS`, `POST_ANALYSIS`, `ON_FILE_CHANGE`, `CUSTOM`
+- `PluginManager`: register, activate/deactivate, dispatch hooks in chain, plugin info
+- `discover_from_directory()`: auto-discover plugins via `create_plugin()` factory
+
+#### Scalability & Performance
+- `BatchProcessor`: configurable batch size with progress callbacks and stats
+- `MemoryAwareEmbedder`: memory-safe embedding generation in batches
+- `ParallelScanner`: thread-based concurrent file processing
+
+- **119 new tests (391 total)** | Commit `8a45b9a`
+
+**Total: 391 tests, all passing.**
+
 ---
 
 ## Upcoming Phases
 
-### Phase 7: Enhanced CLI
-- Add `codex explain <symbol>` command (uses `explain_symbol`)
-- Add `codex summary` command (uses `summarize_repository`)
-- Add `codex context <symbol>` command (uses `ContextBuilder`)
-- Add `codex graph` command (visualize call graph in terminal)
-- Wire all Phase 4–6 features into the existing CLI
-
-### Phase 8: Smart Indexing
-- Replace line-boundary chunker with tree-sitter–aware chunking
-- Split on function/class boundaries instead of raw line counts
-- Produce higher-quality embeddings aligned to semantic units
-- Hybrid mode: fall back to line-based chunking for unsupported languages
-
-### Phase 9: Watch Mode
-- File-system watcher (watchdog) for live re-indexing
-- Detect file changes and re-index only modified files via hash store
-- Background daemon mode with `codex watch`
-- Configurable debounce and ignore patterns
-
-### Phase 10: LLM Integration
+### Phase 8: LLM Integration
 - Connect to OpenAI, Ollama, or other LLM APIs
 - Use `generate_ai_context()` as prompt context for code Q&A
 - `codex ask <question>` — natural language questions about the codebase
 - `codex review` — AI-powered code review suggestions
 - `codex refactor <symbol>` — AI-assisted refactoring proposals
 
-### Phase 11: Multi-Repo Support
+### Phase 9: Multi-Repo Support
 - Index and search across multiple repositories
 - Per-repo configuration with merged search results
 - Cross-repo symbol resolution and dependency tracking
 - Workspace-level summary aggregation
 
-### Phase 12: Additional Languages
+### Phase 10: Additional Languages
 - TypeScript (`.ts`, `.tsx`)
 - C++ (`.cpp`, `.hpp`, `.cc`, `.h`)
 - C# (`.cs`)
 - Ruby (`.rb`)
 - PHP (`.php`)
 
-### Phase 13: Web UI
+### Phase 11: Web UI
 - FastAPI/Flask REST API server
 - Browser-based search interface
 - Interactive call graph visualization (Mermaid / D3.js)
 - Code exploration with syntax highlighting and symbol navigation
 
-### Phase 14: Plugin System
-- Plugin architecture for custom analyzers
-- Custom formatter plugins (Markdown, HTML, SARIF)
-- Third-party integration hooks (Slack, Discord, CI/CD)
-- Plugin discovery and configuration via `codex.plugins` config
-
-### Phase 15: CI/CD Integration
+### Phase 12: CI/CD Integration
 - GitHub Actions workflow for automated analysis on PR
 - Pre-commit hooks for local analysis
 - Generate changed-symbol reports on each commit
 - AI-powered review context injected into PR comments
 
-### Phase 16: Code Quality Metrics
+### Phase 13: Code Quality Metrics
 - Cyclomatic complexity calculation per function
 - Duplicate code detection across the codebase
 - Dead code identification (unreferenced symbols)

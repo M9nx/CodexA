@@ -49,3 +49,13 @@ All notable changes to CodexA are documented in this file.
 - Added focus modes: filter by symbol name or file path
 - Full serialization: `to_dict()`, `to_json()`, `render()`
 - 42 tests (272 cumulative)
+
+### Phase 7: Platform Evolution
+- **AST-Aware Semantic Chunking**: `SemanticChunk`, `semantic_chunk_code()`, `semantic_chunk_file()` — splits on function/class/method boundaries via tree-sitter, falls back to line-based chunking
+- **Enhanced Embedding Pipeline**: `preprocess_code_for_embedding()`, `generate_semantic_embeddings()`, `generate_query_embedding()` — semantic label prepending and format normalization
+- **Background Intelligence**: `FileWatcher` (polling-based change detection), `AsyncIndexer` (queue-based background indexing), `IndexingDaemon` (combined watcher + indexer)
+- **AI Tool Interaction Layer**: `ToolRegistry` with 8 tools (`semantic_search`, `explain_symbol`, `explain_file`, `summarize_repo`, `find_references`, `get_dependencies`, `get_call_graph`, `get_context`), `ToolResult` protocol, `TOOL_DEFINITIONS` schema
+- **Expanded CLI**: `codex explain`, `codex summary`, `codex deps`, `codex watch` commands (all with `--json` support)
+- **Plugin Architecture SDK**: `PluginBase`, `PluginHook` (9 hook points), `PluginManager` with discovery, activation, and chained hook dispatch
+- **Scalability**: `BatchProcessor`, `MemoryAwareEmbedder`, `ParallelScanner` for memory-safe batch processing and concurrent I/O
+- 119 new tests (391 cumulative)
