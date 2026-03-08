@@ -385,9 +385,17 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ## Upcoming Phases
 
-### Phase 21: TBD
+### Phase 23: TBD
 
 ---
+
+### Phase 22: LLM Caching + Rate Limiting ✅
+- Disk-backed LLM response cache with TTL and max-entry eviction ✅
+- Sliding-window rate limiter (RPM + TPM) with blocking/non-blocking modes ✅
+- CachedProvider transparent wrapper for any LLMProvider ✅
+- LLMConfig extended with cache_enabled, cache_ttl_hours, cache_max_entries, rate_limit_rpm, rate_limit_tpm ✅
+- CLI commands auto-wrap providers with caching + rate limiting ✅
+- Phase 22 test suite with full coverage ✅
 
 ### Phase 21: Mypy Strict Typing & Coverage Gate ✅
 - Mypy strict configuration in pyproject.toml ✅

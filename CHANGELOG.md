@@ -2,6 +2,17 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.22.0] — Phase 22: LLM Caching + Rate Limiting
+
+### Added
+- **LLM response cache** (`llm/cache.py`) — disk-backed JSON cache with SHA-256 keys, TTL expiration, and max-entry eviction (LRU oldest-first)
+- **Rate limiter** (`llm/rate_limiter.py`) — sliding-window enforcement for requests-per-minute (RPM) and tokens-per-minute (TPM) with blocking and non-blocking modes
+- **CachedProvider** (`llm/cached_provider.py`) — transparent wrapper that adds caching and rate limiting to any LLMProvider
+- **LLMConfig fields** — `cache_enabled`, `cache_ttl_hours`, `cache_max_entries`, `rate_limit_rpm`, `rate_limit_tpm` in config settings
+- **CLI integration** — `_wrap_provider()` in ask/chat/investigate commands auto-wraps providers with CachedProvider based on config
+- **CacheStats / RateLimiterStats** — statistics tracking with hit rate, eviction count, rejected requests
+- **Phase 22 test suite** (`test_phase22.py`) — 74 tests covering cache, rate limiter, CachedProvider, config, CLI integration, end-to-end flows
+
 ## [0.21.0] — Phase 21: Mypy Strict Typing & Coverage Gate
 
 ### Added

@@ -133,6 +133,26 @@ class LLMConfig(BaseModel):
         default=2048,
         description="Maximum tokens for LLM response generation.",
     )
+    cache_enabled: bool = Field(
+        default=True,
+        description="Enable LLM response caching.",
+    )
+    cache_ttl_hours: int = Field(
+        default=24,
+        description="Time-to-live for cached LLM responses in hours.",
+    )
+    cache_max_entries: int = Field(
+        default=1000,
+        description="Maximum number of cached LLM responses.",
+    )
+    rate_limit_rpm: int = Field(
+        default=0,
+        description="Max requests per minute (0 = unlimited).",
+    )
+    rate_limit_tpm: int = Field(
+        default=0,
+        description="Max tokens per minute (0 = unlimited).",
+    )
 
 
 class QualityConfig(BaseModel):

@@ -6,8 +6,8 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.21.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-2102-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/version-0.22.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/tests-2188-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
@@ -510,7 +510,7 @@ After `codex init`, your project has `.codex/config.json`:
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 2102 tests
+# Run all 2188 tests
 pytest
 
 # Run with coverage (gate: 70% minimum)
@@ -520,7 +520,7 @@ pytest --cov=semantic_code_intelligence
 mypy semantic_code_intelligence --exclude "tests/"
 
 # Run specific phase tests
-pytest semantic_code_intelligence/tests/test_phase21.py -v
+pytest semantic_code_intelligence/tests/test_phase22.py -v
 
 # Run with verbose output
 codex --verbose search "query"

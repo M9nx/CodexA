@@ -5,6 +5,9 @@ Provides:
 - OpenAIProvider: OpenAI API integration
 - OllamaProvider: Ollama local model integration
 - MockProvider: deterministic mock for testing
+- CachedProvider: transparent caching and rate limiting wrapper
+- LLMCache / CacheStats: disk-backed response cache with TTL
+- RateLimiter / RateLimitExceeded: sliding-window rate limiting
 - ReasoningEngine: orchestrates context + LLM for AI-assisted tasks
 - SafetyValidator: validates LLM outputs before applying
 - ConversationSession / SessionStore: multi-turn conversation persistence
@@ -23,6 +26,9 @@ from semantic_code_intelligence.llm.provider import (
 from semantic_code_intelligence.llm.openai_provider import OpenAIProvider
 from semantic_code_intelligence.llm.ollama_provider import OllamaProvider
 from semantic_code_intelligence.llm.mock_provider import MockProvider
+from semantic_code_intelligence.llm.cached_provider import CachedProvider
+from semantic_code_intelligence.llm.cache import LLMCache, CacheStats
+from semantic_code_intelligence.llm.rate_limiter import RateLimiter, RateLimitExceeded, RateLimiterStats
 from semantic_code_intelligence.llm.reasoning import ReasoningEngine
 from semantic_code_intelligence.llm.safety import SafetyValidator
 from semantic_code_intelligence.llm.conversation import ConversationSession, SessionStore
@@ -37,6 +43,12 @@ __all__ = [
     "OpenAIProvider",
     "OllamaProvider",
     "MockProvider",
+    "CachedProvider",
+    "LLMCache",
+    "CacheStats",
+    "RateLimiter",
+    "RateLimitExceeded",
+    "RateLimiterStats",
     "ReasoningEngine",
     "SafetyValidator",
     "ConversationSession",

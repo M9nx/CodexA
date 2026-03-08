@@ -831,7 +831,7 @@ class TestVersionPhase19:
     def test_version_string(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.21.0"
+        assert __version__ == "0.22.0"
 
     def test_pyproject_version(self):
         import tomllib

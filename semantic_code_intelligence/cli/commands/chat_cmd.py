@@ -21,6 +21,32 @@ if TYPE_CHECKING:
 logger = get_logger("cli.chat")
 
 
+def _wrap_provider(provider: LLMProvider, llm: Any, config: Any) -> LLMProvider:
+    """Wrap a provider with caching and rate limiting based on config."""
+    from semantic_code_intelligence.llm.cache import LLMCache
+    from semantic_code_intelligence.llm.cached_provider import CachedProvider
+    from semantic_code_intelligence.llm.rate_limiter import RateLimiter
+
+    cache = None
+    if getattr(llm, "cache_enabled", False):
+        cache_dir = str(config.config_dir(config.project_root)) if hasattr(config, "config_dir") else None
+        cache = LLMCache(
+            cache_dir=cache_dir,
+            ttl_hours=getattr(llm, "cache_ttl_hours", 24),
+            max_entries=getattr(llm, "cache_max_entries", 1000),
+        )
+
+    rate_limiter = None
+    rpm = getattr(llm, "rate_limit_rpm", 0)
+    tpm = getattr(llm, "rate_limit_tpm", 0)
+    if rpm > 0 or tpm > 0:
+        rate_limiter = RateLimiter(rpm=rpm, tpm=tpm)
+
+    if cache is not None or rate_limiter is not None:
+        return CachedProvider(provider, cache=cache, rate_limiter=rate_limiter)
+    return provider
+
+
 def _get_provider(config: Any) -> LLMProvider:
     """Build an LLM provider from the app configuration."""
     from semantic_code_intelligence.config.settings import LLMConfig
@@ -29,7 +55,7 @@ def _get_provider(config: Any) -> LLMProvider:
     if llm.provider == "openai":
         from semantic_code_intelligence.llm.openai_provider import OpenAIProvider
 
-        return OpenAIProvider(
+        provider: LLMProvider = OpenAIProvider(
             api_key=llm.api_key,
             model=llm.model,
             base_url=llm.base_url or None,
@@ -39,7 +65,7 @@ def _get_provider(config: Any) -> LLMProvider:
     elif llm.provider == "ollama":
         from semantic_code_intelligence.llm.ollama_provider import OllamaProvider
 
-        return OllamaProvider(
+        provider = OllamaProvider(
             model=llm.model,
             base_url=llm.base_url or "http://localhost:11434",
             temperature=llm.temperature,
@@ -48,7 +74,9 @@ def _get_provider(config: Any) -> LLMProvider:
     else:
         from semantic_code_intelligence.llm.mock_provider import MockProvider
 
-        return MockProvider()
+        provider = MockProvider()
+
+    return _wrap_provider(provider, llm, config)
 
 
 @click.command("chat")
