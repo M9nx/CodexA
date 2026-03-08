@@ -56,6 +56,7 @@ class RepoEntry:
     vector_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the repo entry to a plain dictionary."""
         return {
             "name": self.name,
             "path": self.path,
@@ -66,6 +67,7 @@ class RepoEntry:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "RepoEntry":
+        """Construct a :class:`RepoEntry` from a dictionary."""
         return cls(
             name=data["name"],
             path=data["path"],
@@ -83,6 +85,7 @@ class WorkspaceManifest:
     repos: list[RepoEntry] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the manifest to a plain dictionary."""
         return {
             "version": self.version,
             "repos": [r.to_dict() for r in self.repos],
@@ -90,6 +93,7 @@ class WorkspaceManifest:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "WorkspaceManifest":
+        """Construct a :class:`WorkspaceManifest` from a dictionary."""
         return cls(
             version=data.get("version", "1.0.0"),
             repos=[RepoEntry.from_dict(r) for r in data.get("repos", [])],
@@ -115,22 +119,27 @@ class Workspace:
 
     @property
     def root(self) -> Path:
+        """Absolute path to the workspace root directory."""
         return self._root
 
     @property
     def config_dir(self) -> Path:
+        """Path to the ``.codex`` configuration directory."""
         return self._root / ".codex"
 
     @property
     def repos_dir(self) -> Path:
+        """Path to the per-repo index storage directory."""
         return self.config_dir / "repos"
 
     @property
     def manifest_path(self) -> Path:
+        """Path to the workspace manifest JSON file."""
         return self.config_dir / WORKSPACE_FILE
 
     @property
     def repos(self) -> list[RepoEntry]:
+        """Snapshot of all registered repositories."""
         return list(self._manifest.repos)
 
     def save(self) -> Path:
@@ -165,6 +174,7 @@ class Workspace:
     # --- repo management ---------------------------------------------------
 
     def get_repo(self, name: str) -> RepoEntry | None:
+        """Look up a repository by name, or return ``None``."""
         for r in self._manifest.repos:
             if r.name == name:
                 return r

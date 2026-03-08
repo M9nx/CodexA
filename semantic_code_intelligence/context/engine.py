@@ -36,6 +36,7 @@ class ContextWindow:
     file_content: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the context window to a plain dictionary."""
         return {
             "focal_symbol": self.focal_symbol.to_dict(),
             "related_symbols": [s.to_dict() for s in self.related_symbols],
@@ -155,6 +156,7 @@ class CallEdge:
     line: int
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the call edge to a plain dictionary."""
         return {
             "caller": self.caller,
             "callee": self.callee,
@@ -209,6 +211,7 @@ class CallGraph:
 
     @property
     def edges(self) -> list[CallEdge]:
+        """Return a shallow copy of all call-graph edges."""
         return list(self._edges)
 
     def callers_of(self, name: str) -> list[CallEdge]:
@@ -220,6 +223,7 @@ class CallGraph:
         return self._callees.get(caller_key, [])
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the call graph to a summary dictionary."""
         return {
             "edges": [e.to_dict() for e in self._edges],
             "node_count": len(
@@ -242,6 +246,7 @@ class FileDependency:
     line: int
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the file dependency to a plain dictionary."""
         return {
             "source_file": self.source_file,
             "import_text": self.import_text,
@@ -287,6 +292,7 @@ class DependencyMap:
         return results
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize all tracked file dependencies to a dictionary."""
         return {
             file: [d.to_dict() for d in deps]
             for file, deps in self._dependencies.items()

@@ -388,7 +388,20 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 ### Phase 25: TBD
 
 ---
+### Evolution Cycle 1 ✔️
+First run of the self-improving development loop (`codex evolve`).
 
+- Rich `markup=True` → `markup=False` on RichHandler to fix CI crash on Python 3.11/Windows ✔️
+- `__test__ = False` on TestResult/TestRunner to suppress PytestCollectionWarning ✔️
+- Click `__version__` deprecation replaced with `importlib.metadata.version()` ✔️
+- Warnings reduced from 15 → 3 (remaining 3 are SWIG/frozen-importlib internals) ✔️
+- 18 public-method docstrings added across evolution + tools/protocol packages ✔️
+- Engine `run()` refactored: extracted `_run_iteration()` with per-iteration error isolation ✔️
+- Evolution history recorded to `.codex/evolution_history.json` ✔️
+
+**2320 tests, all passing, 3 warnings** | Commits `4d7b109`, `31d41a3`
+
+---
 ### Phase 24: Self-Improving Development Loop ✅
 - Evolution engine orchestrating analyse → task → patch → test → commit/revert loop ✅
 - Budget guard enforcing token, iteration, and wall-clock time limits ✅
@@ -477,7 +490,7 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 ## Architecture
 
 ```
-codex CLI (Click) — 31 commands
+codex CLI (Click) — 32 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
@@ -490,6 +503,7 @@ codex CLI (Click) — 31 commands
   ├── metrics / gate
   ├── hotspots / impact / trace
   ├── tool (list · run · schema)
+  ├── evolve
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -555,5 +569,5 @@ codex CLI (Click) — 31 commands
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
 | Vector Search | FAISS (IndexFlatIP) |
 | Code Parsing | tree-sitter 0.25+ (11 language grammars) |
-| Testing | pytest + pytest-cov (979 tests) |
+| Testing | pytest + pytest-cov (2320 tests) |
 | Python | 3.12+ |

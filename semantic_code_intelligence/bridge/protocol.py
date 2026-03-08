@@ -62,6 +62,7 @@ class AgentRequest:
     source: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the request to a plain dictionary."""
         return {
             "kind": self.kind,
             "params": self.params,
@@ -70,10 +71,12 @@ class AgentRequest:
         }
 
     def to_json(self) -> str:
+        """Serialize the request to a JSON string."""
         return json.dumps(self.to_dict())
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "AgentRequest":
+        """Create an AgentRequest from a dictionary."""
         return cls(
             kind=data.get("kind", ""),
             params=data.get("params", {}),
@@ -83,6 +86,7 @@ class AgentRequest:
 
     @classmethod
     def from_json(cls, text: str) -> "AgentRequest":
+        """Create an AgentRequest by parsing a JSON string."""
         return cls.from_dict(json.loads(text))
 
 
@@ -105,6 +109,7 @@ class AgentResponse:
     elapsed_ms: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the response to a plain dictionary."""
         result: dict[str, Any] = {
             "success": self.success,
             "request_id": self.request_id,
@@ -117,6 +122,7 @@ class AgentResponse:
         return result
 
     def to_json(self, indent: int | None = None) -> str:
+        """Serialize the response to a JSON string."""
         return json.dumps(self.to_dict(), indent=indent)
 
 
@@ -145,6 +151,7 @@ class BridgeCapabilities:
     tools: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the capabilities manifest to a plain dictionary."""
         result: dict[str, Any] = {
             "version": self.version,
             "name": self.name,
@@ -156,4 +163,5 @@ class BridgeCapabilities:
         return result
 
     def to_json(self, indent: int = 2) -> str:
+        """Serialize the capabilities manifest to a JSON string."""
         return json.dumps(self.to_dict(), indent=indent)

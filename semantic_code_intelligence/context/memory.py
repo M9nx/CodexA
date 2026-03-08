@@ -34,6 +34,7 @@ class MemoryEntry:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the memory entry to a plain dictionary."""
         return {
             "key": self.key,
             "content": self.content,
@@ -44,6 +45,7 @@ class MemoryEntry:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "MemoryEntry":
+        """Create a MemoryEntry from a dictionary."""
         return cls(
             key=data["key"],
             content=data["content"],
@@ -64,6 +66,7 @@ class ReasoningStep:
     timestamp: float = field(default_factory=time.time)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the reasoning step to a plain dictionary."""
         return {
             "step_id": self.step_id,
             "action": self.action,
@@ -87,6 +90,7 @@ class SessionMemory:
 
     @property
     def entries(self) -> list[MemoryEntry]:
+        """Return a shallow copy of all session memory entries."""
         return list(self._entries)
 
     def add(self, key: str, content: str, kind: str = "general", **metadata: Any) -> MemoryEntry:
@@ -145,6 +149,7 @@ class SessionMemory:
         return list(self._reasoning_chains.get(chain_id, []))
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize all session memory and reasoning chains to a dictionary."""
         return {
             "entries": [e.to_dict() for e in self._entries],
             "chains": {
@@ -197,6 +202,7 @@ class WorkspaceMemory:
 
     @property
     def entries(self) -> list[MemoryEntry]:
+        """Return a list of all persisted workspace memory entries."""
         return list(self._entries.values())
 
     def add(self, key: str, content: str, kind: str = "general", **metadata: Any) -> MemoryEntry:
@@ -234,4 +240,5 @@ class WorkspaceMemory:
         self._save()
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize all workspace memory entries to a dictionary."""
         return {"entries": [e.to_dict() for e in self._entries.values()]}

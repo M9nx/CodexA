@@ -53,12 +53,14 @@ class FileMetrics:
 
     @property
     def comment_ratio(self) -> float:
+        """Fraction of lines that are comments (0.0–1.0)."""
         total = self.lines_of_code + self.comment_lines + self.blank_lines
         if total == 0:
             return 0.0
         return self.comment_lines / total
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise file-level metrics to a plain dictionary."""
         return {
             "file_path": self.file_path,
             "lines_of_code": self.lines_of_code,
@@ -88,12 +90,14 @@ class ProjectMetrics:
 
     @property
     def comment_ratio(self) -> float:
+        """Fraction of lines that are comments (0.0–1.0)."""
         total = self.total_loc + self.total_comment_lines + self.total_blank_lines
         if total == 0:
             return 0.0
         return self.total_comment_lines / total
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise project-wide metrics to a plain dictionary."""
         return {
             "files_analyzed": self.files_analyzed,
             "total_loc": self.total_loc,
@@ -260,6 +264,7 @@ class QualitySnapshot:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the snapshot to a plain dictionary."""
         return {
             "timestamp": self.timestamp,
             "maintainability_index": round(self.maintainability_index, 1),
@@ -274,6 +279,7 @@ class QualitySnapshot:
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> QualitySnapshot:
+        """Construct a :class:`QualitySnapshot` from a dictionary."""
         return QualitySnapshot(
             timestamp=data["timestamp"],
             maintainability_index=data["maintainability_index"],
@@ -352,6 +358,7 @@ class TrendResult:
     direction: str  # "improving", "stable", "degrading"
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise trend analysis to a plain dictionary."""
         return {
             "metric_name": self.metric_name,
             "snapshot_count": self.snapshot_count,
@@ -451,6 +458,7 @@ class QualityPolicy:
     require_safety_pass: bool = True
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the quality policy to a plain dictionary."""
         return {
             "min_maintainability": self.min_maintainability,
             "max_complexity": self.max_complexity,
@@ -462,6 +470,7 @@ class QualityPolicy:
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> QualityPolicy:
+        """Construct a :class:`QualityPolicy` from a dictionary."""
         return QualityPolicy(
             min_maintainability=data.get("min_maintainability", 40.0),
             max_complexity=data.get("max_complexity", 25),
@@ -482,6 +491,7 @@ class GateViolation:
     threshold: float | int
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the gate violation to a plain dictionary."""
         return {
             "rule": self.rule,
             "message": self.message,
@@ -499,6 +509,7 @@ class GateResult:
     policy: QualityPolicy = field(default_factory=QualityPolicy)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the gate result to a plain dictionary."""
         return {
             "passed": self.passed,
             "violations": [v.to_dict() for v in self.violations],

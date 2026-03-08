@@ -6,8 +6,8 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.22.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-2188-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/version-0.24.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/tests-2320-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
@@ -192,7 +192,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codex --version    # → codex, version 0.21.0
+codex --version    # → codex, version 0.24.0
 ```
 
 ### Step 2 — Initialize your target project
@@ -369,7 +369,7 @@ Supported providers: `openai`, `ollama` (local), `mock` (testing).
 
 ## All CLI Commands
 
-CodexA provides **31 commands** organized by capability:
+CodexA provides **32 commands** organized by capability:
 
 ### Core
 
@@ -415,6 +415,7 @@ CodexA provides **31 commands** organized by capability:
 | `codex ci-gen` | Generate CI workflow templates |
 | `codex web` | Start web interface and REST API |
 | `codex viz` | Generate Mermaid visualizations |
+| `codex evolve` | Self-improving development loop |
 
 ### Workspace & Utilities
 
@@ -514,7 +515,7 @@ After `codex init`, your project has `.codex/config.json`:
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 2188 tests
+# Run all 2320 tests
 pytest
 
 # Run with coverage (gate: 70% minimum)
