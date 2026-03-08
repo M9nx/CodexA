@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json as json_mod
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import click
 
@@ -15,10 +16,13 @@ from semantic_code_intelligence.utils.logging import (
     print_info,
 )
 
+if TYPE_CHECKING:
+    from semantic_code_intelligence.llm.provider import LLMProvider
+
 logger = get_logger("cli.ask")
 
 
-def _get_provider(config):
+def _get_provider(config: Any) -> LLMProvider:
     """Build an LLM provider from the app configuration."""
     from semantic_code_intelligence.config.settings import LLMConfig
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codex-ai"
-version = "0.20.0"
+version = "0.21.0"
 description = "Developer intelligence CLI — semantic code search, AI-assisted understanding, and workspace tooling"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -62,3 +62,20 @@ codex = "semantic_code_intelligence.cli.main:main"
 testpaths = ["semantic_code_intelligence/tests"]
 pythonpath = ["."]
 addopts = "-v --tb=short"
+
+[tool.mypy]
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+exclude = ["tests/"]
+
+[tool.coverage.run]
+source = ["semantic_code_intelligence"]
+omit = ["semantic_code_intelligence/tests/*"]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+skip_covered = true

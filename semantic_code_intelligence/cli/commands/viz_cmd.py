@@ -106,7 +106,7 @@ def viz_cmd(
             try:
                 from semantic_code_intelligence.workspace import Workspace
                 ws = Workspace.load(project_root)
-                repos = [r.to_dict() for r in ws.repos.values()] if ws.repos else []
+                repos = [r.to_dict() for r in ws.repos] if ws.repos else []
             except Exception:
                 repos = []
             mermaid = render_workspace_graph(repos)

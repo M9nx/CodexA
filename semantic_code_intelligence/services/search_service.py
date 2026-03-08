@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from semantic_code_intelligence.config.settings import AppConfig, load_config
 from semantic_code_intelligence.embeddings.generator import generate_embeddings
@@ -25,7 +26,7 @@ class SearchResult:
     score: float
     chunk_index: int
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to a JSON-serializable dictionary."""
         return {
             "file_path": self.file_path,

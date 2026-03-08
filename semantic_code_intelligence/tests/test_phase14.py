@@ -515,7 +515,7 @@ class TestRouterPhase14:
 class TestVersionBump:
     def test_version_is_014(self):
         from semantic_code_intelligence import __version__
-        assert __version__ == "0.20.0"
+        assert __version__ == "0.21.0"
 
 
 # =========================================================================

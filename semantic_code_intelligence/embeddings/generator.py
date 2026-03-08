@@ -76,4 +76,7 @@ def get_embedding_dimension(model_name: str = "all-MiniLM-L6-v2") -> int:
         Integer dimension of the embedding vectors.
     """
     model = get_model(model_name)
-    return model.get_sentence_embedding_dimension()
+    dim = model.get_sentence_embedding_dimension()
+    if dim is None:
+        raise RuntimeError(f"Model {model_name!r} returned None for embedding dimension")
+    return dim

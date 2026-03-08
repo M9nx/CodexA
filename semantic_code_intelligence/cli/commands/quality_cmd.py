@@ -136,8 +136,8 @@ def quality_cmd(
             click.echo(f"  COMPLEXITY  {c.symbol_name} ({c.file_path}:{c.start_line}) score={c.complexity} [{c.rating}]")
         for d in report.dead_code:
             click.echo(f"  DEAD_CODE   {d.symbol_name} ({d.file_path}:{d.start_line}) kind={d.kind}")
-        for d in report.duplicates:
-            click.echo(f"  DUPLICATE   {d.symbol_a} ↔ {d.symbol_b} sim={d.similarity:.2f}")
+        for dup in report.duplicates:
+            click.echo(f"  DUPLICATE   {dup.symbol_a} ↔ {dup.symbol_b} sim={dup.similarity:.2f}")
         if report.safety and not report.safety.safe:
             for i in report.safety.issues:
                 click.echo(f"  SAFETY      L{i.line_number}: {i.description}")
@@ -163,8 +163,8 @@ def quality_cmd(
 
     if report.duplicates:
         console.print("[bold yellow]Duplicate Logic:[/bold yellow]")
-        for d in report.duplicates:
-            console.print(f"  {d.symbol_a} ↔ {d.symbol_b} — {d.similarity:.0%} similar")
+        for dup in report.duplicates:
+            console.print(f"  {dup.symbol_a} ↔ {dup.symbol_b} — {dup.similarity:.0%} similar")
         console.print()
 
     if report.safety and not report.safety.safe:

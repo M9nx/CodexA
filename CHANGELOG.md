@@ -2,6 +2,42 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.21.0] — Phase 21: Mypy Strict Typing & Coverage Gate
+
+### Added
+- **Mypy strict configuration** — `[tool.mypy]` in pyproject.toml with `strict = true`, `warn_return_any`, `warn_unused_ignores`
+- **Pytest coverage gate** — `[tool.coverage.run]`/`[tool.coverage.report]` with `fail_under = 70`, `show_missing`, `skip_covered`
+- **Phase 21 test suite** (`test_phase21.py`) — regression guards for all 49 mypy fixes, config validation, type annotation checks
+- **TYPE_CHECKING guards** — proper `if TYPE_CHECKING:` pattern for lazy LLM provider imports in CLI commands
+
+### Fixed
+- **49 mypy strict errors** across 26 source files resolved:
+  - `ci/pr.py` — added missing `SafetyReport` import (name-defined)
+  - `ci/impact.py` — renamed loop vars to avoid `AffectedSymbol`/`Symbol` type conflict
+  - `cli/commands/quality_cmd.py` — renamed duplicate loop var (`d` → `dup`) to fix type narrowing
+  - `llm/investigation.py` — `.module` → `.import_text` on `FileDependency` (attr-defined)
+  - `llm/cross_refactor.py` — fixed `tuple[str, ...]` → `tuple[str, str]` for pair keys
+  - `cli/commands/viz_cmd.py` — `ws.repos.values()` → `ws.repos` (list, not dict)
+  - `search/formatter.py` — added `str | Syntax` annotation for fallback
+  - `embeddings/generator.py` — added `None` guard for `get_sentence_embedding_dimension()`
+  - `docs/__init__.py` — `click.BaseCommand` → `click.Group | click.Command`
+  - `cli/commands/doctor_cmd.py` — `dict` → `dict[str, Any]` (4 functions)
+  - `services/search_service.py` — `dict` → `dict[str, Any]`
+  - `tools/__init__.py` — `dict` → `dict[str, Any]`, explicit `ToolResult` cast
+  - `bridge/context_provider.py` — `dict` → `dict[str, Any]` (2 callees lists)
+  - `llm/ollama_provider.py` — explicit typed variables for `json.loads` and `resp.status`
+  - `storage/vector_store.py` — `int()` cast on `faiss.Index.ntotal`
+  - `ci/templates.py` — `Callable[..., str]` annotation for template generators
+  - `web/api.py` — typed variable for `json.loads` result
+  - `plugins/__init__.py` — removed stale `type: ignore[union-attr]`
+  - `llm/openai_provider.py` — removed stale `type: ignore[import-untyped]`
+  - `cli/commands/{chat,ask,investigate}_cmd.py` — typed `_get_provider` with `TYPE_CHECKING` guard
+
+### Metrics
+- **0 mypy strict errors** on 104 source files
+- **79%+ test coverage** (above 70% gate)
+- **2028+ tests** maintained
+
 ## [0.20.0] — Phase 20: Deep Coverage & Copilot Integration
 
 ### Added

@@ -96,7 +96,7 @@ def _action_deps(file_path: str, builder: ContextBuilder, project_root: Path) ->
     full = project_root / file_path if not Path(file_path).is_absolute() else Path(file_path)
     if full.exists():
         deps = dm.add_file(str(full))
-        parts = [f"{d.module} (L{d.line})" for d in deps]
+        parts = [f"{d.import_text} (L{d.line})" for d in deps]
         return "Dependencies: " + ", ".join(parts) if parts else "No dependencies found."
     return f"File not found: {file_path}"
 

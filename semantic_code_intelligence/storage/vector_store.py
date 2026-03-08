@@ -48,7 +48,7 @@ class VectorStore:
     @property
     def size(self) -> int:
         """Return the number of vectors stored."""
-        return self.index.ntotal
+        return int(self.index.ntotal)
 
     def add(
         self,

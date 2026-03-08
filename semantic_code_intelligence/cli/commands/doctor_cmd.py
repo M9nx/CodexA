@@ -7,6 +7,7 @@ import json as json_mod
 import platform
 import sys
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -23,7 +24,7 @@ from semantic_code_intelligence.utils.logging import (
 logger = get_logger("cli.doctor")
 
 
-def _check_python() -> dict:
+def _check_python() -> dict[str, Any]:
     """Check Python version."""
     ver = platform.python_version()
     ok = sys.version_info >= (3, 11)
@@ -35,7 +36,7 @@ def _check_python() -> dict:
     }
 
 
-def _check_package(pkg_name: str, import_name: str | None = None) -> dict:
+def _check_package(pkg_name: str, import_name: str | None = None) -> dict[str, Any]:
     """Check if a Python package is importable."""
     mod_name = import_name or pkg_name
     try:
@@ -46,7 +47,7 @@ def _check_package(pkg_name: str, import_name: str | None = None) -> dict:
         return {"name": pkg_name, "version": None, "ok": False, "detail": f"{pkg_name} not installed"}
 
 
-def _check_project(path: Path) -> dict:
+def _check_project(path: Path) -> dict[str, Any]:
     """Check if a CodexA project is initialized at the given path."""
     config_dir = path / ".codex"
     if config_dir.is_dir():
@@ -66,7 +67,7 @@ def _check_project(path: Path) -> dict:
     }
 
 
-def run_checks(path: Path) -> list[dict]:
+def run_checks(path: Path) -> list[dict[str, Any]]:
     """Run all health checks and return results."""
     checks = [
         _check_python(),

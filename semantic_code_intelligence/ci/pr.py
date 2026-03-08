@@ -14,7 +14,7 @@ from typing import Any
 
 from semantic_code_intelligence.parsing.parser import Symbol, parse_file, detect_language
 from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder, DependencyMap
-from semantic_code_intelligence.llm.safety import SafetyValidator
+from semantic_code_intelligence.llm.safety import SafetyReport, SafetyValidator
 from semantic_code_intelligence.utils.logging import get_logger
 
 logger = get_logger("ci.pr")

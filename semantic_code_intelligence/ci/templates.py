@@ -6,7 +6,7 @@ CI pipelines.  Templates are plain strings — no YAML library required.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 
 def generate_analysis_workflow(
@@ -153,7 +153,7 @@ TEMPLATES: dict[str, str] = {
 
 def get_template(name: str, **kwargs: Any) -> str:
     """Get a named template. Raises ``KeyError`` for unknown names."""
-    generators = {
+    generators: dict[str, Callable[..., str]] = {
         "analysis": generate_analysis_workflow,
         "safety": generate_safety_workflow,
         "precommit": generate_precommit_config,

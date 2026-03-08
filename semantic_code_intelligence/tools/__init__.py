@@ -188,7 +188,8 @@ class ToolRegistry:
                 error=f"Unknown tool: {tool_name}",
             )
         try:
-            return handler(**kwargs)
+            result: ToolResult = handler(**kwargs)
+            return result
         except Exception as e:
             logger.exception("Tool %s failed", tool_name)
             return ToolResult(
@@ -318,7 +319,7 @@ class ToolRegistry:
         callers = [e.to_dict() for e in graph.callers_of(symbol_name)]
 
         # callees_of needs "file:name" key; collect from all matching
-        all_callees: list[dict] = []
+        all_callees: list[dict[str, Any]] = []
         for edge in graph.edges:
             if edge.caller.endswith(f":{symbol_name}"):
                 all_callees.append(edge.to_dict())

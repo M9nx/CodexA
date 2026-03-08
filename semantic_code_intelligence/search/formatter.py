@@ -59,7 +59,7 @@ def format_results_rich(query: str, results: list[SearchResult]) -> None:
 
         # Code snippet with syntax highlighting
         try:
-            syntax = Syntax(
+            syntax: str | Syntax = Syntax(
                 result.content.rstrip(),
                 result.language if result.language != "unknown" else "text",
                 line_numbers=True,

@@ -147,7 +147,7 @@ class ContextProvider:
             graph = CallGraph()
             graph.build(all_syms)
             callers = [e.to_dict() for e in graph.callers_of(symbol_name)]
-            callees: list[dict] = []
+            callees: list[dict[str, Any]] = []
             for edge in graph.edges:
                 if edge.caller.endswith(f":{symbol_name}"):
                     callees.append(edge.to_dict())
@@ -209,7 +209,7 @@ class ContextProvider:
         graph = CallGraph()
         graph.build(all_syms)
         callers = [e.to_dict() for e in graph.callers_of(symbol_name)]
-        callees: list[dict] = []
+        callees: list[dict[str, Any]] = []
         for edge in graph.edges:
             if edge.caller.endswith(f":{symbol_name}"):
                 callees.append(edge.to_dict())

@@ -215,7 +215,8 @@ class APIHandler(BaseHTTPRequestHandler):
             return None
         raw = self.rfile.read(content_length)
         try:
-            return json.loads(raw.decode("utf-8"))
+            parsed: dict[str, Any] | None = json.loads(raw.decode("utf-8"))
+            return parsed
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:
             self._json(400, {"error": f"Invalid JSON: {exc}"})
             return None

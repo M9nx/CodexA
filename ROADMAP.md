@@ -389,6 +389,14 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ---
 
+### Phase 21: Mypy Strict Typing & Coverage Gate ✅
+- Mypy strict configuration in pyproject.toml ✅
+- All 49 strict errors fixed across 26 source files ✅
+- Pytest coverage gate (fail_under = 70%) ✅
+- 79%+ coverage measured, gate passing ✅
+- TYPE_CHECKING guards for clean lazy imports ✅
+- Phase 21 test suite with regression guards ✅
+
 ### Phase 20: Deep Coverage & Copilot Integration ✅
 - GitHub Copilot system prompt and integration guide ✅
 - `.github/copilot-instructions.md` with full tool instructions ✅

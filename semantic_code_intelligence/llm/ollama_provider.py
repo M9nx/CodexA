@@ -48,7 +48,8 @@ class OllamaProvider(LLMProvider):
         req = Request(url, data=data, headers={"Content-Type": "application/json"})
 
         with urlopen(req, timeout=120) as resp:  # noqa: S310 — localhost only
-            return json.loads(resp.read().decode("utf-8"))
+            result: dict[str, Any] = json.loads(resp.read().decode("utf-8"))
+            return result
 
     def complete(self, prompt: str, **kwargs: Any) -> LLMResponse:
         temperature = kwargs.get("temperature", self._temperature)
@@ -115,6 +116,7 @@ class OllamaProvider(LLMProvider):
             url = f"{self._base_url}/api/tags"
             req = Request(url)
             with urlopen(req, timeout=5) as resp:  # noqa: S310 — localhost only
-                return resp.status == 200
+                ok: bool = resp.status == 200
+                return ok
         except (URLError, OSError):
             return False

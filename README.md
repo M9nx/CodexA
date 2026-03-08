@@ -6,8 +6,10 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.19.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-1204-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/version-0.21.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/tests-2102-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
+  <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
@@ -189,7 +191,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codex --version    # → codex, version 0.19.0
+codex --version    # → codex, version 0.21.0
 ```
 
 ### Step 2 — Initialize your target project
@@ -508,14 +510,17 @@ After `codex init`, your project has `.codex/config.json`:
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 1204 tests
+# Run all 2102 tests
 pytest
 
-# Run with coverage
+# Run with coverage (gate: 70% minimum)
 pytest --cov=semantic_code_intelligence
 
+# Run mypy strict type checking
+mypy semantic_code_intelligence --exclude "tests/"
+
 # Run specific phase tests
-pytest semantic_code_intelligence/tests/test_phase19.py -v
+pytest semantic_code_intelligence/tests/test_phase21.py -v
 
 # Run with verbose output
 codex --verbose search "query"

@@ -240,7 +240,7 @@ class PluginManager:
                 if spec is None or spec.loader is None:
                     continue
                 module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)  # type: ignore[union-attr]
+                spec.loader.exec_module(module)
 
                 factory = getattr(module, "create_plugin", None)
                 if callable(factory):

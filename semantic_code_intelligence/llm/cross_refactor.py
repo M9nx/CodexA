@@ -138,10 +138,8 @@ def _find_cross_duplicates(
                 continue  # Only cross-repo
             sim = _jaccard(tris_a, tris_b)
             if sim >= threshold:
-                pair_key = tuple(sorted([
-                    f"{repo_a}:{sym_a['name']}",
-                    f"{repo_b}:{sym_b['name']}",
-                ]))
+                _sorted = sorted([f"{repo_a}:{sym_a['name']}", f"{repo_b}:{sym_b['name']}"])
+                pair_key = (_sorted[0], _sorted[1])
                 if pair_key in seen:
                     continue
                 seen.add(pair_key)
@@ -207,9 +205,11 @@ def _generate_suggestions(
     try:
         parsed = json.loads(resp.content)
         if isinstance(parsed, list):
-            return parsed
+            result: list[dict[str, Any]] = parsed
+            return result
         if isinstance(parsed, dict) and "suggestions" in parsed:
-            return parsed["suggestions"]
+            suggestions: list[dict[str, Any]] = parsed["suggestions"]
+            return suggestions
     except (json.JSONDecodeError, TypeError):
         pass
 

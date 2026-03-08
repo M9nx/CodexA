@@ -74,7 +74,7 @@ def generate_cli_reference(cli_group: click.Group) -> str:
 
 
 def _collect_commands(
-    group: click.BaseCommand,
+    group: click.Group | click.Command,
     prefix: str,
 ) -> list[tuple[str, click.Command]]:
     """Recursively collect all commands from a Click group."""

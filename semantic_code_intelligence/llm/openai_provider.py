@@ -44,7 +44,7 @@ class OpenAIProvider(LLMProvider):
         """Lazily initialise the OpenAI client."""
         if self._client is None:
             try:
-                import openai  # type: ignore[import-untyped]
+                import openai
             except ImportError as exc:
                 raise ImportError(
                     "The 'openai' package is required for OpenAIProvider. "

@@ -217,23 +217,23 @@ def analyze_impact(
                 ))
 
     # Add files containing direct callers
-    for s in direct:
-        if s.file_path not in visited_modules and s.file_path not in seed_files:
-            visited_modules.add(s.file_path)
+    for af in direct:
+        if af.file_path not in visited_modules and af.file_path not in seed_files:
+            visited_modules.add(af.file_path)
             affected_modules.append(AffectedModule(
-                file_path=s.file_path,
+                file_path=af.file_path,
                 relationship="contains_caller",
                 depth=1,
             ))
 
-    # ── Build dependency chains (top 10) ─────────────────────────
+    # ── Build dependency chains (top 10) ─────────────────────
     chains: list[DependencyChain] = []
-    for s in direct[:10]:
-        chain = [target, s.name]
+    for af in direct[:10]:
+        chain = [target, af.name]
         chains.append(DependencyChain(path=chain))
 
-    for s in transitive[:5]:
-        chain = [target, "...", s.name]
+    for af in transitive[:5]:
+        chain = [target, "...", af.name]
         chains.append(DependencyChain(path=chain))
 
     return ImpactReport(
