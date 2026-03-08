@@ -9,7 +9,11 @@ import click
 
 from semantic_code_intelligence.config.settings import AppConfig, load_config
 from semantic_code_intelligence.services.search_service import SearchMode, search_codebase
-from semantic_code_intelligence.search.formatter import format_results_json, format_results_rich
+from semantic_code_intelligence.search.formatter import (
+    format_results_json,
+    format_results_jsonl,
+    format_results_rich,
+)
 from semantic_code_intelligence.utils.logging import (
     get_logger,
     print_error,
@@ -37,6 +41,13 @@ logger = get_logger("cli.search")
     is_flag=True,
     default=False,
     help="Output results in JSON format for AI integration.",
+)
+@click.option(
+    "--jsonl",
+    "jsonl_mode",
+    is_flag=True,
+    default=False,
+    help="Output one JSON object per line (JSONL), for piping into jq/fzf.",
 )
 @click.option(
     "--path",
@@ -72,17 +83,50 @@ logger = get_logger("cli.search")
     default=False,
     help="Case-sensitive matching (regex mode only).",
 )
+@click.option(
+    "--context-lines",
+    "-C",
+    default=0,
+    type=int,
+    help="Show N context lines before/after each match (grep-style).",
+)
+@click.option(
+    "--files-only",
+    "-l",
+    is_flag=True,
+    default=False,
+    help="Print only file paths with matches (like grep -l).",
+)
+@click.option(
+    "--files-without-match",
+    "-L",
+    is_flag=True,
+    default=False,
+    help="Print file paths without any matches (like grep -L).",
+)
+@click.option(
+    "--line-numbers",
+    "-n",
+    is_flag=True,
+    default=False,
+    help="Prefix each output line with its line number (like grep -n).",
+)
 @click.pass_context
 def search_cmd(
     ctx: click.Context,
     query: str,
     top_k: int | None,
     json_mode: bool,
+    jsonl_mode: bool,
     path: str,
     mode: str,
     full_section: bool,
     no_auto_index: bool,
     case_sensitive: bool,
+    context_lines: int,
+    files_only: bool,
+    files_without_match: bool,
+    line_numbers: bool,
 ) -> None:
     """Search the indexed codebase using a natural language query.
 
@@ -94,14 +138,24 @@ def search_cmd(
       regex     — grep-compatible regex pattern matching
       hybrid    — fused semantic + BM25 via Reciprocal Rank Fusion
 
+    Grep-compatible flags:
+
+    \b
+        -l   show only file paths with matches
+        -L   show only file paths without matches
+        -n   prefix lines with line numbers
+        -C N show N context lines before/after each match
+
     Examples:
 
     \b
         codex search "jwt verification"
         codex search "database connection" --mode hybrid
-        codex search "def\\s+authenticate" --mode regex
+        codex search "def\\s+authenticate" --mode regex -n
         codex search "error handling" --mode keyword --full-section
         codex search "error handling" -k 5 --json
+        codex search "TODO" --mode regex -l
+        codex search "pattern" --jsonl | jq .file_path
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
@@ -129,13 +183,54 @@ def search_cmd(
     except FileNotFoundError:
         if json_mode:
             click.echo(format_results_json(query, [], result_count))
+        elif jsonl_mode:
+            pass  # no output for JSONL with no results
         else:
             print_warning(
                 "Search index is empty. Run 'codex index' to build the index."
             )
         return
 
+    # --- Grep-style output modes ---
+
+    if files_without_match:
+        # Show all indexed files NOT in the results
+        matched_files = {r.file_path for r in results}
+        from semantic_code_intelligence.storage.vector_store import VectorStore
+        index_dir = AppConfig.index_dir(root)
+        try:
+            store = VectorStore.load(index_dir)
+            all_files = sorted({m.file_path for m in store.metadata})
+        except FileNotFoundError:
+            all_files = []
+        for fp in all_files:
+            if fp not in matched_files:
+                click.echo(fp)
+        return
+
+    if files_only:
+        seen: set[str] = set()
+        for r in results:
+            if r.file_path not in seen:
+                seen.add(r.file_path)
+                click.echo(r.file_path)
+        return
+
+    # --- Machine-readable output ---
+
+    if jsonl_mode:
+        click.echo(format_results_jsonl(results))
+        return
+
     if json_mode:
         click.echo(format_results_json(query, results, result_count))
-    else:
-        format_results_rich(query, results)
+        return
+
+    # --- Rich / grep-style human output ---
+
+    format_results_rich(
+        query,
+        results,
+        line_numbers=line_numbers,
+        context_lines=context_lines,
+    )

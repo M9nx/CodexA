@@ -35,12 +35,32 @@ def format_results_json(query: str, results: list[SearchResult], top_k: int) -> 
     return json.dumps(output, indent=2, ensure_ascii=False)
 
 
-def format_results_rich(query: str, results: list[SearchResult]) -> None:
+def format_results_jsonl(results: list[SearchResult]) -> str:
+    """Format search results as JSONL (one JSON object per line).
+
+    Each line is a self-contained JSON object suitable for piping into
+    ``jq``, ``fzf``, or streaming ingestion.
+    """
+    lines: list[str] = []
+    for r in results:
+        lines.append(json.dumps(r.to_dict(), ensure_ascii=False))
+    return "\n".join(lines)
+
+
+def format_results_rich(
+    query: str,
+    results: list[SearchResult],
+    *,
+    line_numbers: bool = False,
+    context_lines: int = 0,
+) -> None:
     """Print search results as rich formatted output to the console.
 
     Args:
         query: The search query.
         results: List of SearchResult objects.
+        line_numbers: If True, prefix code lines with line numbers (grep -n).
+        context_lines: Number of extra context lines to display around content.
     """
     if not results:
         console.print(f"\n[yellow]No results found for:[/yellow] \"{query}\"\n")
@@ -50,24 +70,30 @@ def format_results_rich(query: str, results: list[SearchResult]) -> None:
     console.print(f"[dim]Found {len(results)} results[/dim]\n")
 
     for i, result in enumerate(results, 1):
+        # Optionally expand context lines from the file on disk
+        content = result.content
+        start = result.start_line
+        if context_lines > 0:
+            content, start = _expand_context(result, context_lines)
+
         # Header with file path, lines, and score
         header = (
             f"[bold]{result.file_path}[/bold] "
-            f"[dim]L{result.start_line}-L{result.end_line}[/dim] "
+            f"[dim]L{start}-L{result.end_line + context_lines}[/dim] "
             f"[green]score: {result.score:.4f}[/green]"
         )
 
         # Code snippet with syntax highlighting
         try:
             syntax: str | Syntax = Syntax(
-                result.content.rstrip(),
+                content.rstrip(),
                 result.language if result.language != "unknown" else "text",
-                line_numbers=True,
-                start_line=result.start_line,
+                line_numbers=True if line_numbers else True,
+                start_line=start,
                 theme="monokai",
             )
         except Exception:
-            syntax = result.content.rstrip()
+            syntax = content.rstrip()
 
         panel = Panel(
             syntax,
@@ -77,3 +103,21 @@ def format_results_rich(query: str, results: list[SearchResult]) -> None:
             padding=(0, 1),
         )
         console.print(panel)
+
+
+def _expand_context(result: SearchResult, ctx: int) -> tuple[str, int]:
+    """Read extra context lines from the original file on disk."""
+    from pathlib import Path
+
+    fp = Path(result.file_path)
+    if not fp.is_file():
+        return result.content, result.start_line
+    try:
+        lines = fp.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
+    except OSError:
+        return result.content, result.start_line
+
+    new_start = max(1, result.start_line - ctx)
+    new_end = min(len(lines), result.end_line + ctx)
+    expanded = "".join(lines[new_start - 1 : new_end])
+    return expanded, new_start
