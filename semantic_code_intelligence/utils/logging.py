@@ -53,7 +53,7 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
                 console=error_console,
                 rich_tracebacks=True,
                 show_path=verbose,
-                markup=True,
+                markup=False,
             )
         ],
         force=True,

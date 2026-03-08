@@ -21,6 +21,8 @@ logger = get_logger("evolution.test_runner")
 class TestResult:
     """Structured test-run result."""
 
+    __test__ = False  # prevent pytest collection
+
     passed: bool = False
     total: int = 0
     failures: int = 0
@@ -35,6 +37,8 @@ class TestResult:
 
 class TestRunner:
     """Runs the project test suite via ``pytest``."""
+
+    __test__ = False  # prevent pytest collection
 
     def __init__(self, project_root: Path, timeout: int = 120) -> None:
         self._root = project_root.resolve()

@@ -40,8 +40,13 @@ def _check_package(pkg_name: str, import_name: str | None = None) -> dict[str, A
     """Check if a Python package is importable."""
     mod_name = import_name or pkg_name
     try:
-        mod = importlib.import_module(mod_name)
-        ver = getattr(mod, "__version__", getattr(mod, "VERSION", "installed"))
+        importlib.import_module(mod_name)
+        # Prefer importlib.metadata to avoid deprecated __version__ attributes
+        try:
+            from importlib.metadata import version as meta_version
+            ver = meta_version(pkg_name)
+        except Exception:
+            ver = "installed"
         return {"name": pkg_name, "version": str(ver), "ok": True, "detail": f"{pkg_name} {ver}"}
     except ImportError:
         return {"name": pkg_name, "version": None, "ok": False, "detail": f"{pkg_name} not installed"}
