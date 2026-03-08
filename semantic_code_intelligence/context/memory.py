@@ -158,6 +158,12 @@ class SessionMemory:
             },
         }
 
+    def __repr__(self) -> str:
+        return (
+            f"SessionMemory(entries={len(self._entries)}, "
+            f"chains={len(self._reasoning_chains)})"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Workspace Memory (persistent, stored in .codex/)
@@ -242,3 +248,6 @@ class WorkspaceMemory:
     def to_dict(self) -> dict[str, Any]:
         """Serialize all workspace memory entries to a dictionary."""
         return {"entries": [e.to_dict() for e in self._entries.values()]}
+
+    def __repr__(self) -> str:
+        return f"WorkspaceMemory(entries={len(self._entries)})"

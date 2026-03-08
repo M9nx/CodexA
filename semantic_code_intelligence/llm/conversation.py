@@ -47,12 +47,15 @@ class ConversationSession:
         return msg
 
     def add_user(self, content: str) -> LLMMessage:
+        """Append a user message to the session."""
         return self.add_message(MessageRole.USER, content)
 
     def add_assistant(self, content: str) -> LLMMessage:
+        """Append an assistant message to the session."""
         return self.add_message(MessageRole.ASSISTANT, content)
 
     def add_system(self, content: str) -> LLMMessage:
+        """Append a system message to the session."""
         return self.add_message(MessageRole.SYSTEM, content)
 
     @property
@@ -62,6 +65,7 @@ class ConversationSession:
 
     @property
     def last_message(self) -> LLMMessage | None:
+        """Return the most recent message, or None if empty."""
         return self.messages[-1] if self.messages else None
 
     def get_messages_for_llm(self, max_turns: int | None = None) -> list[LLMMessage]:
@@ -81,6 +85,7 @@ class ConversationSession:
     # --- serialisation ---
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the conversation session to a plain dictionary."""
         return {
             "session_id": self.session_id,
             "title": self.title,
@@ -92,6 +97,7 @@ class ConversationSession:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ConversationSession:
+        """Reconstruct a conversation session from a dictionary."""
         messages = [
             LLMMessage(role=MessageRole(m["role"]), content=m["content"])
             for m in data.get("messages", [])

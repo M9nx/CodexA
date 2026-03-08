@@ -232,6 +232,9 @@ class CallGraph:
             "edge_count": len(self._edges),
         }
 
+    def __repr__(self) -> str:
+        return f"CallGraph(edges={len(self._edges)})"
+
 
 # ---------------------------------------------------------------------------
 # Dependency Map (file-level imports)
@@ -297,3 +300,6 @@ class DependencyMap:
             file: [d.to_dict() for d in deps]
             for file, deps in self._dependencies.items()
         }
+
+    def __repr__(self) -> str:
+        return f"DependencyMap(files={len(self._dependencies)})"

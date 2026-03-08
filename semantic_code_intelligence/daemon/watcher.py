@@ -37,6 +37,7 @@ class FileChangeEvent:
     timestamp: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the file change event to a plain dictionary."""
         return {
             "path": str(self.path),
             "relative_path": self.relative_path,
@@ -75,6 +76,7 @@ class FileWatcher:
 
     @property
     def is_running(self) -> bool:
+        """Whether the file watcher is currently polling."""
         return self._running
 
     def on_change(self, callback: Callable[[list[FileChangeEvent]], None]) -> None:
@@ -223,11 +225,13 @@ class AsyncIndexer:
 
     @property
     def pending_count(self) -> int:
+        """Number of indexing tasks waiting in the queue."""
         with self._lock:
             return len(self._queue)
 
     @property
     def tasks_processed(self) -> int:
+        """Total number of indexing tasks completed so far."""
         return self._tasks_processed
 
     def set_callbacks(
@@ -320,10 +324,12 @@ class IndexingDaemon:
 
     @property
     def is_running(self) -> bool:
+        """Whether the daemon (watcher + indexer) is active."""
         return self._watcher.is_running
 
     @property
     def event_log(self) -> list[FileChangeEvent]:
+        """Return a snapshot of recent file-change events."""
         with self._lock:
             return list(self._event_log)
 

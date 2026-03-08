@@ -39,6 +39,7 @@ class LanguageStats:
     total_lines: int = 0
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the language statistics to a plain dictionary."""
         return {
             "language": self.language,
             "file_count": self.file_count,
@@ -65,6 +66,7 @@ class RepoSummary:
     top_classes: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the repository summary to a plain dictionary."""
         return {
             "total_files": self.total_files,
             "total_symbols": self.total_symbols,
@@ -78,6 +80,7 @@ class RepoSummary:
         }
 
     def to_json(self, indent: int = 2) -> str:
+        """Serialize the repository summary to a JSON string."""
         return json.dumps(self.to_dict(), indent=indent)
 
     def render(self) -> str:
@@ -247,6 +250,7 @@ class CodeExplanation:
     details: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the code explanation to a plain dictionary."""
         return {
             "symbol_name": self.symbol_name,
             "symbol_kind": self.symbol_kind,
@@ -256,6 +260,7 @@ class CodeExplanation:
         }
 
     def render(self) -> str:
+        """Render the explanation as a Markdown-style string."""
         lines = [
             f"# {self.symbol_kind.title()}: {self.symbol_name}",
             f"File: {self.file_path}",

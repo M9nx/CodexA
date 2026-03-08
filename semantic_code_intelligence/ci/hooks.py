@@ -53,8 +53,8 @@ def run_precommit_check(
     for fpath in files:
         try:
             all_code += Path(fpath).read_text(encoding="utf-8", errors="replace") + "\n"
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Could not read %s: %s", fpath, exc)
 
     # Run safety validator
     validator = SafetyValidator()

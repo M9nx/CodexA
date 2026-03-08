@@ -204,8 +204,8 @@ def analyze_hotspots(
         for d in dups:
             file_dup_count[d.file_a] = file_dup_count.get(d.file_a, 0) + 1
             file_dup_count[d.file_b] = file_dup_count.get(d.file_b, 0) + 1
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Duplicate detection skipped: %s", exc)
 
     max_dup = max(file_dup_count.values(), default=1)
 

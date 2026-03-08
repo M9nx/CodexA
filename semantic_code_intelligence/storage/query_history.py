@@ -125,6 +125,9 @@ class QueryHistory:
             "records": [r.to_dict() for r in self._records],
         }
 
+    def __repr__(self) -> str:
+        return f"QueryHistory(records={len(self._records)})"
+
     # ------------------------------------------------------------------
     # Persistence
     # ------------------------------------------------------------------

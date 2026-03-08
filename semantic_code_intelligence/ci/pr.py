@@ -115,8 +115,8 @@ def build_change_summary(
             if base_file.exists():
                 try:
                     base_syms = parse_file(str(base_file))
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("Could not parse base file %s: %s", base_file, exc)
 
         cur_names = {s.name for s in current_syms if s.kind != "import"}
         base_names = {s.name for s in base_syms if s.kind != "import"}
@@ -189,8 +189,8 @@ def analyze_impact(
             for s in syms:
                 if s.kind != "import":
                     changed_syms.add(s.name)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Could not index %s for impact: %s", fpath, exc)
 
     # Build call graph from all indexed symbols
     all_syms = builder.get_all_symbols()
@@ -396,8 +396,8 @@ def generate_pr_report(
         for fpath in changed_files:
             try:
                 code += Path(fpath).read_text(encoding="utf-8", errors="replace") + "\n"
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("Could not read %s for safety check: %s", fpath, exc)
         safety = validator.validate(code)
 
     reviewers = suggest_reviewers(changed_files)
