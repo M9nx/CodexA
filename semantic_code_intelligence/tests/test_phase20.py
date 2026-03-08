@@ -2454,30 +2454,31 @@ class TestCLIRouterDeep:
 #  Cross-cutting: README and copilot-instructions.md
 # ---------------------------------------------------------------------------
 
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
 class TestReadmeExists:
     def test_readme_exists(self):
-        assert Path("README.md").exists() or Path("d:/mounir/CodexA/README.md").exists()
+        assert (_PROJECT_ROOT / "README.md").exists()
 
 
 class TestCopilotInstructionsExists:
+    _ci_path = _PROJECT_ROOT / ".github" / "copilot-instructions.md"
+
     def test_file_exists(self):
-        p = Path("d:/mounir/CodexA/.github/copilot-instructions.md")
-        assert p.exists()
+        assert self._ci_path.exists()
 
     def test_contains_codex_commands(self):
-        p = Path("d:/mounir/CodexA/.github/copilot-instructions.md")
-        content = p.read_text(encoding="utf-8")
+        content = self._ci_path.read_text(encoding="utf-8")
         assert "codex search" in content
         assert "codex tool run" in content
 
     def test_contains_rules(self):
-        p = Path("d:/mounir/CodexA/.github/copilot-instructions.md")
-        content = p.read_text(encoding="utf-8")
+        content = self._ci_path.read_text(encoding="utf-8")
         assert "--json" in content
 
     def test_contains_project_structure(self):
-        p = Path("d:/mounir/CodexA/.github/copilot-instructions.md")
-        content = p.read_text(encoding="utf-8")
+        content = self._ci_path.read_text(encoding="utf-8")
         assert "cli/" in content
         assert "tools/" in content
         assert "bridge/" in content
