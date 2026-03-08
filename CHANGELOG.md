@@ -2,6 +2,17 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.23.0] — Phase 23: Persistent Intelligence Index
+
+### Added
+- **Index manifest** (`storage/index_manifest.py`) — versioned metadata tracking schema version, embedding model, dimensions, timestamps, file/chunk/symbol counts, and project root for index integrity checks
+- **Symbol registry** (`storage/symbol_registry.py`) — persistent queryable directory of all code symbols (functions, classes, methods, imports) with multi-criteria find, substring search, per-file removal, and language/kind summaries
+- **Index statistics** (`storage/index_stats.py`) — comprehensive health metrics including per-language coverage (files, chunks, symbols, lines), staleness tracking, average chunk size, and indexing duration
+- **Query history** (`storage/query_history.py`) — cross-session search analytics with FIFO eviction (max 500), popular queries/files tracking, and per-query result metadata (score, languages, top files)
+- **Indexing integration** — `run_indexing()` now populates manifest, symbol registry, and stats after every index run; `IndexingResult` includes `symbols_extracted` count
+- **Search integration** — `search_codebase()` records every query in persistent history with result count, top score, languages, and top files
+- **Phase 23 test suite** (`test_phase23.py`) — tests covering all 4 storage modules, indexing integration, search integration, module imports, version check
+
 ## [0.22.0] — Phase 22: LLM Caching + Rate Limiting
 
 ### Added

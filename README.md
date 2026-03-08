@@ -520,7 +520,7 @@ pytest --cov=semantic_code_intelligence
 mypy semantic_code_intelligence --exclude "tests/"
 
 # Run specific phase tests
-pytest semantic_code_intelligence/tests/test_phase22.py -v
+pytest semantic_code_intelligence/tests/test_phase23.py -v
 
 # Run with verbose output
 codex --verbose search "query"

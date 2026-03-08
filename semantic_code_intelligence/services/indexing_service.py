@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+from collections import defaultdict
 from pathlib import Path
 
 from semantic_code_intelligence.config.settings import AppConfig, load_config
@@ -9,9 +11,13 @@ from semantic_code_intelligence.embeddings.generator import (
     generate_embeddings,
     get_embedding_dimension,
 )
-from semantic_code_intelligence.indexing.chunker import CodeChunk, chunk_file
+from semantic_code_intelligence.indexing.chunker import CodeChunk, chunk_file, detect_language
 from semantic_code_intelligence.indexing.scanner import ScannedFile, scan_repository
+from semantic_code_intelligence.parsing.parser import Symbol, parse_file
 from semantic_code_intelligence.storage.hash_store import HashStore
+from semantic_code_intelligence.storage.index_manifest import IndexManifest
+from semantic_code_intelligence.storage.index_stats import IndexStats, LanguageCoverage
+from semantic_code_intelligence.storage.symbol_registry import SymbolEntry, SymbolRegistry
 from semantic_code_intelligence.storage.vector_store import ChunkMetadata, VectorStore
 from semantic_code_intelligence.utils.logging import get_logger
 
@@ -27,12 +33,14 @@ class IndexingResult:
         self.files_skipped: int = 0
         self.chunks_created: int = 0
         self.total_vectors: int = 0
+        self.symbols_extracted: int = 0
 
     def __repr__(self) -> str:
         return (
             f"IndexingResult(scanned={self.files_scanned}, "
             f"indexed={self.files_indexed}, skipped={self.files_skipped}, "
-            f"chunks={self.chunks_created}, vectors={self.total_vectors})"
+            f"chunks={self.chunks_created}, vectors={self.total_vectors}, "
+            f"symbols={self.symbols_extracted})"
         )
 
 
@@ -60,6 +68,7 @@ def run_indexing(
     index_dir = AppConfig.index_dir(project_root)
     index_dir.mkdir(parents=True, exist_ok=True)
 
+    indexing_start = time.time()
     result = IndexingResult()
 
     # Step 1: Scan repository
@@ -161,5 +170,86 @@ def run_indexing(
     hash_store.save(index_dir)
 
     result.total_vectors = store.size
+
+    # Step 8: Extract symbols and populate registry
+    registry = SymbolRegistry() if force else SymbolRegistry.load(index_dir)
+    for sf in files_to_index:
+        registry.remove_file(sf.relative_path)
+        try:
+            symbols = parse_file(sf.path)
+            entries = [
+                SymbolEntry(
+                    name=sym.name,
+                    kind=sym.kind,
+                    file_path=sf.relative_path,
+                    start_line=sym.start_line,
+                    end_line=sym.end_line,
+                    parent=sym.parent,
+                    parameters=sym.parameters,
+                    decorators=sym.decorators,
+                    language=detect_language(str(sf.path)),
+                )
+                for sym in symbols
+            ]
+            registry.add_many(entries)
+            result.symbols_extracted += len(entries)
+        except Exception:
+            logger.debug("Symbol extraction failed for %s", sf.relative_path)
+    registry.save(index_dir)
+
+    # Step 9: Update index manifest
+    manifest = IndexManifest.load(index_dir) or IndexManifest()
+    manifest.embedding_model = config.embedding.model_name
+    manifest.embedding_dimension = dimension
+    manifest.project_root = str(project_root)
+    manifest.total_files = result.files_indexed + result.files_skipped
+    manifest.total_chunks = store.size
+    manifest.total_symbols = registry.size
+    manifest.languages = sorted(set(
+        chunk.language for chunk in all_chunks if chunk.language != "unknown"
+    ))
+    manifest.touch()
+    manifest.save(index_dir)
+
+    # Step 10: Compute and persist index stats
+    indexing_end = time.time()
+
+    # Aggregate per-language metrics
+    lang_files: dict[str, set[str]] = defaultdict(set)
+    lang_chunks: dict[str, int] = defaultdict(int)
+    lang_lines: dict[str, int] = defaultdict(int)
+    for chunk in all_chunks:
+        lang = chunk.language or "unknown"
+        lang_files[lang].add(chunk.file_path)
+        lang_chunks[lang] += 1
+        lang_lines[lang] += chunk.end_line - chunk.start_line + 1
+    lang_symbols: dict[str, int] = registry.language_summary()
+
+    coverage = [
+        LanguageCoverage(
+            language=lang,
+            files=len(files),
+            chunks=lang_chunks.get(lang, 0),
+            symbols=lang_symbols.get(lang, 0),
+            total_lines=lang_lines.get(lang, 0),
+        )
+        for lang, files in lang_files.items()
+    ]
+
+    total_chars = sum(len(c.content) for c in all_chunks)
+    stats = IndexStats(
+        total_files=result.files_indexed + result.files_skipped,
+        total_chunks=store.size,
+        total_symbols=registry.size,
+        total_vectors=store.size,
+        last_indexed_at=indexing_end,
+        indexing_duration_seconds=round(indexing_end - indexing_start, 3),
+        language_coverage=coverage,
+        avg_chunk_size=round(total_chars / len(all_chunks), 1) if all_chunks else 0.0,
+        embedding_model=config.embedding.model_name,
+        embedding_dimension=dimension,
+    )
+    stats.save(index_dir)
+
     logger.info("Indexing complete. %s", result)
     return result

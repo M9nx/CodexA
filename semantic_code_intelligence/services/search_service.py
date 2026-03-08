@@ -8,6 +8,7 @@ from typing import Any
 
 from semantic_code_intelligence.config.settings import AppConfig, load_config
 from semantic_code_intelligence.embeddings.generator import generate_embeddings
+from semantic_code_intelligence.storage.query_history import QueryHistory
 from semantic_code_intelligence.storage.vector_store import ChunkMetadata, VectorStore
 from semantic_code_intelligence.utils.logging import get_logger
 
@@ -101,4 +102,21 @@ def search_codebase(
         )
 
     logger.info("Found %d results above threshold %.2f.", len(results), threshold)
+
+    # Record query in persistent history
+    try:
+        history = QueryHistory.load(index_dir)
+        languages = sorted(set(r.language for r in results if r.language))
+        top_files = list(dict.fromkeys(r.file_path for r in results))[:5]
+        history.record(
+            query=query,
+            result_count=len(results),
+            top_score=results[0].score if results else 0.0,
+            languages=languages,
+            top_files=top_files,
+        )
+        history.save(index_dir)
+    except Exception:
+        logger.debug("Failed to record query history.")
+
     return results

@@ -389,6 +389,15 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ---
 
+### Phase 23: Persistent Intelligence Index ✅
+- Index manifest with schema versioning, embedding model tracking, timestamps ✅
+- Symbol registry with multi-criteria find, substring search, file-level removal ✅
+- Index statistics with per-language coverage, staleness, health metrics ✅
+- Query history with FIFO eviction, popular queries/files, search analytics ✅
+- Indexing service integration (manifest, registry, stats auto-populated) ✅
+- Search service integration (query history auto-recorded) ✅
+- Phase 23 test suite with full coverage ✅
+
 ### Phase 22: LLM Caching + Rate Limiting ✅
 - Disk-backed LLM response cache with TTL and max-entry eviction ✅
 - Sliding-window rate limiter (RPM + TPM) with blocking/non-blocking modes ✅
