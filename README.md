@@ -96,6 +96,7 @@ codex summary                      # Full repo summary
 codex quality src/                 # Code quality analysis
 codex hotspots                     # High-risk code hotspots
 codex trace handle_request         # Execution trace of a symbol
+codex evolve                       # Self-improving development loop
 ```
 
 ---
@@ -454,7 +455,7 @@ Additional tools can be registered via the plugin system using the
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    CLI Layer (click)                 │
-│  31 commands · --json · --pipe · --verbose           │
+│  32 commands · --json · --pipe · --verbose           │
 ├─────────────────────────────────────────────────────┤
 │               AI Agent Tooling Protocol              │
 │  ToolExecutor · ToolInvocation · ToolExecutionResult │
@@ -464,7 +465,10 @@ Additional tools can be registered via the plugin system using the
 ├──────────────┬──────────────┬───────────────────────┤
 │ Parsing      │ Embedding    │ Search                │
 │ tree-sitter  │ sent-trans   │ FAISS                 │
-├──────────────┴──────────────┴───────────────────────┤
+├──────────────┼──────────────┴───────────────────────┤
+│ Evolution    │  Self-improving dev loop              │
+│ engine       │  budget · task · patch · test · commit│
+├──────────────┴──────────────────────────────────────┤
 │              Plugin System (22 hooks)                │
 ├─────────────────────────────────────────────────────┤
 │         Storage (.codex/ — config, index, cache)     │

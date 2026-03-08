@@ -812,7 +812,7 @@ class TestRouterPhase19:
     def test_command_count_31(self):
         from semantic_code_intelligence.cli.main import cli
 
-        assert len(cli.commands) == 31
+        assert len(cli.commands) == 32
 
     def test_tool_command_registered(self):
         from semantic_code_intelligence.cli.main import cli
@@ -831,7 +831,7 @@ class TestVersionPhase19:
     def test_version_string(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.23.0"
+        assert __version__ == "0.24.0"
 
     def test_pyproject_version(self):
         import tomllib

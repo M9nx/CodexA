@@ -385,9 +385,21 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ## Upcoming Phases
 
-### Phase 23: TBD
+### Phase 25: TBD
 
 ---
+
+### Phase 24: Self-Improving Development Loop ✅
+- Evolution engine orchestrating analyse → task → patch → test → commit/revert loop ✅
+- Budget guard enforcing token, iteration, and wall-clock time limits ✅
+- Pytest-based test runner with structured result parsing ✅
+- Git commit manager (diff, stage, commit, revert, stash) ✅
+- Priority-based task selector (fix tests → type hints → error handling → dedup → optimise) ✅
+- Minimal context builder with token-budget-aware prompt assembly ✅
+- Patch generator with LLM diff generation, safety validation, git apply ✅
+- `codex evolve` CLI command with --iterations, --budget, --timeout flags ✅
+- Evolution history persisted to .codex/evolution_history.json ✅
+- Phase 24 test suite with full coverage ✅
 
 ### Phase 23: Persistent Intelligence Index ✅
 - Index manifest with schema versioning, embedding model tracking, timestamps ✅

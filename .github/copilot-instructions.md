@@ -75,11 +75,12 @@ Before answering questions about this codebase, use CodexA to gather context:
 ### Project Structure
 
 - `semantic_code_intelligence/` — Main Python package
-  - `cli/` — 31 CLI commands (click-based)
+  - `cli/` — 32 CLI commands (click-based)
   - `tools/` — AI Agent Tooling Protocol (8 built-in tools)
   - `bridge/` — HTTP bridge server (port 24842)
   - `llm/` — LLM providers (OpenAI, Ollama, Mock)
   - `ci/` — Quality analysis, metrics, hotspots, impact
+  - `evolution/` — Self-improving development loop (engine, budget, tasks, patches)
   - `web/` — Web UI and REST API
   - `plugins/` — Plugin system (22 hooks)
   - `parsing/` — Tree-sitter AST parsing (12 languages)

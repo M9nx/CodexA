@@ -2,6 +2,20 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.24.0] — Phase 24: Self-Improving Development Loop
+
+### Added
+- **Evolution engine** (`evolution/engine.py`) — orchestrates the self-improving development loop: analyse → select task → build context → generate patch → test → commit/revert → repeat
+- **Budget guard** (`evolution/budget_guard.py`) — enforces hard limits on tokens (default 20 000), iterations (default 5), and wall-clock time (default 600 s) so the loop cannot run away
+- **Test runner** (`evolution/test_runner.py`) — runs pytest as a subprocess with timeout, parses summary into structured `TestResult` dataclass
+- **Commit manager** (`evolution/commit_manager.py`) — safe git operations (diff, stage, commit, revert, stash) for the evolution cycle
+- **Task selector** (`evolution/task_selector.py`) — priority-based selection: fix failing tests → add type hints → improve error handling → reduce duplication → small optimisation
+- **Context builder** (`evolution/context_builder.py`) — assembles minimal LLM prompt (system rules + task + file contents + git diff) within a token budget
+- **Patch generator** (`evolution/patch_generator.py`) — calls LLM for a unified diff, validates safety limits (≤ 3 files, ≤ 200 lines), applies via `git apply`
+- **`codex evolve` CLI command** (`cli/commands/evolve_cmd.py`) — `--iterations`, `--budget`, `--timeout`, `--path` flags; Rich progress output with per-iteration details
+- **Evolution history** — every run appended to `.codex/evolution_history.json` with full iteration records
+- **Phase 24 test suite** (`test_phase24.py`) — tests covering all 7 evolution modules, CLI command, module imports, version check
+
 ## [0.23.0] — Phase 23: Persistent Intelligence Index
 
 ### Added
