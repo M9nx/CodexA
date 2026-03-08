@@ -402,6 +402,30 @@ First run of the self-improving development loop (`codex evolve`).
 **2320 tests, all passing, 3 warnings** | Commits `4d7b109`, `31d41a3`
 
 ---
+### Evolution Cycle 2 ✔️
+Documentation sweep — 42 docstrings added across 5 core modules.
+
+- ci/metrics.py: 11 docstrings (FileMetrics, ProjectMetrics, QualitySnapshot, etc.) ✔️
+- workspace/__init__.py: 10 docstrings (RepoEntry, WorkspaceManifest, Workspace) ✔️
+- bridge/protocol.py: 8 docstrings (AgentRequest, AgentResponse, BridgeCapabilities) ✔️
+- context/memory.py: 7 docstrings (MemoryEntry, ReasoningStep, SessionMemory, WorkspaceMemory) ✔️
+- context/engine.py: 6 docstrings (ContextWindow, CallEdge, CallGraph, DependencyMap) ✔️
+- README.md & ROADMAP.md updated with correct badges and stats ✔️
+
+**2320 tests, all passing** | Commit `8576ac5`
+
+---
+### Evolution Cycle 3 ✔️
+Three targeted improvements: debugging UX, observability, and documentation.
+
+- `__repr__` added to 5 non-dataclass classes (CallGraph, DependencyMap, SessionMemory, WorkspaceMemory, QueryHistory) ✔️
+- 5 silent `except Exception: pass` replaced with `logger.debug()` in CI modules (hooks, hotspots, pr) ✔️
+- 17 docstrings added across daemon/watcher.py, llm/conversation.py, analysis/ai_features.py ✔️
+- Missing docstrings reduced from 109 → 92 across 9 files ✔️
+
+**2320 tests, all passing** | Commit `a1f3c98`
+
+---
 ### Phase 24: Self-Improving Development Loop ✅
 - Evolution engine orchestrating analyse → task → patch → test → commit/revert loop ✅
 - Budget guard enforcing token, iteration, and wall-clock time limits ✅
