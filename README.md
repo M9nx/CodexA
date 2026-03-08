@@ -1,70 +1,392 @@
-# Codex — Semantic Code Intelligence
+<p align="center">
+  <strong>CodexA — Developer Intelligence Engine</strong><br>
+  <em>Semantic code search · AI-assisted understanding · Agent tooling protocol</em>
+</p>
 
-Local semantic code search and AI-assisted code understanding.
+<p align="center">
+  <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/version-0.19.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/tests-1204-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
+</p>
 
-Codex is a CLI tool that indexes codebases, performs semantic search, and provides
-structured code context for AI integration. It runs fully locally and is optimized
-for developer productivity.
+---
+
+**CodexA** is a lightweight developer intelligence engine designed to cooperate
+with AI coding assistants (GitHub Copilot, Cursor, Cline, etc.) and developer
+tooling. It indexes codebases locally, performs semantic search, and exposes a
+structured tool protocol that any AI agent can call over HTTP or CLI.
 
 ## Features
 
-- **Code Indexing** — Scan repositories, extract functions/classes, generate embeddings
-- **Semantic Search** — Natural language search across your codebase
-- **Code Context** — Get surrounding code, imports, dependencies, and call graphs
-- **Repository Analysis** — Language breakdown, module summaries, component detection
-- **AI Integration** — JSON output mode for programmatic consumption
+| Area | What you get |
+|------|-------------|
+| **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS) |
+| **Semantic Search** | Natural-language search across your entire codebase |
+| **Code Context** | Rich context windows — imports, dependencies, call graphs, surrounding code |
+| **Repository Analysis** | Language breakdown, module summaries, component detection |
+| **AI Agent Protocol** | 8 built-in tools exposed via HTTP bridge + CLI for any AI agent to invoke |
+| **Quality & Metrics** | Complexity analysis, maintainability scoring, quality gates for CI |
+| **Multi-Repo Workspaces** | Link multiple repos under one workspace for cross-repo search & refactoring |
+| **Plugin System** | 22 hooks for extending every layer — from indexing to tool invocation |
+
+---
 
 ## Quick Start
 
-### Install
+### 1. Clone & Install
 
 ```bash
-pip install -e .
+git clone https://github.com/M9nx/CodexA.git
+cd CodexA
+
+# Create a virtual environment (recommended)
+python -m venv .venv
+
+# Activate it
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# Windows (cmd):
+.venv\Scripts\activate.bat
+# macOS / Linux:
+source .venv/bin/activate
+
+# Install in editable mode with dev dependencies
+pip install -e ".[dev]"
 ```
 
-### Initialize a Project
+### 2. Initialize a Project
+
+Navigate to any project you want to analyze and run:
 
 ```bash
+cd /path/to/your-project
 codex init
 ```
 
-### Index the Codebase
+This creates a `.codex/` directory with configuration, index storage, and session data.
+
+### 3. Index the Codebase
 
 ```bash
 codex index .
 ```
 
-### Semantic Search
+This parses all source files (Python, JS/TS, Java, Go, Rust, C#, Ruby, C++),
+extracts symbols, generates embeddings, and stores them in a local FAISS index.
+
+### 4. Semantic Search
 
 ```bash
-codex search "jwt verification"
-codex search "database connection" --json
+codex search "jwt authentication"
+codex search "database connection pool" --json
 codex search "error handling" -k 5
 ```
 
-## CLI Commands
+### 5. Explore More
 
-| Command                  | Description                              |
-|--------------------------|------------------------------------------|
-| `codex init [path]`     | Initialize project for indexing           |
-| `codex index [path]`    | Index codebase for semantic search        |
-| `codex search "<query>"`| Search with natural language              |
-| `codex context <symbol>`| Get context for a symbol (Phase 5)        |
-| `codex summarize`       | Generate repository summary (Phase 6)     |
-| `codex stats`           | Show indexing statistics (Phase 6)        |
+```bash
+codex explain MyClass              # Structural explanation of a symbol
+codex context parse_config         # Rich AI context window
+codex deps src/auth.py             # Import / dependency map
+codex summary                      # Full repo summary
+codex quality src/                 # Code quality analysis
+codex hotspots                     # High-risk code hotspots
+codex trace handle_request         # Execution trace of a symbol
+```
+
+---
+
+## Using CodexA with AI Agents (GitHub Copilot, etc.)
+
+CodexA is designed to be called by AI coding assistants as an external tool.
+There are **three integration modes**: CLI tool mode, HTTP bridge server, and
+in-process Python API.
+
+### Option A — CLI Tool Mode (Recommended for Copilot Chat)
+
+Any AI agent that can run shell commands can use CodexA directly:
+
+```bash
+# List available tools
+codex tool list --json
+
+# Run a tool with arguments
+codex tool run semantic_search --arg query="authentication middleware" --json
+codex tool run explain_symbol --arg symbol_name="UserService" --json
+codex tool run get_call_graph --arg symbol_name="process_payment" --json
+codex tool run get_dependencies --arg file_path="src/auth.py" --json
+
+# Get tool schema (so the agent knows what arguments to pass)
+codex tool schema semantic_search --json
+```
+
+The `--json` flag ensures machine-readable output. The `--pipe` flag suppresses
+colors and spinners for clean piping.
+
+### Option B — HTTP Bridge Server (For MCP / Long-Running Agents)
+
+Start the bridge server to expose all tools over HTTP:
+
+```bash
+codex serve --port 24842
+```
+
+The server runs on `http://127.0.0.1:24842` and exposes:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/capabilities` | Full capability manifest — version, tools, supported requests |
+| `GET` | `/health` | Health check → `{"status": "ok"}` |
+| `GET` | `/tools/list` | List all available tools with schemas |
+| `POST` | `/tools/invoke` | Execute a tool by name with arguments |
+| `GET` | `/tools/stream` | SSE stream — tool discovery + heartbeat |
+| `POST` | `/request` | Dispatch any `AgentRequest` (12 request kinds) |
+
+**Example — invoke a tool via HTTP:**
+
+```bash
+curl -X POST http://127.0.0.1:24842/tools/invoke \
+  -H "Content-Type: application/json" \
+  -d '{"tool_name": "semantic_search", "arguments": {"query": "error handling"}}'
+```
+
+**Example — list capabilities:**
+
+```bash
+curl http://127.0.0.1:24842/capabilities
+```
+
+### Option C — Python API (In-Process)
+
+```python
+from pathlib import Path
+from semantic_code_intelligence.tools.executor import ToolExecutor
+from semantic_code_intelligence.tools.protocol import ToolInvocation
+
+executor = ToolExecutor(Path("/path/to/project"))
+invocation = ToolInvocation(tool_name="semantic_search", arguments={"query": "auth"})
+result = executor.execute(invocation)
+
+print(result.success)           # True
+print(result.result_payload)    # dict with search results
+print(result.execution_time_ms) # timing in milliseconds
+```
+
+---
+
+## Setting Up with VS Code + GitHub Copilot
+
+### Step 1 — Install CodexA in your project
+
+```bash
+# In your project root
+cd /path/to/your-project
+pip install -e /path/to/CodexA    # or install from the cloned repo
+codex init
+codex index .
+```
+
+### Step 2 — Verify it works
+
+```bash
+codex doctor          # Check environment health
+codex search "main"   # Quick test
+codex tool list       # See available tools
+```
+
+### Step 3 — Use from Copilot Chat
+
+In VS Code with GitHub Copilot, open Copilot Chat and ask it to run CodexA
+commands via the terminal. Examples:
+
+> **You:** Search my codebase for authentication logic using CodexA
+>
+> Copilot will run: `codex search "authentication logic" --json`
+
+> **You:** Explain the UserService class using CodexA
+>
+> Copilot will run: `codex tool run explain_symbol --arg symbol_name="UserService" --json`
+
+> **You:** Show me the call graph for process_payment
+>
+> Copilot will run: `codex tool run get_call_graph --arg symbol_name="process_payment" --json`
+
+> **You:** What are the dependencies of src/auth.py?
+>
+> Copilot will run: `codex tool run get_dependencies --arg file_path="src/auth.py" --json`
+
+### Step 4 — Use the Bridge Server for continuous integration
+
+For persistent AI agent connections (e.g., custom MCP servers, agent frameworks):
+
+```bash
+# Start the bridge in a terminal
+codex serve --port 24842
+
+# The agent can now POST to http://127.0.0.1:24842/tools/invoke
+```
+
+### Step 5 — Configure LLM provider (optional, for AI commands)
+
+Edit `.codex/config.json` in your project:
+
+```json
+{
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "api_key": "sk-...",
+    "temperature": 0.2,
+    "max_tokens": 2048
+  }
+}
+```
+
+Supported providers: `openai`, `ollama` (local), `mock` (testing).
+This powers commands like `codex ask`, `codex review`, `codex refactor`,
+`codex chat`, and `codex investigate`.
+
+---
+
+## All CLI Commands
+
+CodexA provides **31 commands** organized by capability:
+
+### Core
+
+| Command | Description |
+|---------|-------------|
+| `codex init [path]` | Initialize project — creates `.codex/` directory |
+| `codex index [path]` | Index codebase for semantic search |
+| `codex search "<query>"` | Natural-language semantic search |
+| `codex explain <symbol>` | Structural explanation of a symbol or file |
+| `codex context <symbol>` | Rich context window for AI consumption |
+| `codex summary` | Structured repository summary |
+| `codex deps <file>` | File/project dependency map |
+| `codex watch` | Background indexing daemon |
+
+### AI-Powered
+
+| Command | Description |
+|---------|-------------|
+| `codex ask "<question>"` | Ask a question about the codebase (LLM) |
+| `codex review <file>` | AI-powered code review |
+| `codex refactor <file>` | AI-powered refactoring suggestions |
+| `codex suggest <symbol>` | Intelligent improvement suggestions |
+| `codex chat` | Multi-turn conversation with session persistence |
+| `codex investigate <goal>` | Autonomous multi-step code investigation |
+
+### Quality & Metrics
+
+| Command | Description |
+|---------|-------------|
+| `codex quality [path]` | Code quality analysis |
+| `codex metrics` | Code metrics, snapshots, and trends |
+| `codex hotspots` | Identify high-risk code hotspots |
+| `codex gate` | Enforce quality gates for CI pipelines |
+| `codex impact` | Blast radius analysis of code changes |
+
+### DevOps & Integration
+
+| Command | Description |
+|---------|-------------|
+| `codex serve` | Start HTTP bridge server for AI agents |
+| `codex tool list\|run\|schema` | AI Agent Tooling Protocol commands |
+| `codex pr-summary` | Generate PR intelligence report |
+| `codex ci-gen` | Generate CI workflow templates |
+| `codex web` | Start web interface and REST API |
+| `codex viz` | Generate Mermaid visualizations |
+
+### Workspace & Utilities
+
+| Command | Description |
+|---------|-------------|
+| `codex workspace` | Multi-repo workspace management |
+| `codex cross-refactor` | Cross-repository refactoring |
+| `codex trace <symbol>` | Trace execution relationships |
+| `codex docs` | Generate project documentation |
+| `codex doctor` | Environment health check |
+| `codex plugin list\|scaffold\|discover` | Plugin management |
+
+---
+
+## Built-in Tools (AI Agent Protocol)
+
+These tools can be invoked via CLI (`codex tool run`), HTTP (`POST /tools/invoke`),
+or Python API (`ToolExecutor.execute()`):
+
+| Tool | Arguments | Description |
+|------|-----------|-------------|
+| `semantic_search` | `query` (string) | Search codebase by natural language |
+| `explain_symbol` | `symbol_name` (string) | Structural explanation of a symbol |
+| `explain_file` | `file_path` (string) | Explain all symbols in a file |
+| `summarize_repo` | *(none)* | Full repository summary |
+| `find_references` | `symbol_name` (string) | Find all references to a symbol |
+| `get_dependencies` | `file_path` (string) | Import / dependency map for a file |
+| `get_call_graph` | `symbol_name` (string) | Call graph — callers and callees |
+| `get_context` | `symbol_name` (string) | Rich context window for AI tasks |
+
+Additional tools can be registered via the plugin system using the
+`REGISTER_TOOL` hook.
+
+---
 
 ## Architecture
 
 ```
-CLI Layer           → click commands
-Command Layer       → router dispatches to services
-Service Layer       → business logic
-Parsing Engine      → tree-sitter code parsing
-Embedding Engine    → sentence-transformers vectors
-Search Engine       → FAISS similarity search
-Analysis Engine     → call graphs, dependency maps
-Storage Layer       → embeddings, metadata, cache
+┌─────────────────────────────────────────────────────┐
+│                    CLI Layer (click)                 │
+│  31 commands · --json · --pipe · --verbose           │
+├─────────────────────────────────────────────────────┤
+│               AI Agent Tooling Protocol              │
+│  ToolExecutor · ToolInvocation · ToolExecutionResult │
+├─────────────────────────────────────────────────────┤
+│                  Bridge Server (HTTP)                │
+│  /tools/invoke · /tools/list · /request · SSE stream │
+├──────────────┬──────────────┬───────────────────────┤
+│ Parsing      │ Embedding    │ Search                │
+│ tree-sitter  │ sent-trans   │ FAISS                 │
+├──────────────┴──────────────┴───────────────────────┤
+│              Plugin System (22 hooks)                │
+├─────────────────────────────────────────────────────┤
+│         Storage (.codex/ — config, index, cache)     │
+└─────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Configuration
+
+After `codex init`, your project has `.codex/config.json`:
+
+```json
+{
+  "embedding": {
+    "model_name": "all-MiniLM-L6-v2",
+    "chunk_size": 512,
+    "chunk_overlap": 64
+  },
+  "search": {
+    "top_k": 10,
+    "similarity_threshold": 0.3
+  },
+  "index": {
+    "use_incremental": true,
+    "extensions": [".py", ".js", ".ts", ".java", ".go", ".rs", ".rb", ".cpp", ".cs"]
+  },
+  "llm": {
+    "provider": "mock",
+    "model": "",
+    "api_key": "",
+    "temperature": 0.2,
+    "max_tokens": 2048
+  }
+}
+```
+
+---
 
 ## Development
 
@@ -72,8 +394,14 @@ Storage Layer       → embeddings, metadata, cache
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run tests
+# Run all 1204 tests
 pytest
+
+# Run with coverage
+pytest --cov=semantic_code_intelligence
+
+# Run specific phase tests
+pytest semantic_code_intelligence/tests/test_phase19.py -v
 
 # Run with verbose output
 codex --verbose search "query"
@@ -81,14 +409,14 @@ codex --verbose search "query"
 
 ## Tech Stack
 
-- **Python 3.11+**
+- **Python 3.11+** — No heavy frameworks, stdlib-first design
 - **click** — CLI framework
-- **sentence-transformers** — Embedding generation
+- **sentence-transformers** — Embedding generation (`all-MiniLM-L6-v2`)
 - **faiss-cpu** — Vector similarity search
-- **tree-sitter** — Code parsing
+- **tree-sitter** — Multi-language code parsing
 - **pydantic** — Configuration & data models
-- **rich** — Terminal UI
+- **rich** — Terminal UI and formatting
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.
