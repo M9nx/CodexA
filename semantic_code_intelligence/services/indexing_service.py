@@ -44,6 +44,93 @@ class IndexingResult:
         )
 
 
+def _extract_symbols(
+    files_to_index: list[ScannedFile],
+    deleted_paths: list[str],
+    index_dir: Path,
+    force: bool,
+) -> tuple[SymbolRegistry, int]:
+    """Extract symbols from indexed files and update the registry."""
+    registry = SymbolRegistry() if force else SymbolRegistry.load(index_dir)
+    count = 0
+    for dp in deleted_paths:
+        registry.remove_file(dp)
+    for sf in files_to_index:
+        registry.remove_file(sf.relative_path)
+        try:
+            symbols = parse_file(sf.path)
+            entries = [
+                SymbolEntry(
+                    name=sym.name,
+                    kind=sym.kind,
+                    file_path=sf.relative_path,
+                    start_line=sym.start_line,
+                    end_line=sym.end_line,
+                    parent=sym.parent,
+                    parameters=sym.parameters,
+                    decorators=sym.decorators,
+                    language=detect_language(str(sf.path)),
+                )
+                for sym in symbols
+            ]
+            registry.add_many(entries)
+            count += len(entries)
+        except Exception:
+            logger.debug("Symbol extraction failed for %s", sf.relative_path)
+    registry.save(index_dir)
+    return registry, count
+
+
+def _compute_index_stats(
+    all_chunks: list[CodeChunk],
+    registry: SymbolRegistry,
+    result: IndexingResult,
+    config: "AppConfig",
+    dimension: int,
+    store_size: int,
+    indexing_start: float,
+    index_dir: Path,
+) -> None:
+    """Aggregate per-language metrics and persist index stats."""
+    indexing_end = time.time()
+
+    lang_files: dict[str, set[str]] = defaultdict(set)
+    lang_chunks: dict[str, int] = defaultdict(int)
+    lang_lines: dict[str, int] = defaultdict(int)
+    for chunk in all_chunks:
+        lang = chunk.language or "unknown"
+        lang_files[lang].add(chunk.file_path)
+        lang_chunks[lang] += 1
+        lang_lines[lang] += chunk.end_line - chunk.start_line + 1
+    lang_symbols: dict[str, int] = registry.language_summary()
+
+    coverage = [
+        LanguageCoverage(
+            language=lang,
+            files=len(files),
+            chunks=lang_chunks.get(lang, 0),
+            symbols=lang_symbols.get(lang, 0),
+            total_lines=lang_lines.get(lang, 0),
+        )
+        for lang, files in lang_files.items()
+    ]
+
+    total_chars = sum(len(c.content) for c in all_chunks)
+    stats = IndexStats(
+        total_files=result.files_indexed + result.files_skipped,
+        total_chunks=store_size,
+        total_symbols=registry.size,
+        total_vectors=store_size,
+        last_indexed_at=indexing_end,
+        indexing_duration_seconds=round(indexing_end - indexing_start, 3),
+        language_coverage=coverage,
+        avg_chunk_size=round(total_chars / len(all_chunks), 1) if all_chunks else 0.0,
+        embedding_model=config.embedding.model_name,
+        embedding_dimension=dimension,
+    )
+    stats.save(index_dir)
+
+
 def run_indexing(
     project_root: Path,
     force: bool = False,
@@ -83,6 +170,7 @@ def run_indexing(
     # Step 2: Load hash store for incremental indexing
     hash_store = HashStore.load(index_dir)
     files_to_index: list[ScannedFile] = []
+    scanned_paths = {sf.relative_path for sf in scanned_files}
 
     if force:
         files_to_index = scanned_files
@@ -92,6 +180,13 @@ def run_indexing(
                 files_to_index.append(sf)
             else:
                 result.files_skipped += 1
+
+    # Detect deleted files: tracked in hash_store but no longer on disk
+    deleted_paths: list[str] = []
+    if not force:
+        for tracked_path in list(hash_store._hashes.keys()):
+            if tracked_path not in scanned_paths:
+                deleted_paths.append(tracked_path)
 
     logger.info(
         "%d files to index (%d skipped, unchanged).",
@@ -121,6 +216,19 @@ def run_indexing(
         # Update hashes even if no chunks (e.g. empty files)
         for sf in files_to_index:
             hash_store.set(sf.relative_path, sf.content_hash)
+
+        # Still clean up deleted files from the vector store
+        if deleted_paths:
+            try:
+                store = VectorStore.load(index_dir)
+                for dp in deleted_paths:
+                    full = str(project_root / dp)
+                    store.remove_by_file(full)
+                    hash_store.remove(dp)
+                store.save(index_dir)
+            except FileNotFoundError:
+                pass
+
         hash_store.save(index_dir)
         return result
 
@@ -150,7 +258,7 @@ def run_indexing(
 
     # Step 6: Store in vector store
     # For force mode or first run, create fresh store.
-    # For incremental, load existing and append.
+    # For incremental, load existing, remove stale vectors, and append new.
     dimension = embeddings.shape[1]
 
     if force:
@@ -160,6 +268,16 @@ def run_indexing(
             store = VectorStore.load(index_dir)
         except FileNotFoundError:
             store = VectorStore(dimension)
+
+        # Remove stale vectors for changed files before adding updated ones
+        for sf in files_to_index:
+            store.remove_by_file(str(sf.path))
+
+        # Remove vectors for deleted files
+        for dp in deleted_paths:
+            full = str(project_root / dp)
+            store.remove_by_file(full)
+            hash_store.remove(dp)
 
     store.add(embeddings, metadata_list)
     store.save(index_dir)
@@ -172,30 +290,9 @@ def run_indexing(
     result.total_vectors = store.size
 
     # Step 8: Extract symbols and populate registry
-    registry = SymbolRegistry() if force else SymbolRegistry.load(index_dir)
-    for sf in files_to_index:
-        registry.remove_file(sf.relative_path)
-        try:
-            symbols = parse_file(sf.path)
-            entries = [
-                SymbolEntry(
-                    name=sym.name,
-                    kind=sym.kind,
-                    file_path=sf.relative_path,
-                    start_line=sym.start_line,
-                    end_line=sym.end_line,
-                    parent=sym.parent,
-                    parameters=sym.parameters,
-                    decorators=sym.decorators,
-                    language=detect_language(str(sf.path)),
-                )
-                for sym in symbols
-            ]
-            registry.add_many(entries)
-            result.symbols_extracted += len(entries)
-        except Exception:
-            logger.debug("Symbol extraction failed for %s", sf.relative_path)
-    registry.save(index_dir)
+    registry, result.symbols_extracted = _extract_symbols(
+        files_to_index, deleted_paths, index_dir, force,
+    )
 
     # Step 9: Update index manifest
     manifest = IndexManifest.load(index_dir) or IndexManifest()
@@ -212,44 +309,10 @@ def run_indexing(
     manifest.save(index_dir)
 
     # Step 10: Compute and persist index stats
-    indexing_end = time.time()
-
-    # Aggregate per-language metrics
-    lang_files: dict[str, set[str]] = defaultdict(set)
-    lang_chunks: dict[str, int] = defaultdict(int)
-    lang_lines: dict[str, int] = defaultdict(int)
-    for chunk in all_chunks:
-        lang = chunk.language or "unknown"
-        lang_files[lang].add(chunk.file_path)
-        lang_chunks[lang] += 1
-        lang_lines[lang] += chunk.end_line - chunk.start_line + 1
-    lang_symbols: dict[str, int] = registry.language_summary()
-
-    coverage = [
-        LanguageCoverage(
-            language=lang,
-            files=len(files),
-            chunks=lang_chunks.get(lang, 0),
-            symbols=lang_symbols.get(lang, 0),
-            total_lines=lang_lines.get(lang, 0),
-        )
-        for lang, files in lang_files.items()
-    ]
-
-    total_chars = sum(len(c.content) for c in all_chunks)
-    stats = IndexStats(
-        total_files=result.files_indexed + result.files_skipped,
-        total_chunks=store.size,
-        total_symbols=registry.size,
-        total_vectors=store.size,
-        last_indexed_at=indexing_end,
-        indexing_duration_seconds=round(indexing_end - indexing_start, 3),
-        language_coverage=coverage,
-        avg_chunk_size=round(total_chars / len(all_chunks), 1) if all_chunks else 0.0,
-        embedding_model=config.embedding.model_name,
-        embedding_dimension=dimension,
+    _compute_index_stats(
+        all_chunks, registry, result, config,
+        dimension, store.size, indexing_start, index_dir,
     )
-    stats.save(index_dir)
 
     logger.info("Indexing complete. %s", result)
     return result

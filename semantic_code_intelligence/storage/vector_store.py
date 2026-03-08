@@ -160,6 +160,41 @@ class VectorStore:
         logger.info("Loaded %d vectors from %s", store.size, directory)
         return store
 
+    def remove_by_file(self, file_path: str) -> int:
+        """Remove all vectors whose metadata references *file_path*.
+
+        Rebuilds the FAISS index in-place, excluding matching entries.
+
+        Args:
+            file_path: The ``file_path`` field to match against.
+
+        Returns:
+            Number of vectors removed.
+        """
+        keep_indices = [
+            i for i, m in enumerate(self.metadata) if m.file_path != file_path
+        ]
+        removed = len(self.metadata) - len(keep_indices)
+        if removed == 0:
+            return 0
+
+        if keep_indices:
+            # Reconstruct vectors for kept entries
+            kept_vectors = np.vstack(
+                [self.index.reconstruct(i).reshape(1, -1) for i in keep_indices]
+            ).astype(np.float32)
+            kept_meta = [self.metadata[i] for i in keep_indices]
+        else:
+            kept_vectors = np.empty((0, self.dimension), dtype=np.float32)
+            kept_meta = []
+
+        self.index.reset()
+        if len(kept_vectors) > 0:
+            self.index.add(np.ascontiguousarray(kept_vectors))
+        self.metadata = kept_meta
+        logger.debug("Removed %d vectors for %s", removed, file_path)
+        return removed
+
     def clear(self) -> None:
         """Remove all vectors and metadata."""
         self.index.reset()

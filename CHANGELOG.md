@@ -2,6 +2,25 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.25.0] — Phase 25: Incremental Indexing & Quality Refactors
+
+### Added
+- **Stale vector removal** (`storage/vector_store.py`) — `VectorStore.remove_by_file()` rebuilds the FAISS index excluding entries for a given file, enabling true incremental re-indexing without stale duplicates
+- **Deleted file cleanup** (`services/indexing_service.py`) — incremental indexing now detects files removed from disk and purges their vectors, symbols, and hash entries automatically
+- **HF_TOKEN environment support** (`embeddings/generator.py`) — `_configure_hf_token()` checks `HF_TOKEN`, `HUGGING_FACE_HUB_TOKEN`, and `HUGGINGFACE_TOKEN` before loading models, eliminating unauthenticated-request warnings
+- **Call graph regex matching** (`context/engine.py`) — `CallGraph.build()` uses word-boundary regex `\b{name}\s*[\(\.]` instead of substring matching for accurate call detection
+- **Web UI Mermaid rendering** (`web/ui.py`) — visualization page now loads Mermaid JS from CDN and renders call graphs / dependency graphs as interactive SVGs
+- **Web viz data format fix** (`web/server.py`, `bridge/context_provider.py`) — call graph API now returns `edges` key combining callers and callees, matching what the visualization renderer expects
+
+### Fixed
+- **23 silent exception catches** across 14 files converted to `logger.debug()` messages for better debuggability: `explain_cmd`, `quality_cmd`, `pr_summary_cmd`, `chat_cmd`, `cross_refactor_cmd`, `hotspots_cmd`, `impact_cmd`, `trace_cmd`, `hooks.py`, `investigation.py`, `cross_refactor.py`, `metrics.py`, `docs/__init__`, `streaming.py`
+- **Dependency path resolution** (`bridge/context_provider.py`) — relative file paths now resolved against project root before lookup
+
+### Changed
+- **Refactored `quality_cmd.py`** — extracted `_output_safety()`, `_output_report_pipe()`, `_output_report_rich()` helpers to reduce cyclomatic complexity from 38 to ~12
+- **Refactored `metrics_cmd.py`** — extracted `_output_history()`, `_output_trend()`, `_output_current_metrics()` helpers to reduce cyclomatic complexity from 31 to ~10
+- **Refactored `indexing_service.py`** — extracted `_extract_symbols()` and `_compute_index_stats()` from `run_indexing()` to reduce complexity from 31 to ~18
+
 ## [0.24.0] — Phase 24: Self-Improving Development Loop
 
 ### Added

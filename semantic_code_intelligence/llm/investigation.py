@@ -150,7 +150,7 @@ class InvestigationChain:
             try:
                 self._builder.index_file(str(self._root / sf.relative_path))
             except Exception:
-                pass
+                logger.debug("Skip unindexable file: %s", sf.relative_path)
         self._indexed = True
 
     def _run_action(self, action: str, action_input: str) -> str:

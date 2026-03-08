@@ -337,6 +337,7 @@ def load_snapshots(
             data = json.loads(entry.content)
             snapshots.append(QualitySnapshot.from_dict(data))
         except Exception:
+            logger.debug("Skipping corrupt snapshot: %s", entry.key)
             continue
 
     snapshots.sort(key=lambda s: s.timestamp, reverse=True)

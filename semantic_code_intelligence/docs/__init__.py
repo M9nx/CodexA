@@ -16,6 +16,10 @@ from typing import Any
 
 import click
 
+from semantic_code_intelligence.utils.logging import get_logger
+
+logger = get_logger("docs")
+
 
 def generate_cli_reference(cli_group: click.Group) -> str:
     """Generate Markdown documentation for all CLI commands.
@@ -999,7 +1003,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "CLI.md").write_text(cli_md, encoding="utf-8")
         generated.append("CLI.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate CLI.md")
 
     # Plugin reference
     try:
@@ -1007,7 +1011,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "PLUGINS.md").write_text(plugin_md, encoding="utf-8")
         generated.append("PLUGINS.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate PLUGINS.md")
 
     # Bridge reference
     try:
@@ -1015,7 +1019,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "BRIDGE.md").write_text(bridge_md, encoding="utf-8")
         generated.append("BRIDGE.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate BRIDGE.md")
 
     # Tool reference
     try:
@@ -1023,7 +1027,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "TOOLS.md").write_text(tool_md, encoding="utf-8")
         generated.append("TOOLS.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate TOOLS.md")
 
     # Web / API reference
     try:
@@ -1031,7 +1035,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "WEB.md").write_text(web_md, encoding="utf-8")
         generated.append("WEB.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate WEB.md")
 
     # CI/CD reference
     try:
@@ -1039,7 +1043,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "CI.md").write_text(ci_md, encoding="utf-8")
         generated.append("CI.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate CI.md")
 
     # AI Workflows reference
     try:
@@ -1047,7 +1051,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "AI_WORKFLOWS.md").write_text(ai_md, encoding="utf-8")
         generated.append("AI_WORKFLOWS.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate AI_WORKFLOWS.md")
 
     # Quality Metrics reference
     try:
@@ -1055,7 +1059,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "QUALITY_METRICS.md").write_text(qm_md, encoding="utf-8")
         generated.append("QUALITY_METRICS.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate QUALITY_METRICS.md")
 
     # Workflow Intelligence reference
     try:
@@ -1063,7 +1067,7 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "WORKFLOW_INTELLIGENCE.md").write_text(wi_md, encoding="utf-8")
         generated.append("WORKFLOW_INTELLIGENCE.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate WORKFLOW_INTELLIGENCE.md")
 
     # AI Tool Protocol reference (Phase 19)
     try:
@@ -1071,6 +1075,6 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         (output_dir / "AI_TOOL_PROTOCOL.md").write_text(atp_md, encoding="utf-8")
         generated.append("AI_TOOL_PROTOCOL.md")
     except Exception:
-        pass
+        logger.debug("Failed to generate AI_TOOL_PROTOCOL.md")
 
     return generated

@@ -43,7 +43,7 @@ def _find_changed_files(root: Path) -> list[str]:
             if files:
                 return files
     except Exception:
-        pass
+        logger.debug("git diff-tree failed; falling back to full file scan")
 
     # Fallback: list all supported source files
     from semantic_code_intelligence.parsing.parser import EXTENSION_TO_LANGUAGE

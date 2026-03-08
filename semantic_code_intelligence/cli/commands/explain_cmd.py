@@ -94,6 +94,7 @@ def explain_cmd(
             try:
                 builder.index_file(full_path)
             except Exception:
+                logger.debug("Failed to index %s", full_path)
                 continue
         matches = builder.find_symbol(target)
 

@@ -76,10 +76,12 @@ def trace_cmd(
             content = fp.read_text(encoding="utf-8", errors="replace")
             builder.index_file(str(fp), content)
         except Exception:
+            logger.debug("Failed to index %s", fp)
             continue
 
     symbols = builder.get_all_symbols()
     call_graph = CallGraph()
+    call_graph.build(symbols)
     call_graph.build(symbols)
 
     result = trace_symbol(symbol, symbols, call_graph, max_depth=max_depth)

@@ -195,7 +195,7 @@ def chat_cmd(
                 content=f"Relevant code:\n{ctx_text}\n\nUser: {message}",
             )
     except Exception:
-        pass
+        logger.debug("Context injection failed; continuing without code context")
 
     # Call LLM
     resp = provider.chat(messages)

@@ -67,7 +67,7 @@ def cross_refactor_cmd(
 
             provider = _get_provider(config)
     except Exception:
-        pass
+        logger.debug("LLM provider not available; running without AI suggestions")
 
     result = analyze_cross_repo(root, provider=provider, threshold=threshold)
 

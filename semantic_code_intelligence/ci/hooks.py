@@ -78,6 +78,7 @@ def run_precommit_check(
                     try:
                         content = Path(fpath).read_text(encoding="utf-8", errors="replace")
                     except Exception:
+                        logger.debug("Failed to read %s for plugin validation", fpath)
                         continue
                     data = {
                         "file_path": fpath,

@@ -8,6 +8,7 @@ Provides:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -191,6 +192,12 @@ class CallGraph:
         # All function/method names as potential callees
         callee_names = {s.name for s in callable_symbols}
 
+        # Pre-compile word-boundary patterns for each potential callee
+        _callee_patterns: dict[str, re.Pattern[str]] = {
+            name: re.compile(r"\b" + re.escape(name) + r"\s*[\(\.]")
+            for name in callee_names
+        }
+
         for sym in callable_symbols:
             body_text = sym.body
             caller_key = f"{sym.file_path}:{sym.name}"
@@ -198,7 +205,7 @@ class CallGraph:
             for callee_name in callee_names:
                 if callee_name == sym.name:
                     continue  # skip self-references
-                if callee_name in body_text:
+                if _callee_patterns[callee_name].search(body_text):
                     edge = CallEdge(
                         caller=caller_key,
                         callee=callee_name,

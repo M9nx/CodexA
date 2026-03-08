@@ -4,18 +4,139 @@ from __future__ import annotations
 
 import json as json_mod
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import click
 
 from semantic_code_intelligence.utils.logging import (
     console,
     get_logger,
-    print_error,
     print_info,
     print_success,
 )
 
+if TYPE_CHECKING:
+    from semantic_code_intelligence.ci.metrics import MetricSnapshot, TrendResult, ProjectMetrics
+
 logger = get_logger("cli.metrics")
+
+
+# ------------------------------------------------------------------
+# Output helpers
+# ------------------------------------------------------------------
+
+
+def _output_history(
+    snaps: list["MetricSnapshot"],
+    limit: int,
+    *,
+    json_mode: bool,
+    pipe: bool,
+) -> None:
+    """Emit snapshot history in the requested format."""
+    if json_mode:
+        click.echo(json_mod.dumps(
+            {"snapshots": [s.to_dict() for s in snaps]},
+            indent=2,
+        ))
+    elif pipe:
+        for s in snaps:
+            click.echo(
+                f"  {s.timestamp:.0f}  MI={s.maintainability_index:.1f}  "
+                f"LOC={s.total_loc}  issues={s.issue_count}"
+            )
+    else:
+        if not snaps:
+            print_info("No snapshots found — run with --snapshot to save one.")
+            return
+        console.print(f"\n[bold cyan]Quality Snapshots[/bold cyan] (last {len(snaps)})\n")
+        for s in snaps:
+            import datetime
+            ts = datetime.datetime.fromtimestamp(s.timestamp).strftime("%Y-%m-%d %H:%M")
+            console.print(
+                f"  {ts}  MI=[bold]{s.maintainability_index:.1f}[/bold]  "
+                f"LOC={s.total_loc}  issues={s.issue_count}"
+            )
+
+
+def _output_trend(
+    results: list["TrendResult"],
+    snap_count: int,
+    *,
+    json_mode: bool,
+    pipe: bool,
+) -> None:
+    """Emit trend analysis in the requested format."""
+    if json_mode:
+        click.echo(json_mod.dumps(
+            {"trends": [t.to_dict() for t in results]},
+            indent=2,
+        ))
+    elif pipe:
+        for t in results:
+            click.echo(
+                f"  TREND  {t.metric_name}  {t.direction}  "
+                f"oldest={t.oldest_value:.2f}  newest={t.newest_value:.2f}  "
+                f"delta={t.delta:+.2f}"
+            )
+    else:
+        console.print(f"\n[bold cyan]Quality Trends[/bold cyan] ({snap_count} snapshots)\n")
+        for t in results:
+            color = {"improving": "green", "degrading": "red", "stable": "yellow"}.get(t.direction, "white")
+            console.print(
+                f"  {t.metric_name:<30} [{color}]{t.direction:>10}[/{color}]  "
+                f"{t.oldest_value:.1f} -> {t.newest_value:.1f}  ({t.delta:+.1f})"
+            )
+
+
+def _output_current_metrics(
+    pm: "ProjectMetrics",
+    root: Path,
+    saved: "MetricSnapshot | None",
+    *,
+    json_mode: bool,
+    pipe: bool,
+) -> None:
+    """Emit current metrics in the requested format."""
+    if json_mode:
+        payload = pm.to_dict()
+        if saved:
+            payload["snapshot"] = saved.to_dict()
+        click.echo(json_mod.dumps(payload, indent=2))
+        return
+
+    if pipe:
+        click.echo(
+            f"Files: {pm.files_analyzed}  LOC: {pm.total_loc}  "
+            f"MI: {pm.maintainability_index:.1f}  "
+            f"AvgCC: {pm.avg_complexity:.1f}  MaxCC: {pm.max_complexity}"
+        )
+        if saved:
+            click.echo(f"Snapshot saved at {saved.timestamp:.0f}")
+        return
+
+    # Rich output
+    console.print(f"\n[bold cyan]Quality Metrics[/bold cyan] — {root}\n")
+    console.print(f"  Files analyzed:       {pm.files_analyzed}")
+    console.print(f"  Lines of code:        {pm.total_loc}")
+    console.print(f"  Comment lines:        {pm.total_comment_lines}")
+    console.print(f"  Comment ratio:        {pm.comment_ratio:.1%}")
+    console.print(f"  Symbols:              {pm.total_symbols}")
+    console.print(f"  Avg complexity:       {pm.avg_complexity:.1f}")
+    console.print(f"  Max complexity:       {pm.max_complexity}")
+    console.print(f"  Maintainability index: [bold]{pm.maintainability_index:.1f}[/bold]")
+
+    if saved:
+        print_success("Snapshot saved")
+
+    if pm.file_metrics:
+        console.print(f"\n[bold]Per-File Maintainability:[/bold]")
+        ranked = sorted(pm.file_metrics, key=lambda f: f.maintainability_index)
+        for fm in ranked[:10]:
+            mi = fm.maintainability_index
+            color = "green" if mi >= 65 else ("yellow" if mi >= 40 else "red")
+            name = Path(fm.file_path).name
+            console.print(f"  [{color}]{mi:5.1f}[/{color}]  {name}  (LOC={fm.lines_of_code}, CC={fm.avg_complexity:.1f})")
 
 
 @click.command("metrics")
@@ -96,29 +217,7 @@ def metrics_cmd(
     # ── History-only mode ────────────────────────────────────────
     if history > 0 and not trend:
         snaps = load_snapshots(root, limit=history)
-        if json_mode:
-            click.echo(json_mod.dumps(
-                {"snapshots": [s.to_dict() for s in snaps]},
-                indent=2,
-            ))
-        elif pipe:
-            for s in snaps:
-                click.echo(
-                    f"  {s.timestamp:.0f}  MI={s.maintainability_index:.1f}  "
-                    f"LOC={s.total_loc}  issues={s.issue_count}"
-                )
-        else:
-            if not snaps:
-                print_info("No snapshots found — run with --snapshot to save one.")
-                return
-            console.print(f"\n[bold cyan]Quality Snapshots[/bold cyan] (last {len(snaps)})\n")
-            for s in snaps:
-                import datetime
-                ts = datetime.datetime.fromtimestamp(s.timestamp).strftime("%Y-%m-%d %H:%M")
-                console.print(
-                    f"  {ts}  MI=[bold]{s.maintainability_index:.1f}[/bold]  "
-                    f"LOC={s.total_loc}  issues={s.issue_count}"
-                )
+        _output_history(snaps, history, json_mode=json_mode, pipe=pipe)
         return
 
     # ── Trend-only mode ──────────────────────────────────────────
@@ -140,74 +239,15 @@ def metrics_cmd(
             t = compute_trend(snaps, metric, higher_is_better=higher)
             results.append(t)
 
-        if json_mode:
-            click.echo(json_mod.dumps(
-                {"trends": [t.to_dict() for t in results]},
-                indent=2,
-            ))
-        elif pipe:
-            for t in results:
-                click.echo(
-                    f"  TREND  {t.metric_name}  {t.direction}  "
-                    f"oldest={t.oldest_value:.2f}  newest={t.newest_value:.2f}  "
-                    f"delta={t.delta:+.2f}"
-                )
-        else:
-            console.print(f"\n[bold cyan]Quality Trends[/bold cyan] ({len(snaps)} snapshots)\n")
-            for t in results:
-                color = {"improving": "green", "degrading": "red", "stable": "yellow"}.get(t.direction, "white")
-                console.print(
-                    f"  {t.metric_name:<30} [{color}]{t.direction:>10}[/{color}]  "
-                    f"{t.oldest_value:.1f} -> {t.newest_value:.1f}  ({t.delta:+.1f})"
-                )
+        _output_trend(results, len(snaps), json_mode=json_mode, pipe=pipe)
         return
 
     # ── Compute current metrics ──────────────────────────────────
     pm = compute_project_metrics(root)
 
-    # Optionally save snapshot
     saved = None
     if snapshot:
         report = analyze_project(root)
         saved = save_snapshot(root, pm, report)
 
-    if json_mode:
-        payload = pm.to_dict()
-        if saved:
-            payload["snapshot"] = saved.to_dict()
-        click.echo(json_mod.dumps(payload, indent=2))
-        return
-
-    if pipe:
-        click.echo(
-            f"Files: {pm.files_analyzed}  LOC: {pm.total_loc}  "
-            f"MI: {pm.maintainability_index:.1f}  "
-            f"AvgCC: {pm.avg_complexity:.1f}  MaxCC: {pm.max_complexity}"
-        )
-        if saved:
-            click.echo(f"Snapshot saved at {saved.timestamp:.0f}")
-        return
-
-    # Rich output
-    console.print(f"\n[bold cyan]Quality Metrics[/bold cyan] — {root}\n")
-    console.print(f"  Files analyzed:       {pm.files_analyzed}")
-    console.print(f"  Lines of code:        {pm.total_loc}")
-    console.print(f"  Comment lines:        {pm.total_comment_lines}")
-    console.print(f"  Comment ratio:        {pm.comment_ratio:.1%}")
-    console.print(f"  Symbols:              {pm.total_symbols}")
-    console.print(f"  Avg complexity:       {pm.avg_complexity:.1f}")
-    console.print(f"  Max complexity:       {pm.max_complexity}")
-    console.print(f"  Maintainability index: [bold]{pm.maintainability_index:.1f}[/bold]")
-
-    if saved:
-        print_success("Snapshot saved")
-
-    if pm.file_metrics:
-        console.print(f"\n[bold]Per-File Maintainability:[/bold]")
-        # Sort worst-first
-        ranked = sorted(pm.file_metrics, key=lambda f: f.maintainability_index)
-        for fm in ranked[:10]:
-            mi = fm.maintainability_index
-            color = "green" if mi >= 65 else ("yellow" if mi >= 40 else "red")
-            name = Path(fm.file_path).name
-            console.print(f"  [{color}]{mi:5.1f}[/{color}]  {name}  (LOC={fm.lines_of_code}, CC={fm.avg_complexity:.1f})")
+    _output_current_metrics(pm, root, saved, json_mode=json_mode, pipe=pipe)

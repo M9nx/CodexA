@@ -243,7 +243,7 @@ def stream_chat(
                         {"event": event.to_dict(), "accumulated": ""},
                     )
                 except Exception:
-                    pass  # Plugin errors must not break streaming
+                    logger.debug("Plugin streaming hook failed")
             yield event
     except StopIteration as stop:
         result = stop.value

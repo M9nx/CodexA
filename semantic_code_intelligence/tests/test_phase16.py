@@ -670,7 +670,7 @@ class TestVersionBump:
     def test_version_is_016(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.24.0"
+        assert __version__ == "0.25.0"
 
 
 class TestPhase16ModuleStructure:

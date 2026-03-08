@@ -97,8 +97,13 @@ _NAV = """\
 """
 
 
-def _page(title: str, body: str, script: str = "") -> str:
+def _page(title: str, body: str, script: str = "", *, mermaid: bool = False) -> str:
     """Wrap content in a full HTML page."""
+    mermaid_tag = (
+        '<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>\n'
+        '<script>mermaid.initialize({startOnLoad:false, theme:"dark"});</script>'
+        if mermaid else ""
+    )
     return f"""\
 <!DOCTYPE html>
 <html lang="en">
@@ -107,6 +112,7 @@ def _page(title: str, body: str, script: str = "") -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)} — CodexA</title>
 <style>{_CSS}</style>
+{mermaid_tag}
 </head>
 <body>
 {_NAV}
@@ -285,33 +291,43 @@ def page_viz() -> str:
     script = """\
 async function loadViz(kind) {
   const target = document.getElementById('target').value.trim();
-  let url, title;
-  if (kind === 'callgraph') {
-    url = '/api/callgraph?symbol=' + encodeURIComponent(target);
-    title = 'Call Graph';
-  } else {
-    url = '/api/deps?file=' + encodeURIComponent(target);
-    title = 'Dependencies';
-  }
+  const diagram = document.getElementById('diagram');
+  const source = document.getElementById('mermaid-source');
+  diagram.innerHTML = '<div class="empty">Loading…</div>';
+  source.innerHTML = '';
   try {
-    const res = await fetch(url);
-    const data = await res.json();
-    // Fetch the mermaid visualization
     const vizRes = await fetch('/api/viz/' + kind + '?target=' + encodeURIComponent(target));
     const vizData = await vizRes.json();
+    if (vizData.error) { diagram.innerHTML = '<div class="card status-err">' + vizData.error + '</div>'; return; }
     const src = vizData.mermaid || '';
-    document.getElementById('diagram').innerHTML =
-      '<div class="card"><h3>' + title + '</h3>' +
-      '<pre class="mermaid">' + src.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre></div>';
-    document.getElementById('mermaid-source').innerHTML =
+    const title = kind === 'callgraph' ? 'Call Graph' : 'Dependencies';
+    // Render with Mermaid
+    const container = document.createElement('div');
+    container.className = 'card';
+    const heading = document.createElement('h3');
+    heading.textContent = title;
+    container.appendChild(heading);
+    const mermaidDiv = document.createElement('div');
+    mermaidDiv.className = 'mermaid';
+    const id = 'mermaid-' + Date.now();
+    try {
+      const { svg } = await mermaid.render(id, src);
+      mermaidDiv.innerHTML = svg;
+    } catch(_) {
+      mermaidDiv.innerHTML = '<pre>' + src.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>';
+    }
+    container.appendChild(mermaidDiv);
+    diagram.innerHTML = '';
+    diagram.appendChild(container);
+    source.innerHTML =
       '<details><summary style="color:var(--dim);cursor:pointer;">Raw Mermaid source</summary>' +
       '<pre><code>' + src.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</code></pre></details>';
   } catch(e) {
-    document.getElementById('diagram').innerHTML = '<div class="card status-err">' + e + '</div>';
+    diagram.innerHTML = '<div class="card status-err">' + e + '</div>';
   }
 }
 """
-    return _page("Visualize", body, script)
+    return _page("Visualize", body, script, mermaid=True)
 
 
 # ------------------------------------------------------------------

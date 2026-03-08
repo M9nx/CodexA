@@ -196,10 +196,15 @@ class ContextProvider:
     def get_dependencies(self, file_path: str) -> dict[str, Any]:
         """Return file-level dependency map."""
         builder = self._ensure_indexed()
-        builder.index_file(file_path)
+        # Resolve relative paths against project root
+        resolved = Path(file_path)
+        if not resolved.is_absolute():
+            resolved = self._root / resolved
+        resolved_str = str(resolved)
+        builder.index_file(resolved_str)
         dep_map = DependencyMap()
-        if file_path in builder._file_contents:
-            dep_map.add_file(file_path, builder._file_contents[file_path])
+        if resolved_str in builder._file_contents:
+            dep_map.add_file(resolved_str, builder._file_contents[resolved_str])
         return {"file_path": file_path, "dependencies": dep_map.to_dict()}
 
     def get_call_graph(self, symbol_name: str) -> dict[str, Any]:
@@ -213,7 +218,13 @@ class ContextProvider:
         for edge in graph.edges:
             if edge.caller.endswith(f":{symbol_name}"):
                 callees.append(edge.to_dict())
-        return {"symbol_name": symbol_name, "callers": callers, "callees": callees}
+        edges = callers + callees
+        return {
+            "symbol_name": symbol_name,
+            "callers": callers,
+            "callees": callees,
+            "edges": edges,
+        }
 
     def find_references(self, symbol_name: str) -> dict[str, Any]:
         """Find all references to a symbol."""

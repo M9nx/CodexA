@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -17,6 +18,21 @@ logger = get_logger("embeddings")
 _model_cache: dict[str, "SentenceTransformer"] = {}
 
 
+def _configure_hf_token() -> None:
+    """Set HF_TOKEN from common env vars if not already set.
+
+    Checks ``HF_TOKEN``, ``HUGGING_FACE_HUB_TOKEN``, and
+    ``HUGGINGFACE_TOKEN`` so the user only needs to export one.
+    """
+    if os.environ.get("HF_TOKEN"):
+        return
+    for var in ("HUGGING_FACE_HUB_TOKEN", "HUGGINGFACE_TOKEN"):
+        value = os.environ.get(var)
+        if value:
+            os.environ["HF_TOKEN"] = value
+            return
+
+
 def get_model(model_name: str = "all-MiniLM-L6-v2") -> "SentenceTransformer":
     """Load and cache a sentence-transformers model.
 
@@ -27,6 +43,7 @@ def get_model(model_name: str = "all-MiniLM-L6-v2") -> "SentenceTransformer":
         A SentenceTransformer model instance.
     """
     if model_name not in _model_cache:
+        _configure_hf_token()
         from sentence_transformers import SentenceTransformer
 
         logger.info("Loading embedding model: %s", model_name)

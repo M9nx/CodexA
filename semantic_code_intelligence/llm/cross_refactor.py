@@ -88,7 +88,7 @@ def _collect_repo_symbols(
         try:
             builder.index_file(str(repo_path / sf.relative_path))
         except Exception:
-            pass
+            logger.debug("Skip unindexable file: %s", sf.relative_path)
 
     symbols = builder.get_all_symbols()
     result: list[dict[str, Any]] = []

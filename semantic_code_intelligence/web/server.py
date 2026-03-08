@@ -129,7 +129,8 @@ class _CombinedHandler(BaseHTTPRequestHandler):
             try:
                 if kind == "callgraph":
                     data = self.provider.get_call_graph(symbol_name=target)
-                    mermaid = render_call_graph(data.get("edges", []))
+                    edges = data.get("edges", [])
+                    mermaid = render_call_graph(edges)
                 elif kind == "deps":
                     data = self.provider.get_dependencies(file_path=target)
                     mermaid = render_dependency_graph(data)

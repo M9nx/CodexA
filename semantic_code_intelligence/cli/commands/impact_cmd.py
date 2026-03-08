@@ -78,6 +78,7 @@ def impact_cmd(
             builder.index_file(str(fp), content)
             dep_map.add_file(str(fp), content)
         except Exception:
+            logger.debug("Failed to index %s", fp)
             continue
 
     symbols = builder.get_all_symbols()

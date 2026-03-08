@@ -6,8 +6,8 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.24.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-2320-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/version-0.25.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/tests-2320%2B-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
