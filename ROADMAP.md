@@ -385,9 +385,28 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ## Upcoming Phases
 
-### Phase 19: TBD
+### Phase 21: TBD
 
 ---
+
+### Phase 20: Deep Coverage & Copilot Integration ✅
+- GitHub Copilot system prompt and integration guide ✅
+- `.github/copilot-instructions.md` with full tool instructions ✅
+- 824 new tests across 3 test files (Phase 20a/20b/20c) ✅
+- Full coverage of all 22 subpackages ✅
+- Context engine, memory, visualization, AI features, services ✅
+- 2028 total tests, all passing ✅
+
+### Phase 19: AI Agent Tooling Protocol ✅
+- Tool Invocation Protocol (ToolInvocation, ToolExecutionResult, ToolError dataclasses) ✅
+- Tool Execution Engine (ToolExecutor with validation, routing, timing) ✅
+- Extended capability manifest (tools field in BridgeCapabilities) ✅
+- Agent-friendly streaming (SSE /tools/stream endpoint) ✅
+- CLI tool mode: `codex tool run|list|schema` ✅
+- AI safety guardrails (deterministic, no code execution, schema validation) ✅
+- Plugin integration (REGISTER_TOOL, PRE_TOOL_INVOKE, POST_TOOL_INVOKE hooks) ✅
+- AI_TOOL_PROTOCOL.md auto-generated documentation ✅
+- 70+ new tests ✅
 
 ### Phase 17: Code Quality Metrics & Trends ✅
 - Maintainability index and trend tracking ✅

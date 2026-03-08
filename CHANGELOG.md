@@ -2,6 +2,17 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.20.0] — Phase 20: Deep Coverage & Copilot Integration
+
+### Added
+- **GitHub Copilot integration** — `.github/copilot-instructions.md` with full CodexA tool instructions for system prompt
+- **README Copilot setup guide** — 7-step guide for VS Code Copilot configuration, example conversations, and settings
+- **Phase 20 test suite** (`test_phase20.py`) — 385 deep-coverage tests across all 22 subpackages
+- **Phase 20b test suite** (`test_phase20b.py`) — 289 extended tests for config, bridge, LLM, context, analysis, indexing, storage, workspace, daemon, CI, docs, scalability, plugins, tools, and version
+- **Phase 20c test suite** (`test_phase20c.py`) — 150 tests for visualization functions, search formatter, context engine (CallGraph, DependencyMap, ContextWindow, ContextBuilder), memory (SessionMemory, WorkspaceMemory), AI features (LanguageStats, RepoSummary, CodeExplanation, summarize/explain), reasoning/investigation results, services
+- 2028 total tests (up from 1204) — **824 new tests**
+- 31 CLI commands, 22 plugin hooks
+
 ## [0.19.0] — Phase 19: AI Agent Tooling Protocol
 
 ### Added

@@ -178,59 +178,175 @@ print(result.execution_time_ms) # timing in milliseconds
 
 ## Setting Up with VS Code + GitHub Copilot
 
-### Step 1 — Install CodexA in your project
+### Step 1 — Install CodexA globally
 
 ```bash
-# In your project root
+# Clone the repo
+git clone https://github.com/M9nx/CodexA.git
+
+# Install it (makes `codex` available system-wide in your venv)
+cd CodexA
+pip install -e ".[dev]"
+
+# Verify
+codex --version    # → codex, version 0.19.0
+```
+
+### Step 2 — Initialize your target project
+
+```bash
 cd /path/to/your-project
-pip install -e /path/to/CodexA    # or install from the cloned repo
-codex init
-codex index .
+codex init          # Creates .codex/ directory
+codex index .       # Index the entire codebase
+codex doctor        # Verify everything is healthy
+codex search "main" # Quick sanity check
 ```
 
-### Step 2 — Verify it works
+### Step 3 — Add Copilot Custom Instructions (System Prompt)
+
+Create the file `.github/copilot-instructions.md` in your project root.
+This file acts as a **system prompt** — GitHub Copilot reads it automatically
+and follows the instructions in every chat and code generation session.
 
 ```bash
-codex doctor          # Check environment health
-codex search "main"   # Quick test
-codex tool list       # See available tools
+mkdir -p .github
 ```
 
-### Step 3 — Use from Copilot Chat
+Then create `.github/copilot-instructions.md` with this content:
 
-In VS Code with GitHub Copilot, open Copilot Chat and ask it to run CodexA
-commands via the terminal. Examples:
+````markdown
+# Copilot Custom Instructions
 
-> **You:** Search my codebase for authentication logic using CodexA
+## CodexA Integration
+
+This project uses **CodexA** — a local developer intelligence engine.
+You have access to the `codex` CLI for semantic code search, symbol
+explanation, dependency analysis, and more.
+
+### Available Commands
+
+Before answering questions about this codebase, use CodexA to gather context:
+
+- **Search the codebase:**
+  ```bash
+  codex search "<natural language query>" --json
+  ```
+
+- **Explain a symbol (function/class/method):**
+  ```bash
+  codex tool run explain_symbol --arg symbol_name="<name>" --json
+  ```
+
+- **Get the call graph of a function:**
+  ```bash
+  codex tool run get_call_graph --arg symbol_name="<name>" --json
+  ```
+
+- **Get file dependencies/imports:**
+  ```bash
+  codex tool run get_dependencies --arg file_path="<path>" --json
+  ```
+
+- **Find all references to a symbol:**
+  ```bash
+  codex tool run find_references --arg symbol_name="<name>" --json
+  ```
+
+- **Get rich context for a symbol:**
+  ```bash
+  codex tool run get_context --arg symbol_name="<name>" --json
+  ```
+
+- **Summarize the entire repo:**
+  ```bash
+  codex tool run summarize_repo --json
+  ```
+
+- **Explain all symbols in a file:**
+  ```bash
+  codex tool run explain_file --arg file_path="<path>" --json
+  ```
+
+### Rules
+
+1. Always use `--json` flag for machine-readable output.
+2. When asked about code structure, search with `codex search` first.
+3. When explaining a function or class, use `codex tool run explain_symbol`.
+4. When analyzing impact of changes, use `codex impact`.
+5. When reviewing code, run `codex quality <path>` first.
+6. Prefer CodexA tools over reading large files manually — they provide
+   structured, indexed results.
+````
+
+### Step 4 — Configure Copilot Chat to use CodexA
+
+In VS Code, open **Settings** (Ctrl+,) and search for:
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `github.copilot.chat.codeGeneration.instructions` | Add `.github/copilot-instructions.md` | Auto-loads custom instructions |
+| `chat.agent.enabled` | `true` | Enables agent mode in Copilot Chat |
+
+Or add this to your `.vscode/settings.json`:
+
+```json
+{
+  "github.copilot.chat.codeGeneration.instructions": [
+    { "file": ".github/copilot-instructions.md" }
+  ]
+}
+```
+
+### Step 5 — Use Copilot Chat with CodexA
+
+Open **Copilot Chat** in VS Code (Ctrl+Shift+I or the chat panel) and switch
+to **Agent mode** (the dropdown at the top). Now Copilot can run terminal
+commands and will automatically use CodexA per your instructions.
+
+**Example conversations:**
+
+> **You:** What does the `process_payment` function do and what calls it?
 >
-> Copilot will run: `codex search "authentication logic" --json`
+> **Copilot** runs:
+> ```
+> codex tool run explain_symbol --arg symbol_name="process_payment" --json
+> codex tool run get_call_graph --arg symbol_name="process_payment" --json
+> ```
+> Then gives you a structured answer with callers, callees, and explanation.
 
-> **You:** Explain the UserService class using CodexA
+> **You:** Find all code related to authentication
 >
-> Copilot will run: `codex tool run explain_symbol --arg symbol_name="UserService" --json`
+> **Copilot** runs: `codex search "authentication" --json`
+> Returns ranked semantic search results across your entire codebase.
 
-> **You:** Show me the call graph for process_payment
+> **You:** What would break if I change `UserService`?
 >
-> Copilot will run: `codex tool run get_call_graph --arg symbol_name="process_payment" --json`
+> **Copilot** runs:
+> ```
+> codex tool run find_references --arg symbol_name="UserService" --json
+> codex impact
+> ```
+> Shows blast radius and all dependents.
 
-> **You:** What are the dependencies of src/auth.py?
+> **You:** Review the code quality of src/api/
 >
-> Copilot will run: `codex tool run get_dependencies --arg file_path="src/auth.py" --json`
+> **Copilot** runs: `codex quality src/api/ --json`
+> Returns complexity scores, dead code, duplicates, and security issues.
 
-### Step 4 — Use the Bridge Server for continuous integration
+### Step 6 — Start the Bridge Server (optional, for MCP)
 
-For persistent AI agent connections (e.g., custom MCP servers, agent frameworks):
+For persistent connections (MCP servers, custom agent frameworks):
 
 ```bash
-# Start the bridge in a terminal
 codex serve --port 24842
-
-# The agent can now POST to http://127.0.0.1:24842/tools/invoke
 ```
 
-### Step 5 — Configure LLM provider (optional, for AI commands)
+The agent can then call `http://127.0.0.1:24842/tools/invoke` directly.
 
-Edit `.codex/config.json` in your project:
+### Step 7 — Configure LLM provider (optional)
+
+For AI-powered commands (`codex ask`, `codex review`, `codex chat`, etc.),
+edit `.codex/config.json`:
 
 ```json
 {
@@ -245,8 +361,6 @@ Edit `.codex/config.json` in your project:
 ```
 
 Supported providers: `openai`, `ollama` (local), `mock` (testing).
-This powers commands like `codex ask`, `codex review`, `codex refactor`,
-`codex chat`, and `codex investigate`.
 
 ---
 
