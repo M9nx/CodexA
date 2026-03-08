@@ -36,7 +36,7 @@ class TestNewPluginHooks:
 
     def test_all_hooks_count(self):
         # 11 original + 2 new = 13
-        assert len(PluginHook) == 13
+        assert len(PluginHook) == 19
 
     def test_hook_registry_has_new_hooks(self):
         mgr = PluginManager()

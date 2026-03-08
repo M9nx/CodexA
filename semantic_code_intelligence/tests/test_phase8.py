@@ -524,7 +524,7 @@ class TestPluginAIHooks:
 
     def test_all_hooks_count(self):
         # Expect 11 hooks: 3 indexing + 2 search + 2 analysis + 2 AI + 1 file + 1 custom
-        assert len(PluginHook) == 13
+        assert len(PluginHook) == 19
 
 
 # ---------------------------------------------------------------------------
@@ -589,4 +589,4 @@ class TestRouterPhase8:
 
         group = click.Group()
         register_commands(group)
-        assert len(group.commands) == 27
+        assert len(group.commands) == 30

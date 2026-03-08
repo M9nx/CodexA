@@ -2,6 +2,20 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.18.0] — Phase 18: Developer Workflow Intelligence
+
+### Added
+- **Hotspot detection engine** — multi-factor risk scoring (complexity, duplication, fan-in/out, git churn)
+- **Impact analysis engine** — BFS blast radius prediction via call graph and dependency map
+- **Symbol trace tool** — upstream callers, downstream callees, cross-file execution paths
+- **`codex hotspots`** — identify high-risk code areas with `--top-n`, `--include-git/--no-git`
+- **`codex impact <target>`** — analyse blast radius of a symbol or file change
+- **`codex trace <symbol>`** — trace execution relationships upstream and downstream
+- **6 new plugin hooks** — `PRE/POST_HOTSPOT_ANALYSIS`, `PRE/POST_IMPACT_ANALYSIS`, `PRE/POST_TRACE` (19 total)
+- **Pipeline-oriented output** — all 3 new commands support `--json` and `--pipe` modes
+- **WORKFLOW_INTELLIGENCE.md** — auto-generated documentation for workflow intelligence features
+- 30 CLI commands (up from 27)
+
 ## [0.17.0] — Phase 17: Code Quality Metrics & Trends
 
 ### Added

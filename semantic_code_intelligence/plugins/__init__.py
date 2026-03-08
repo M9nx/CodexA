@@ -54,6 +54,14 @@ class PluginHook(str, Enum):
     # Validation hooks (Phase 12)
     CUSTOM_VALIDATION = "custom_validation"  # user-defined code validation rules
 
+    # Workflow intelligence hooks (Phase 18)
+    PRE_HOTSPOT_ANALYSIS = "pre_hotspot_analysis"
+    POST_HOTSPOT_ANALYSIS = "post_hotspot_analysis"
+    PRE_IMPACT_ANALYSIS = "pre_impact_analysis"
+    POST_IMPACT_ANALYSIS = "post_impact_analysis"
+    PRE_TRACE = "pre_trace"
+    POST_TRACE = "post_trace"
+
     # Custom hooks
     CUSTOM = "custom"
 

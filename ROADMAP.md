@@ -385,18 +385,32 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ## Upcoming Phases
 
-### Phase 17: Code Quality Metrics & Trends
+### Phase 19: TBD
+
+---
+
+### Phase 17: Code Quality Metrics & Trends ✅
 - Maintainability index and trend tracking ✅
 - Historical metric snapshots and trend visualization ✅
 - Configurable quality thresholds and policies ✅
 - Quality gate enforcement in CI pipelines ✅
+
+### Phase 18: Developer Workflow Intelligence ✅
+- Hotspot detection engine (complexity, duplication, fan-in/out, churn) ✅
+- Impact analysis engine (blast radius via call graph + deps BFS) ✅
+- Symbol trace tool (upstream callers, downstream callees, cross-file) ✅
+- 3 new CLI commands: `hotspots`, `impact`, `trace` ✅
+- Pipeline-oriented output (--json, --pipe) for all commands ✅
+- 6 new plugin hooks (19 total) ✅
+- WORKFLOW_INTELLIGENCE.md auto-generated documentation ✅
+- 60+ new tests ✅
 
 ---
 
 ## Architecture
 
 ```
-codex CLI (Click) — 27 commands
+codex CLI (Click) — 30 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
@@ -407,6 +421,7 @@ codex CLI (Click) — 27 commands
   ├── quality / pr-summary / ci-gen
   ├── chat / investigate / cross-refactor
   ├── metrics / gate
+  ├── hotspots / impact / trace
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -457,7 +472,7 @@ codex CLI (Click) — 27 commands
   │     Mermaid Visualization (call graph, deps, workspace, symbol map)
   │
   └── Plugin SDK
-        PluginBase · PluginHook (14 hooks) · PluginManager
+        PluginBase · PluginHook (19 hooks) · PluginManager
         Plugin scaffold · Sample plugins · Discovery
 ```
 

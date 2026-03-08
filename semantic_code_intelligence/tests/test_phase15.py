@@ -689,7 +689,7 @@ class TestRouterPhase15:
 
         group = click.Group("test")
         register_commands(group)
-        assert len(group.commands) == 27
+        assert len(group.commands) == 30
 
     def test_quality_command_registered(self):
         from semantic_code_intelligence.cli.main import cli
@@ -708,12 +708,12 @@ class TestRouterPhase15:
 
 
 class TestVersionBump:
-    """Test version is 0.17.0."""
+    """Test version is 0.18.0."""
 
     def test_version_is_015(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.17.0"
+        assert __version__ == "0.18.0"
 
 
 class TestCIModuleStructure:
@@ -803,7 +803,7 @@ class TestBackwardCompatibility:
     def test_plugin_hooks_intact(self):
         from semantic_code_intelligence.plugins import PluginHook
 
-        assert len(PluginHook) == 13
+        assert len(PluginHook) == 19
         assert PluginHook.CUSTOM_VALIDATION.value == "custom_validation"
 
     def test_safety_validator_intact(self):

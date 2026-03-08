@@ -31,6 +31,9 @@ from semantic_code_intelligence.cli.commands.investigate_cmd import investigate_
 from semantic_code_intelligence.cli.commands.cross_refactor_cmd import cross_refactor_cmd
 from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
 from semantic_code_intelligence.cli.commands.gate_cmd import gate_cmd
+from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
+from semantic_code_intelligence.cli.commands.impact_cmd import impact_cmd
+from semantic_code_intelligence.cli.commands.trace_cmd import trace_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -66,3 +69,6 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(cross_refactor_cmd)
     cli.add_command(metrics_cmd)
     cli.add_command(gate_cmd)
+    cli.add_command(hotspots_cmd)
+    cli.add_command(impact_cmd)
+    cli.add_command(trace_cmd)
