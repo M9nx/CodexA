@@ -69,10 +69,10 @@ def explain_cmd(
         # Explain entire file
         explanations = explain_file(file_path)
         if json_mode:
-            console.print(json_mod.dumps([e.to_dict() for e in explanations], indent=2))
+            click.echo(json_mod.dumps([e.to_dict() for e in explanations], indent=2))
         else:
             for exp in explanations:
-                console.print(exp.render())
+                console.print(exp.render(), markup=False)
                 console.print()
         return
 
@@ -103,10 +103,10 @@ def explain_cmd(
 
     explanations = [explain_symbol(s, builder) for s in matches]
     if json_mode:
-        console.print(json_mod.dumps([e.to_dict() for e in explanations], indent=2))
+        click.echo(json_mod.dumps([e.to_dict() for e in explanations], indent=2))
     else:
         for exp in explanations:
-            console.print(exp.render())
+            console.print(exp.render(), markup=False)
             console.print()
 
     print_info(f"Found {len(explanations)} match(es) for '{target}'.")

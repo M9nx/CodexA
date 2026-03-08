@@ -139,7 +139,7 @@ def ask_cmd(
     result = engine.ask(question, top_k=top_k)
 
     if json_mode:
-        console.print(json_mod.dumps(result.to_dict(), indent=2))
+        click.echo(json_mod.dumps(result.to_dict(), indent=2))
     else:
         console.print(f"\n[bold cyan]Question:[/bold cyan] {result.question}\n")
         console.print(f"[bold green]Answer:[/bold green]\n{result.answer}\n")

@@ -78,7 +78,7 @@ def suggest_cmd(
     result = engine.suggest(target, top_k=top_k)
 
     if json_mode:
-        console.print(json_mod.dumps(result.to_dict(), indent=2))
+        click.echo(json_mod.dumps(result.to_dict(), indent=2))
     else:
         console.print(f"\n[bold cyan]Suggestions for:[/bold cyan] {result.target}\n")
         if result.suggestions:

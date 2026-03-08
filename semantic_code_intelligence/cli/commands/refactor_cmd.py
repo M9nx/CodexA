@@ -92,7 +92,7 @@ def refactor_cmd(
             console.print()
 
     if json_mode:
-        console.print(json_mod.dumps(result.to_dict(), indent=2))
+        click.echo(json_mod.dumps(result.to_dict(), indent=2))
     else:
         console.print(f"\n[bold cyan]Refactor:[/bold cyan] {result.file_path}\n")
         console.print(f"[bold green]Explanation:[/bold green]\n{result.explanation}\n")

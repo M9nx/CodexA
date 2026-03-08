@@ -72,7 +72,7 @@ def review_cmd(
     result = engine.review(file)
 
     if json_mode:
-        console.print(json_mod.dumps(result.to_dict(), indent=2))
+        click.echo(json_mod.dumps(result.to_dict(), indent=2))
     else:
         console.print(f"\n[bold cyan]Code Review:[/bold cyan] {result.file_path}\n")
         if result.issues:

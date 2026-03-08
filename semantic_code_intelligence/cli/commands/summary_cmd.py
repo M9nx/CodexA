@@ -71,8 +71,8 @@ def summary_cmd(ctx: click.Context, path: str, json_mode: bool) -> None:
     summary = summarize_repository(builder)
 
     if json_mode:
-        console.print(summary.to_json())
+        click.echo(summary.to_json())
     else:
-        console.print(summary.render())
+        console.print(summary.render(), markup=False)
 
     print_success(f"Summary generated for {summary.total_files} files.")
