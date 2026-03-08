@@ -63,6 +63,7 @@ class ToolInvocation:
             self.timestamp = time.time()
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the invocation to a plain dictionary."""
         return {
             "tool_name": self.tool_name,
             "arguments": self.arguments,
@@ -71,10 +72,12 @@ class ToolInvocation:
         }
 
     def to_json(self, indent: int | None = None) -> str:
+        """Serialise the invocation to a JSON string."""
         return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ToolInvocation:
+        """Construct a :class:`ToolInvocation` from a dictionary."""
         return cls(
             tool_name=data.get("tool_name", ""),
             arguments=data.get("arguments", {}),
@@ -84,6 +87,7 @@ class ToolInvocation:
 
     @classmethod
     def from_json(cls, text: str) -> ToolInvocation:
+        """Construct a :class:`ToolInvocation` from a JSON string."""
         return cls.from_dict(json.loads(text))
 
 
@@ -108,6 +112,7 @@ class ToolError:
     request_id: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the error to a plain dictionary."""
         return {
             "tool_name": self.tool_name,
             "error_code": self.error_code,
@@ -116,10 +121,12 @@ class ToolError:
         }
 
     def to_json(self, indent: int | None = None) -> str:
+        """Serialise the error to a JSON string."""
         return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ToolError:
+        """Construct a :class:`ToolError` from a dictionary."""
         return cls(
             tool_name=data.get("tool_name", ""),
             error_code=data.get("error_code", ""),
@@ -159,6 +166,7 @@ class ToolExecutionResult:
             self.timestamp = time.time()
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the execution result to a plain dictionary."""
         result: dict[str, Any] = {
             "tool_name": self.tool_name,
             "request_id": self.request_id,
@@ -173,10 +181,12 @@ class ToolExecutionResult:
         return result
 
     def to_json(self, indent: int | None = None) -> str:
+        """Serialise the execution result to a JSON string."""
         return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ToolExecutionResult:
+        """Construct a :class:`ToolExecutionResult` from a dictionary."""
         error_data = data.get("error")
         error = ToolError.from_dict(error_data) if error_data else None
         return cls(

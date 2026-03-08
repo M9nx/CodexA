@@ -44,6 +44,7 @@ class BudgetGuard:
 
     @property
     def elapsed_seconds(self) -> float:
+        """Wall-clock seconds since :meth:`start` was called."""
         if self._start_time == 0.0:
             return 0.0
         return time.time() - self._start_time
@@ -54,10 +55,12 @@ class BudgetGuard:
 
     @property
     def tokens_remaining(self) -> int:
+        """Tokens still available before the budget is exhausted."""
         return max(0, self.max_tokens - self.tokens_used)
 
     @property
     def iterations_remaining(self) -> int:
+        """Iterations still available before the limit is hit."""
         return max(0, self.max_iterations - self.iterations_done)
 
     def can_continue(self) -> bool:
@@ -97,6 +100,7 @@ class BudgetGuard:
     # ------------------------------------------------------------------ #
 
     def summary(self) -> dict[str, object]:
+        """Return a dict snapshot of current budget usage."""
         return {
             "tokens_used": self.tokens_used,
             "tokens_max": self.max_tokens,

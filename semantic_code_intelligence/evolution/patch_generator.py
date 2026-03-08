@@ -39,6 +39,7 @@ class PatchResult:
     error: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the patch result to a plain dictionary."""
         return {
             "success": self.success,
             "files_changed": self.files_changed,

@@ -42,6 +42,7 @@ class EvolutionTask:
     context_hint: str = ""
 
     def to_dict(self) -> dict[str, object]:
+        """Serialise the task to a plain dictionary."""
         return {
             "category": self.category,
             "description": self.description,

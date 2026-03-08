@@ -53,6 +53,7 @@ class IterationRecord:
     duration_seconds: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the iteration record to a plain dictionary."""
         return {
             "iteration": self.iteration,
             "task_category": self.task_category,
@@ -81,6 +82,7 @@ class EvolutionResult:
     history: list[IterationRecord] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialise the evolution result to a plain dictionary."""
         return {
             "iterations_completed": self.iterations_completed,
             "commits": self.commits,
@@ -147,51 +149,13 @@ class EvolutionEngine:
             iter_start = time.time()
             record = IterationRecord(iteration=iteration, tests_before=last_test.passed)
 
-            # 1. Select task
-            task = self._task_selector.select(last_test)
-            record.task_category = task.category
-            record.task_description = task.description
-            record.target_files = list(task.target_files)
-            logger.info("iter %d: %s — %s", iteration, task.category, task.description)
-
-            # 2. Generate + apply patch
-            patch_result = self._patch_gen.generate_and_apply(task)
-            record.patch_lines_changed = patch_result.lines_changed
-
-            if not patch_result.success:
-                record.error = patch_result.error
-                record.duration_seconds = time.time() - iter_start
-                result.history.append(record)
-                self._budget.record_iteration()
-                logger.warning("iter %d: patch failed — %s", iteration, patch_result.error)
-                continue
-
-            # 3. Re-run tests
-            new_test = self._test_runner.run()
-            record.tests_after = new_test.passed
-            logger.info(
-                "iter %d: tests %d → %d",
-                iteration, last_test.passed, new_test.passed,
-            )
-
-            # 4. Decide: commit or revert
-            if new_test.return_code == 0 and new_test.passed >= last_test.passed:
-                # Tests pass and we did not regress — commit
-                self._commit_mgr.stage_files(patch_result.files_changed)
-                sha = self._commit_mgr.commit(
-                    f"evolve: {task.category} — {task.description[:60]}"
+            try:
+                last_test = self._run_iteration(
+                    iteration, last_test, record, result,
                 )
-                record.committed = True
-                record.commit_sha = sha
-                result.commits.append(sha)
-                last_test = new_test
-                logger.info("iter %d: committed %s", iteration, sha)
-            else:
-                # Revert
-                self._commit_mgr.revert_files(patch_result.files_changed)
-                record.reverted = True
-                result.reverts += 1
-                logger.info("iter %d: reverted — tests regressed", iteration)
+            except Exception as exc:
+                record.error = f"unexpected error: {exc}"
+                logger.error("iter %d: %s", iteration, record.error)
 
             record.duration_seconds = time.time() - iter_start
             result.history.append(record)
@@ -204,6 +168,61 @@ class EvolutionEngine:
         # Persist history
         self._write_history(result)
         return result
+
+    # ------------------------------------------------------------------ #
+    # Single iteration
+    # ------------------------------------------------------------------ #
+
+    def _run_iteration(
+        self,
+        iteration: int,
+        last_test: TestResult,
+        record: IterationRecord,
+        result: EvolutionResult,
+    ) -> TestResult:
+        """Execute one evolution iteration.  Returns the latest TestResult."""
+        # 1. Select task
+        task = self._task_selector.select(last_test)
+        record.task_category = task.category
+        record.task_description = task.description
+        record.target_files = list(task.target_files)
+        logger.info("iter %d: %s — %s", iteration, task.category, task.description)
+
+        # 2. Generate + apply patch
+        patch_result = self._patch_gen.generate_and_apply(task)
+        record.patch_lines_changed = patch_result.lines_changed
+
+        if not patch_result.success:
+            record.error = patch_result.error
+            logger.warning("iter %d: patch failed — %s", iteration, patch_result.error)
+            return last_test
+
+        # 3. Re-run tests
+        new_test = self._test_runner.run()
+        record.tests_after = new_test.passed
+        logger.info(
+            "iter %d: tests %d -> %d",
+            iteration, last_test.passed, new_test.passed,
+        )
+
+        # 4. Decide: commit or revert
+        if new_test.return_code == 0 and new_test.passed >= last_test.passed:
+            self._commit_mgr.stage_files(patch_result.files_changed)
+            sha = self._commit_mgr.commit(
+                f"evolve: {task.category} — {task.description[:60]}"
+            )
+            record.committed = True
+            record.commit_sha = sha
+            result.commits.append(sha)
+            logger.info("iter %d: committed %s", iteration, sha)
+            return new_test
+
+        # Revert
+        self._commit_mgr.revert_files(patch_result.files_changed)
+        record.reverted = True
+        result.reverts += 1
+        logger.info("iter %d: reverted — tests regressed", iteration)
+        return last_test
 
     # ------------------------------------------------------------------ #
     # Persistence
