@@ -111,6 +111,12 @@ def _get_provider(config: Any) -> LLMProvider:
     type=click.Path(exists=True, file_okay=False, resolve_path=True),
     help="Project root path.",
 )
+@click.option(
+    "--stream",
+    is_flag=True,
+    default=False,
+    help="Stream tokens incrementally as they arrive.",
+)
 @click.option("--pipe", is_flag=True, default=False, hidden=True)
 @click.pass_context
 def chat_cmd(
@@ -121,6 +127,7 @@ def chat_cmd(
     json_mode: bool,
     max_turns: int,
     path: str,
+    stream: bool,
     pipe: bool,
 ) -> None:
     """Continue or start a multi-turn conversation about the codebase.
@@ -197,7 +204,26 @@ def chat_cmd(
     except Exception:
         logger.debug("Context injection failed; continuing without code context")
 
-    # Call LLM
+    # Call LLM (streaming or batch)
+    if stream and not json_mode:
+        from semantic_code_intelligence.llm.streaming import stream_chat
+
+        gen = stream_chat(provider, messages)
+        accumulated = ""
+        if not pipe:
+            console.print(f"[bold cyan]CodexA [{conv.session_id}][/]", end="")
+            click.echo("")
+        for event in gen:
+            if event.kind == "token":
+                accumulated += event.content
+                click.echo(event.content, nl=False)
+        click.echo("")  # trailing newline
+        conv.add_assistant(accumulated)
+        store.save(conv)
+        if not pipe:
+            print_info(f"Session: {conv.session_id} (use --session {conv.session_id} to continue)")
+        return
+
     resp = provider.chat(messages)
     conv.add_assistant(resp.content)
 

@@ -132,7 +132,7 @@ class TestSearchCommand:
     def test_search_json_output(self, runner: CliRunner, tmp_path: Path):
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(
-            cli, ["search", "jwt verification", "--json", "--path", str(tmp_path)]
+            cli, ["search", "jwt verification", "--json", "--no-auto-index", "--path", str(tmp_path)]
         )
         assert result.exit_code == 0
         data = json.loads(result.output)
@@ -144,7 +144,7 @@ class TestSearchCommand:
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(
             cli,
-            ["search", "query", "-k", "5", "--json", "--path", str(tmp_path)],
+            ["search", "query", "-k", "5", "--json", "--no-auto-index", "--path", str(tmp_path)],
         )
         assert result.exit_code == 0
         data = json.loads(result.output)
@@ -154,7 +154,7 @@ class TestSearchCommand:
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(
             cli,
-            ["search", "query", "--json", "--path", str(tmp_path)],
+            ["search", "query", "--json", "--no-auto-index", "--path", str(tmp_path)],
         )
         assert result.exit_code == 0
         data = json.loads(result.output)

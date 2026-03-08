@@ -181,8 +181,29 @@ class InvestigationChain:
         # Fallback — treat entire response as conclusion
         return {"thought": "", "action": "conclude", "action_input": text}
 
-    def investigate(self, question: str) -> InvestigationResult:
-        """Run a full investigation loop and return the result."""
+    def _conclude_streaming(self, messages: list[LLMMessage]) -> str:
+        """Stream the final conclusion tokens to stdout, return accumulated text."""
+        from semantic_code_intelligence.llm.streaming import stream_chat
+
+        gen = stream_chat(self._provider, messages)
+        accumulated = ""
+        import sys
+        for event in gen:
+            if event.kind == "token":
+                accumulated += event.content
+                sys.stdout.write(event.content)
+                sys.stdout.flush()
+        sys.stdout.write("\n")
+        return accumulated
+
+    def investigate(self, question: str, *, stream_conclusion: bool = False) -> InvestigationResult:
+        """Run a full investigation loop and return the result.
+
+        Args:
+            question: The question to investigate.
+            stream_conclusion: If True, yield the conclusion token-by-token
+                via ``stream_chat`` and print incrementally.
+        """
         chain_id = uuid.uuid4().hex[:10]
         self._memory.start_chain(chain_id)
 
@@ -237,7 +258,10 @@ class InvestigationChain:
                 role=MessageRole.USER,
                 content="You have reached the step limit. Please provide your best conclusion now.",
             ))
-            resp = self._provider.chat(messages)
+            if stream_conclusion:
+                conclusion = self._conclude_streaming(messages)
+            else:
+                resp = self._provider.chat(messages)
             conclusion = resp.content
             self._memory.add_step(chain_id, "conclude", "forced", conclusion)
 

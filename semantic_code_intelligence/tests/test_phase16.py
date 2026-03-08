@@ -494,6 +494,12 @@ class TestChatCLI:
     def runner(self):
         return CliRunner()
 
+    def _extract_json(self, output: str) -> dict:
+        """Extract JSON object from CLI output, skipping any log noise."""
+        # Find the first '{' and parse from there
+        start = output.index("{")
+        return json.loads(output[start:])
+
     def test_help(self, runner):
         from semantic_code_intelligence.cli.commands.chat_cmd import chat_cmd
 
@@ -526,7 +532,7 @@ class TestChatCLI:
             "Hello", "--json", "--path", str(tmp_path)
         ], obj={"pipe": False})
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = self._extract_json(result.output)
         assert "session_id" in data
         assert "answer" in data
 
@@ -646,7 +652,7 @@ class TestRouterPhase16:
 
         group = click.Group("test")
         register_commands(group)
-        assert len(group.commands) == 32
+        assert len(group.commands) == 34
 
     def test_chat_command_registered(self):
         from semantic_code_intelligence.cli.main import cli

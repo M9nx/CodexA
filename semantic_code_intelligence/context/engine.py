@@ -2,7 +2,7 @@
 
 Provides:
 - ContextBuilder: assembles context windows around symbols
-- CallGraph: lightweight call/reference graph
+- CallGraph: AST-based call/reference graph (tree-sitter powered)
 - DependencyMap: file-level dependency tracking from imports
 """
 
@@ -13,9 +13,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import tree_sitter
+
 from semantic_code_intelligence.parsing.parser import (
     Symbol,
+    detect_language,
     extract_imports,
+    get_language,
     parse_file,
 )
 from semantic_code_intelligence.utils.logging import get_logger
@@ -167,45 +171,65 @@ class CallEdge:
 
 
 class CallGraph:
-    """Lightweight call graph built from symbol name references.
+    """AST-based call graph built from tree-sitter function-call nodes.
 
-    This uses a simple heuristic: if symbol A's body contains the name
-    of symbol B, we record A -> B as a potential call edge. This is
-    not a full static analysis but provides useful signal.
+    Walks the AST of each callable symbol's body to find ``call`` nodes
+    (function/method invocations).  The callee name is resolved from the
+    AST node (``identifier`` / ``attribute`` / ``field_expression``) and
+    matched against indexed symbol names to produce precise edges.
+
+    Falls back to the regex heuristic only when tree-sitter cannot parse
+    the file (e.g. unsupported language).
     """
+
+    # Node types that represent a function/method call across languages
+    _CALL_NODE_TYPES: set[str] = {
+        "call",                     # Python, Ruby, PHP
+        "call_expression",          # JS, TS, Go, Rust, C#, C++, Java
+        "method_invocation",        # Java
+        "invocation_expression",    # C#
+    }
 
     def __init__(self) -> None:
         self._edges: list[CallEdge] = []
         self._callers: dict[str, list[CallEdge]] = {}  # callee -> list of callers
         self._callees: dict[str, list[CallEdge]] = {}  # caller -> list of callees
 
+    # ----- public API -----
+
     def build(self, symbols: list[Symbol]) -> None:
-        """Build the call graph from a list of symbols."""
+        """Build the call graph from a list of symbols using AST analysis."""
         self._edges.clear()
         self._callers.clear()
         self._callees.clear()
 
-        # Only consider function/method/class definitions as potential callers
         callable_symbols = [
             s for s in symbols if s.kind in ("function", "method", "class")
         ]
-        # All function/method names as potential callees
-        callee_names = {s.name for s in callable_symbols}
+        callee_names: set[str] = {s.name for s in callable_symbols}
 
-        # Pre-compile word-boundary patterns for each potential callee
-        _callee_patterns: dict[str, re.Pattern[str]] = {
-            name: re.compile(r"\b" + re.escape(name) + r"\s*[\(\.]")
-            for name in callee_names
-        }
-
+        # Group symbols by file so we parse each file once
+        file_symbols: dict[str, list[Symbol]] = {}
         for sym in callable_symbols:
-            body_text = sym.body
-            caller_key = f"{sym.file_path}:{sym.name}"
+            file_symbols.setdefault(sym.file_path, []).append(sym)
 
-            for callee_name in callee_names:
-                if callee_name == sym.name:
-                    continue  # skip self-references
-                if _callee_patterns[callee_name].search(body_text):
+        for file_path, syms in file_symbols.items():
+            lang_name = detect_language(file_path)
+            language_obj = get_language(lang_name) if lang_name else None
+
+            for sym in syms:
+                caller_key = f"{sym.file_path}:{sym.name}"
+                if language_obj is not None:
+                    call_names = self._extract_calls_ast(
+                        sym.body, language_obj, callee_names, sym.name,
+                    )
+                else:
+                    # Fallback: regex heuristic for unsupported languages
+                    call_names = self._extract_calls_regex(
+                        sym.body, callee_names, sym.name,
+                    )
+
+                for callee_name in call_names:
                     edge = CallEdge(
                         caller=caller_key,
                         callee=callee_name,
@@ -215,6 +239,99 @@ class CallGraph:
                     self._edges.append(edge)
                     self._callers.setdefault(callee_name, []).append(edge)
                     self._callees.setdefault(caller_key, []).append(edge)
+
+    # ----- AST-based extraction -----
+
+    def _extract_calls_ast(
+        self,
+        body: str,
+        language: tree_sitter.Language,
+        known_names: set[str],
+        self_name: str,
+    ) -> set[str]:
+        """Extract function/method call names from *body* via tree-sitter AST.
+
+        Returns the set of *known* callee names that appear as call
+        targets in the AST (excluding self-references).
+        """
+        source = body.encode("utf-8")
+        parser = tree_sitter.Parser(language)
+        tree = parser.parse(source)
+
+        found: set[str] = set()
+        self._walk_calls(tree.root_node, source, known_names, self_name, found)
+        return found
+
+    def _walk_calls(
+        self,
+        node: tree_sitter.Node,
+        source: bytes,
+        known_names: set[str],
+        self_name: str,
+        found: set[str],
+    ) -> None:
+        """Recursively walk the AST collecting call-target names."""
+        if node.type in self._CALL_NODE_TYPES:
+            name = self._resolve_call_name(node, source)
+            if name and name != self_name and name in known_names:
+                found.add(name)
+
+        for child in node.children:
+            self._walk_calls(child, source, known_names, self_name, found)
+
+    @staticmethod
+    def _resolve_call_name(call_node: tree_sitter.Node, source: bytes) -> str | None:
+        """Resolve the callee name from a call/call_expression node.
+
+        Handles:
+        - ``foo()``: direct identifier call
+        - ``obj.method()``: attribute/member access — returns ``method``
+        - ``pkg::func()``: scoped identifier (Rust/C++) — returns ``func``
+        """
+        # The function/target is typically the first named child
+        func = call_node.child_by_field_name("function")
+        if func is None:
+            # Java method_invocation uses "name" field
+            func = call_node.child_by_field_name("name")
+        if func is None and call_node.children:
+            func = call_node.children[0]
+        if func is None:
+            return None
+
+        # Drill through attribute access to get the final name
+        if func.type in ("attribute", "member_expression", "field_expression",
+                         "scoped_identifier", "member_access_expression"):
+            # The method name is the last named child / field "attribute"/"field"
+            attr = func.child_by_field_name("attribute") or func.child_by_field_name("field")
+            if attr is not None:
+                return source[attr.start_byte:attr.end_byte].decode("utf-8", errors="replace")
+            # Fallback: last named child
+            for ch in reversed(func.children):
+                if ch.is_named:
+                    return source[ch.start_byte:ch.end_byte].decode("utf-8", errors="replace")
+            return None
+
+        if func.type == "identifier":
+            return source[func.start_byte:func.end_byte].decode("utf-8", errors="replace")
+
+        return None
+
+    # ----- regex fallback -----
+
+    @staticmethod
+    def _extract_calls_regex(
+        body: str,
+        known_names: set[str],
+        self_name: str,
+    ) -> set[str]:
+        """Fallback regex heuristic for unsupported languages."""
+        found: set[str] = set()
+        for name in known_names:
+            if name == self_name:
+                continue
+            if re.search(r"\b" + re.escape(name) + r"\s*[\(\.]", body):
+                found.add(name)
+        return found
 
     @property
     def edges(self) -> list[CallEdge]:

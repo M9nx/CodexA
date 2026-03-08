@@ -2,6 +2,46 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.26.0] — Phase 26: Priority Feature Implementation (P1–P5)
+
+### Added — P1: Close the Search Gap
+- **BM25 keyword search** (`search/keyword_search.py`) — in-memory inverted index with configurable k1/b parameters, camelCase/underscore-aware tokenizer
+- **Regex search** (`search/keyword_search.py`) — grep-compatible pattern matching with case-sensitivity control
+- **Hybrid search with RRF** (`search/hybrid_search.py`) — Reciprocal Rank Fusion fuses semantic and BM25 rankings (k=60)
+- **Full-section expansion** (`search/section_expander.py`) — expand search results to the enclosing function/class using the symbol registry
+- **Auto-index on first search** (`services/search_service.py`) — transparent indexing when no vector store exists, controlled via `--no-auto-index`
+- **4 search modes in CLI** (`cli/commands/search_cmd.py`) — `--mode semantic|keyword|regex|hybrid`, `--full-section`, `--case-sensitive` flags
+
+### Added — P2: Close the Indexing Gap
+- **Chunk-level content hashing** (`storage/chunk_hash_store.py`) — SHA-256 per chunk stored in `chunk_hashes.json`, enables skipping unchanged chunks during incremental indexing
+- **Model registry** (`embeddings/model_registry.py`) — 5 curated embedding models as frozen `ModelInfo` dataclasses with dimension/description metadata
+- **ONNX runtime backend** (`embeddings/generator.py`) — auto-detection of `optimum`/`onnxruntime`, falls back to PyTorch when unavailable
+
+### Added — P3: Performance
+- **Parallel indexing** (`indexing/parallel.py`) — `ThreadPoolExecutor`-based parallel file chunking and hashing with configurable worker count
+- **Shared model caching** — in-process `_model_cache` dict in `generator.py` eliminates redundant model loads
+
+### Added — P4: UX & Integration
+- **Interactive TUI** (`tui/__init__.py`, `cli/commands/tui_cmd.py`) — terminal REPL with `/mode`, `/view`, `/quit` commands and mode switching
+- **MCP server** (`mcp/__init__.py`, `cli/commands/mcp_cmd.py`) — JSON-RPC over stdio implementing Model Context Protocol v2024-11-05 with 8 tools
+- **`.codexaignore` support** (`indexing/scanner.py`) — gitignore-style file exclusion patterns loaded from project root
+
+### Added — P5: Widen the Lead
+- **AST-based call graphs** (`context/engine.py`) — tree-sitter powered call extraction walking `call`/`call_expression`/`method_invocation`/`invocation_expression` nodes, with regex fallback for unsupported languages
+- **Cross-repo search modes** (`workspace/__init__.py`) — `Workspace.search()` now supports semantic, keyword, regex, and hybrid modes across all linked repositories
+- **Streaming responses** (`cli/commands/chat_cmd.py`, `cli/commands/investigate_cmd.py`, `llm/investigation.py`) — `--stream` flag for token-by-token output in chat and investigate commands
+
+### Changed
+- CLI now registers **34 commands** (up from 32)
+- `search_service.py` rewritten to dispatch across 4 search backends with auto-index and full-section support
+- `indexing_service.py` rewritten for chunk-level incremental indexing with content hashing
+- `generator.py` rewritten for ONNX backend and model registry integration
+- `CallGraph.build()` replaced regex-based implementation with AST-based tree-sitter analysis
+
+### Tests
+- **48 new tests** in `test_priority_features.py` covering all P1–P5 features
+- Total test count: **2413** (up from 2365)
+
 ## [0.25.0] — Phase 25: Incremental Indexing & Quality Refactors
 
 ### Added

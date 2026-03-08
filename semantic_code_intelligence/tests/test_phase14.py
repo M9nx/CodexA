@@ -494,7 +494,7 @@ class TestRouterPhase14:
         """Router should register exactly 19 commands."""
         group = click.Group()
         register_commands(group)
-        assert len(group.commands) == 32
+        assert len(group.commands) == 34
 
     def test_web_command_registered(self):
         group = click.Group()

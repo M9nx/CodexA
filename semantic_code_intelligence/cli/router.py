@@ -36,6 +36,8 @@ from semantic_code_intelligence.cli.commands.impact_cmd import impact_cmd
 from semantic_code_intelligence.cli.commands.trace_cmd import trace_cmd
 from semantic_code_intelligence.cli.commands.tool_cmd import tool_cmd
 from semantic_code_intelligence.cli.commands.evolve_cmd import evolve_cmd
+from semantic_code_intelligence.cli.commands.tui_cmd import tui_cmd
+from semantic_code_intelligence.cli.commands.mcp_cmd import mcp_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -76,3 +78,5 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(trace_cmd)
     cli.add_command(tool_cmd)
     cli.add_command(evolve_cmd)
+    cli.add_command(tui_cmd)
+    cli.add_command(mcp_cmd)

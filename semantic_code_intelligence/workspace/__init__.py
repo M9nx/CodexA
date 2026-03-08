@@ -31,7 +31,7 @@ from semantic_code_intelligence.config.settings import (
 )
 from semantic_code_intelligence.indexing.scanner import scan_repository
 from semantic_code_intelligence.services.indexing_service import IndexingResult, run_indexing
-from semantic_code_intelligence.services.search_service import SearchResult
+from semantic_code_intelligence.services.search_service import SearchMode, SearchResult
 from semantic_code_intelligence.storage.vector_store import VectorStore
 from semantic_code_intelligence.embeddings.generator import generate_embeddings
 from semantic_code_intelligence.utils.logging import get_logger
@@ -246,14 +246,19 @@ class Workspace:
         top_k: int = 10,
         threshold: float = 0.3,
         repos: list[str] | None = None,
+        mode: SearchMode = "semantic",
+        case_insensitive: bool = True,
     ) -> list[dict[str, Any]]:
         """Search across repositories and return merged results.
 
         Args:
-            query: Natural language search query.
+            query: Natural language search query, keywords, or regex.
             top_k: Number of top results per repo.
-            threshold: Minimum similarity score.
+            threshold: Minimum similarity score (semantic/hybrid modes).
             repos: Restrict search to these repo names. None = all.
+            mode: Search mode — ``"semantic"``, ``"keyword"``,
+                  ``"regex"``, or ``"hybrid"``.
+            case_insensitive: For regex mode, whether to ignore case.
 
         Returns:
             List of result dicts sorted by score (descending), each with
@@ -265,7 +270,10 @@ class Workspace:
         config = load_config(self._root)
         model_name = config.embedding.model_name
 
-        query_embedding = generate_embeddings([query], model_name=model_name)[0]
+        # Pre-compute query embedding for semantic/hybrid modes
+        query_embedding = None
+        if mode in ("semantic", "hybrid"):
+            query_embedding = generate_embeddings([query], model_name=model_name)[0]
 
         for repo_name in targets:
             idx_dir = self.repo_index_dir(repo_name)
@@ -275,19 +283,40 @@ class Workspace:
                 logger.debug("No index for repo %s, skipping.", repo_name)
                 continue
 
-            raw = store.search(query_embedding, top_k=top_k)
-            for meta, score in raw:
-                if score < threshold:
+            raw: list[tuple[Any, float]] = []
+
+            if mode == "keyword":
+                from semantic_code_intelligence.search.keyword_search import keyword_search
+                hits = keyword_search(query, store, idx_dir, top_k=top_k)
+                raw = [(h, h.score) for h in hits]
+            elif mode == "regex":
+                from semantic_code_intelligence.search.keyword_search import regex_search
+                hits = regex_search(query, store, top_k=top_k, case_insensitive=case_insensitive)
+                raw = [(h, h.score) for h in hits]
+            elif mode == "hybrid":
+                from semantic_code_intelligence.search.hybrid_search import hybrid_search
+                hits = hybrid_search(query, store, idx_dir, model_name=model_name, top_k=top_k)
+                raw = [(h, h.score) for h in hits]
+            else:
+                # semantic (default)
+                assert query_embedding is not None
+                raw_store = store.search(query_embedding, top_k=top_k)
+                raw = [(meta, score) for meta, score in raw_store]
+
+            for item, score in raw:
+                if mode in ("semantic", "hybrid") and score < threshold:
                     continue
+                # Normalise to dict — item may be ChunkMetadata or a hit dataclass
+                file_path = getattr(item, "file_path", "")
                 all_results.append({
                     "repo": repo_name,
-                    "file_path": meta.file_path,
-                    "start_line": meta.start_line,
-                    "end_line": meta.end_line,
-                    "language": meta.language,
-                    "content": meta.content,
+                    "file_path": file_path,
+                    "start_line": getattr(item, "start_line", 0),
+                    "end_line": getattr(item, "end_line", 0),
+                    "language": getattr(item, "language", ""),
+                    "content": getattr(item, "content", ""),
                     "score": round(float(score), 4),
-                    "chunk_index": meta.chunk_index,
+                    "chunk_index": getattr(item, "chunk_index", 0),
                 })
 
         all_results.sort(key=lambda r: r["score"], reverse=True)

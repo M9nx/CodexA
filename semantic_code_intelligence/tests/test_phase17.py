@@ -758,7 +758,7 @@ class TestRouterPhase17:
 
         group = click.Group("test")
         register_commands(group)
-        assert len(group.commands) == 32
+        assert len(group.commands) == 34
 
     def test_metrics_command_registered(self):
         from semantic_code_intelligence.cli.main import cli

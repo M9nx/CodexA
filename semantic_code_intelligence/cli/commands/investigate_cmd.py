@@ -99,6 +99,12 @@ def _get_provider(config: Any) -> LLMProvider:
     type=click.Path(exists=True, file_okay=False, resolve_path=True),
     help="Project root path.",
 )
+@click.option(
+    "--stream",
+    is_flag=True,
+    default=False,
+    help="Stream the conclusion tokens incrementally.",
+)
 @click.option("--pipe", is_flag=True, default=False, hidden=True)
 @click.pass_context
 def investigate_cmd(
@@ -107,6 +113,7 @@ def investigate_cmd(
     max_steps: int,
     json_mode: bool,
     path: str,
+    stream: bool,
     pipe: bool,
 ) -> None:
     """Run an autonomous multi-step investigation to answer a question.
@@ -125,7 +132,7 @@ def investigate_cmd(
     provider = _get_provider(config)
 
     chain = InvestigationChain(provider, root, max_steps=max_steps)
-    result = chain.investigate(question)
+    result = chain.investigate(question, stream_conclusion=stream and not json_mode)
 
     if json_mode:
         click.echo(json_mod.dumps(result.to_dict(), indent=2))

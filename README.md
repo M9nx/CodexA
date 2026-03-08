@@ -6,8 +6,8 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.25.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-2320%2B-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/version-0.26.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/tests-2413%2B-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
@@ -24,13 +24,15 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 
 | Area | What you get |
 |------|-------------|
-| **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS) |
-| **Semantic Search** | Natural-language search across your entire codebase |
-| **Code Context** | Rich context windows — imports, dependencies, call graphs, surrounding code |
+| **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `.codexaignore` support |
+| **Multi-Mode Search** | Semantic, keyword (BM25), regex, and hybrid (RRF) search with full-section expansion and auto-indexing |
+| **Code Context** | Rich context windows — imports, dependencies, AST-based call graphs, surrounding code |
 | **Repository Analysis** | Language breakdown, module summaries, component detection |
-| **AI Agent Protocol** | 8 built-in tools exposed via HTTP bridge + CLI for any AI agent to invoke |
+| **AI Agent Protocol** | 8 built-in tools exposed via HTTP bridge, MCP server, or CLI for any AI agent to invoke |
 | **Quality & Metrics** | Complexity analysis, maintainability scoring, quality gates for CI |
 | **Multi-Repo Workspaces** | Link multiple repos under one workspace for cross-repo search & refactoring |
+| **Interactive TUI** | Terminal REPL with mode switching for interactive exploration |
+| **Streaming Responses** | Token-by-token streaming for chat and investigation commands |
 | **Plugin System** | 22 hooks for extending every layer — from indexing to tool invocation |
 
 ---
@@ -369,7 +371,7 @@ Supported providers: `openai`, `ollama` (local), `mock` (testing).
 
 ## All CLI Commands
 
-CodexA provides **32 commands** organized by capability:
+CodexA provides **34 commands** organized by capability:
 
 ### Core
 
@@ -427,6 +429,8 @@ CodexA provides **32 commands** organized by capability:
 | `codex docs` | Generate project documentation |
 | `codex doctor` | Environment health check |
 | `codex plugin list\|scaffold\|discover` | Plugin management |
+| `codex tui` | Interactive terminal REPL |
+| `codex mcp` | Start MCP (Model Context Protocol) server |
 
 ---
 
@@ -456,7 +460,7 @@ Additional tools can be registered via the plugin system using the
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    CLI Layer (click)                 │
-│  32 commands · --json · --pipe · --verbose           │
+│  34 commands · --json · --pipe · --verbose           │
 ├─────────────────────────────────────────────────────┤
 │               AI Agent Tooling Protocol              │
 │  ToolExecutor · ToolInvocation · ToolExecutionResult │
