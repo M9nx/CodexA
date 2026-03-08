@@ -30,6 +30,8 @@ from semantic_code_intelligence.bridge.protocol import (
     BridgeCapabilities,
     RequestKind,
 )
+from semantic_code_intelligence.tools.executor import ToolExecutor
+from semantic_code_intelligence.tools.protocol import ToolInvocation
 from semantic_code_intelligence.utils.logging import get_logger
 
 logger = get_logger("bridge.server")
@@ -41,6 +43,7 @@ class _BridgeHandler(BaseHTTPRequestHandler):
     # Assigned by BridgeServer before the HTTPServer starts.
     context_provider: ContextProvider
     capabilities: BridgeCapabilities
+    tool_executor: ToolExecutor | None = None
 
     # Silence default stderr logging — we use our own logger.
     def log_message(self, fmt: str, *args: Any) -> None:  # noqa: D102
@@ -53,12 +56,18 @@ class _BridgeHandler(BaseHTTPRequestHandler):
             self._json_response(200, self.capabilities.to_dict())
         elif self.path == "/health":
             self._json_response(200, {"status": "ok"})
+        elif self.path == "/tools/list":
+            self._handle_list_tools()
+        elif self.path == "/tools/stream":
+            self._handle_tool_stream()
         else:
             self._json_response(404, {"error": "Not found"})
 
     def do_POST(self) -> None:  # noqa: N802
         if self.path == "/request":
             self._handle_request()
+        elif self.path == "/tools/invoke":
+            self._handle_tool_invoke()
         else:
             self._json_response(404, {"error": "Not found"})
 
@@ -78,12 +87,79 @@ class _BridgeHandler(BaseHTTPRequestHandler):
             return
 
         start = time.monotonic()
-        resp = _dispatch(req, self.context_provider, self.capabilities)
+        resp = _dispatch(req, self.context_provider, self.capabilities, self.tool_executor)
         resp.elapsed_ms = (time.monotonic() - start) * 1000
         resp.request_id = req.request_id
 
         status = 200 if resp.success else 422
         self._json_response(status, resp.to_dict())
+
+    # --- tool endpoints (Phase 19) ---
+
+    def _handle_list_tools(self) -> None:
+        """GET /tools/list — return schemas of all available tools."""
+        if self.tool_executor is None:
+            self._json_response(503, {"error": "Tool executor not initialized"})
+            return
+        tools = self.tool_executor.available_tools
+        self._json_response(200, {"tools": tools, "count": len(tools)})
+
+    def _handle_tool_invoke(self) -> None:
+        """POST /tools/invoke — execute a ToolInvocation and return result."""
+        if self.tool_executor is None:
+            self._json_response(503, {"error": "Tool executor not initialized"})
+            return
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        if content_length == 0:
+            self._json_response(400, {"error": "Empty body"})
+            return
+
+        raw = self.rfile.read(content_length)
+        try:
+            data = json.loads(raw.decode("utf-8"))
+            invocation = ToolInvocation.from_dict(data)
+        except (json.JSONDecodeError, KeyError, TypeError) as exc:
+            self._json_response(400, {"error": f"Invalid JSON: {exc}"})
+            return
+
+        result = self.tool_executor.execute(invocation)
+        status = 200 if result.success else 422
+        self._json_response(status, result.to_dict())
+
+    def _handle_tool_stream(self) -> None:
+        """GET /tools/stream — SSE endpoint for tool execution events.
+
+        Sends a heartbeat followed by tool list in SSE format.
+        Agents can use this to discover tools via a streaming connection.
+        """
+        if self.tool_executor is None:
+            self._json_response(503, {"error": "Tool executor not initialized"})
+            return
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "keep-alive")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+
+        import time as _time
+
+        # Send discovery event
+        tools = self.tool_executor.available_tools
+        discovery_event = {
+            "kind": "tool_discovery",
+            "content": "",
+            "metadata": {"tools": [t["name"] for t in tools], "count": len(tools)},
+        }
+        self.wfile.write(f"data: {json.dumps(discovery_event)}\n\n".encode("utf-8"))
+        self.wfile.flush()
+
+        # Send heartbeat and close
+        heartbeat = {"kind": "heartbeat", "content": "", "metadata": {"timestamp": _time.time()}}
+        self.wfile.write(f"data: {json.dumps(heartbeat)}\n\n".encode("utf-8"))
+        self.wfile.flush()
 
     # --- helpers ---
 
@@ -116,6 +192,7 @@ def _dispatch(
     req: AgentRequest,
     provider: ContextProvider,
     capabilities: BridgeCapabilities,
+    executor: ToolExecutor | None = None,
 ) -> AgentResponse:
     """Route an AgentRequest to the appropriate ContextProvider method."""
     kind = req.kind
@@ -154,6 +231,23 @@ def _dispatch(
             data = provider.validate_code(code=params.get("code", ""))
         elif kind == RequestKind.LIST_CAPABILITIES:
             data = capabilities.to_dict()
+        elif kind == RequestKind.INVOKE_TOOL:
+            # Delegate to ToolExecutor if available
+            tool_name = params.get("tool_name", "")
+            arguments = params.get("arguments", {})
+            invocation = ToolInvocation(tool_name=tool_name, arguments=arguments)
+            _executor = executor or getattr(_BridgeHandler, "tool_executor", None)
+            if _executor is None:
+                return AgentResponse(success=False, error="Tool executor not initialized")
+            result = _executor.execute(invocation)
+            data = result.to_dict()
+            if not result.success:
+                return AgentResponse(success=False, error=data.get("error", {}).get("error_message", "Tool execution failed"))
+        elif kind == RequestKind.LIST_TOOLS:
+            _executor = executor or getattr(_BridgeHandler, "tool_executor", None)
+            if _executor is None:
+                return AgentResponse(success=False, error="Tool executor not initialized")
+            data = {"tools": _executor.available_tools, "count": len(_executor.available_tools)}
         else:
             return AgentResponse(success=False, error=f"Unknown request kind: {kind}")
 
@@ -196,6 +290,10 @@ class BridgeServer:
 
         self._provider = ContextProvider(self._root)
         self._capabilities = BridgeCapabilities()
+        self._executor = ToolExecutor(self._root)
+
+        # Populate capabilities with tool schemas
+        self._capabilities.tools = self._executor.available_tools
 
     @property
     def url(self) -> str:
@@ -205,6 +303,7 @@ class BridgeServer:
         # Inject dependencies into the handler class.
         _BridgeHandler.context_provider = self._provider
         _BridgeHandler.capabilities = self._capabilities
+        _BridgeHandler.tool_executor = self._executor
         httpd = HTTPServer((self._host, self._port), _BridgeHandler)
         return httpd
 
@@ -243,7 +342,7 @@ class BridgeServer:
         inside a larger application.
         """
         start = time.monotonic()
-        resp = _dispatch(request, self._provider, self._capabilities)
+        resp = _dispatch(request, self._provider, self._capabilities, self._executor)
         resp.elapsed_ms = (time.monotonic() - start) * 1000
         resp.request_id = request.request_id
         return resp

@@ -62,6 +62,11 @@ class PluginHook(str, Enum):
     PRE_TRACE = "pre_trace"
     POST_TRACE = "post_trace"
 
+    # AI Agent Tool Protocol hooks (Phase 19)
+    REGISTER_TOOL = "register_tool"
+    PRE_TOOL_INVOKE = "pre_tool_invoke"
+    POST_TOOL_INVOKE = "post_tool_invoke"
+
     # Custom hooks
     CUSTOM = "custom"
 

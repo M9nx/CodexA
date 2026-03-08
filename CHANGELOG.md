@@ -2,6 +2,25 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.19.0] — Phase 19: AI Agent Tooling Protocol
+
+### Added
+- **Tool Invocation Protocol** — `ToolInvocation`, `ToolExecutionResult`, `ToolError` dataclasses with JSON round-trip
+- **`ToolErrorCode` enum** — typed error codes (`unknown_tool`, `invalid_arguments`, `missing_required_arg`, `execution_error`, `timeout`, `permission_denied`)
+- **Tool Execution Engine** — `ToolExecutor` with argument validation, built-in + plugin tool routing, timing, and batch execution
+- **Plugin tool registration** — `register_plugin_tool()` / `unregister_plugin_tool()` with collision protection
+- **Extended capability manifest** — `BridgeCapabilities.tools` field with full tool schemas
+- **Bridge HTTP endpoints** — `POST /tools/invoke`, `GET /tools/list`, `GET /tools/stream` (SSE)
+- **Bridge protocol extensions** — `INVOKE_TOOL` and `LIST_TOOLS` request kinds (12 total)
+- **`codex tool list`** — list all available tools with descriptions
+- **`codex tool run <name>`** — invoke a tool with `--arg key=value` pairs
+- **`codex tool schema <name>`** — display tool parameter schema
+- **3 new plugin hooks** — `REGISTER_TOOL`, `PRE_TOOL_INVOKE`, `POST_TOOL_INVOKE` (22 total)
+- **AI safety guardrails** — deterministic tools only, schema validation, no arbitrary code execution
+- **AI_TOOL_PROTOCOL.md** — auto-generated documentation for the tool protocol
+- 31 CLI commands (up from 30)
+- 70+ new tests
+
 ## [0.18.0] — Phase 18: Developer Workflow Intelligence
 
 ### Added

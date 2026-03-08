@@ -36,6 +36,10 @@ class RequestKind(str, Enum):
     VALIDATE_CODE = "validate_code"
     LIST_CAPABILITIES = "list_capabilities"
 
+    # Phase 19 — AI Agent Tooling Protocol
+    INVOKE_TOOL = "invoke_tool"
+    LIST_TOOLS = "list_tools"
+
 
 # ---------------------------------------------------------------------------
 # Request / Response
@@ -138,14 +142,18 @@ class BridgeCapabilities:
     supported_requests: list[str] = field(
         default_factory=lambda: [k.value for k in RequestKind]
     )
+    tools: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        result: dict[str, Any] = {
             "version": self.version,
             "name": self.name,
             "description": self.description,
             "supported_requests": self.supported_requests,
         }
+        if self.tools:
+            result["tools"] = self.tools
+        return result
 
     def to_json(self, indent: int = 2) -> str:
         return json.dumps(self.to_dict(), indent=indent)

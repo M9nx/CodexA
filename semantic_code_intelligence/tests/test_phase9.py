@@ -44,7 +44,7 @@ class TestRequestKind:
         assert "list_capabilities" in kinds
 
     def test_count(self):
-        assert len(RequestKind) == 10
+        assert len(RequestKind) == 12
 
     def test_string_enum(self):
         assert RequestKind.SEMANTIC_SEARCH == "semantic_search"
@@ -150,7 +150,7 @@ class TestBridgeCapabilities:
         assert cap.version == "0.9.0"
         assert cap.name == "CodexA Bridge"
         assert "semantic_search" in cap.supported_requests
-        assert len(cap.supported_requests) == 10
+        assert len(cap.supported_requests) == 12
 
     def test_to_dict(self):
         cap = BridgeCapabilities()

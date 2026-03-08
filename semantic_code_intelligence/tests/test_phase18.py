@@ -775,10 +775,10 @@ class TestPluginHooks:
         for hook in PluginHook:
             assert hook in pm._hook_registry
 
-    def test_hook_count_is_19(self):
+    def test_hook_count_is_22(self):
         from semantic_code_intelligence.plugins import PluginHook
 
-        assert len(PluginHook) == 19
+        assert len(PluginHook) == 22
 
 
 # =========================================================================
@@ -787,16 +787,16 @@ class TestPluginHooks:
 
 
 class TestRouter:
-    """Tests for CLI router with 30 commands."""
+    """Tests for CLI router with 31 commands."""
 
-    def test_command_count_is_30(self):
+    def test_command_count_is_31(self):
         import click
 
         from semantic_code_intelligence.cli.router import register_commands
 
         group = click.Group("test")
         register_commands(group)
-        assert len(group.commands) == 30
+        assert len(group.commands) == 31
 
     def test_hotspots_registered(self):
         import click
@@ -832,12 +832,12 @@ class TestRouter:
 
 
 class TestVersion:
-    """Test version is 0.18.0."""
+    """Test version is 0.19.0."""
 
     def test_version_string(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.18.0"
+        assert __version__ == "0.19.0"
 
     def test_cli_version(self):
         from semantic_code_intelligence.cli.main import cli
@@ -845,7 +845,7 @@ class TestVersion:
         runner = CliRunner()
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.18.0" in result.output
+        assert "0.19.0" in result.output
 
 
 # =========================================================================

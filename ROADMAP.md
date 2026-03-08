@@ -405,12 +405,23 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 - WORKFLOW_INTELLIGENCE.md auto-generated documentation ✅
 - 60+ new tests ✅
 
+### Phase 19: AI Agent Tooling Protocol ✅
+- Tool Invocation Protocol (ToolInvocation, ToolExecutionResult, ToolError dataclasses) ✅
+- Tool Execution Engine (ToolExecutor with validation, routing, timing) ✅
+- Extended capability manifest (tools field in BridgeCapabilities) ✅
+- Agent-friendly streaming (SSE /tools/stream endpoint) ✅
+- CLI tool mode: `codex tool run|list|schema` ✅
+- AI safety guardrails (deterministic, no code execution, schema validation) ✅
+- Plugin integration (REGISTER_TOOL, PRE_TOOL_INVOKE, POST_TOOL_INVOKE hooks) ✅
+- AI_TOOL_PROTOCOL.md auto-generated documentation ✅
+- 70+ new tests ✅
+
 ---
 
 ## Architecture
 
 ```
-codex CLI (Click) — 30 commands
+codex CLI (Click) — 31 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
@@ -422,6 +433,7 @@ codex CLI (Click) — 30 commands
   ├── chat / investigate / cross-refactor
   ├── metrics / gate
   ├── hotspots / impact / trace
+  ├── tool (list · run · schema)
   │
   ├── Indexing Pipeline
   │     Scanner → Chunker → Embeddings (sentence-transformers) → FAISS VectorStore
@@ -461,10 +473,11 @@ codex CLI (Click) — 30 commands
   │
   ├── Bridge / IDE Integration
   │     BridgeServer (HTTP) · ContextProvider · VSCodeBridge
+  │     ToolExecutor (structured tool protocol) · ToolInvocation / ToolExecutionResult
   │     StreamChunk (SSE streaming) · Extension manifest
   │
   ├── Auto-Documentation Engine
-  │     CLI ref · Plugin ref · Bridge ref · Tool ref · Web ref → Markdown
+  │     CLI ref · Plugin ref · Bridge ref · Tool ref · Web ref · AI Tool Protocol ref → Markdown
   │
   ├── Web Interface (optional)
   │     WebServer (stdlib http.server) · APIHandler · UIHandler
@@ -472,7 +485,7 @@ codex CLI (Click) — 30 commands
   │     Mermaid Visualization (call graph, deps, workspace, symbol map)
   │
   └── Plugin SDK
-        PluginBase · PluginHook (19 hooks) · PluginManager
+        PluginBase · PluginHook (22 hooks) · PluginManager
         Plugin scaffold · Sample plugins · Discovery
 ```
 

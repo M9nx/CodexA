@@ -858,6 +858,131 @@ def generate_workflow_intelligence_reference() -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# AI Tool Protocol Reference (Phase 19)
+# ---------------------------------------------------------------------------
+
+
+def generate_ai_tool_protocol_reference() -> str:
+    """Generate AI_TOOL_PROTOCOL.md documentation."""
+    from semantic_code_intelligence.tools import TOOL_DEFINITIONS
+    from semantic_code_intelligence.tools.protocol import (
+        ToolErrorCode,
+        ToolExecutionResult,
+        ToolInvocation,
+        ToolError,
+    )
+
+    lines = [
+        "# AI Tool Protocol Reference",
+        "",
+        "This document describes the AI Agent Tooling Protocol introduced in",
+        "**Phase 19** of CodexA.  It enables AI coding agents to invoke CodexA",
+        "tools via structured JSON requests and receive typed results.",
+        "",
+        "## Overview",
+        "",
+        "The protocol provides three layers:",
+        "",
+        "1. **Tool Invocation Protocol** — typed request/response dataclasses",
+        "2. **Tool Execution Engine** — validates, routes, and executes tools",
+        "3. **Bridge HTTP Endpoints** — REST + SSE for external agents",
+        "",
+        "## Protocol Dataclasses",
+        "",
+        "### ToolInvocation",
+        "",
+        "| Field | Type | Description |",
+        "|-------|------|-------------|",
+        "| `tool_name` | `str` | Name of the tool to invoke |",
+        "| `arguments` | `dict` | Key-value arguments |",
+        "| `request_id` | `str` | Correlation ID (auto-generated) |",
+        "| `timestamp` | `float` | Unix timestamp |",
+        "",
+        "### ToolExecutionResult",
+        "",
+        "| Field | Type | Description |",
+        "|-------|------|-------------|",
+        "| `tool_name` | `str` | Tool that was executed |",
+        "| `request_id` | `str` | Correlation ID |",
+        "| `success` | `bool` | Whether execution succeeded |",
+        "| `result_payload` | `dict` | Output data (success only) |",
+        "| `error` | `ToolError` | Error details (failure only) |",
+        "| `execution_time_ms` | `float` | Execution time |",
+        "",
+        "### ToolError",
+        "",
+        "| Field | Type | Description |",
+        "|-------|------|-------------|",
+        "| `tool_name` | `str` | Tool that failed |",
+        "| `error_code` | `str` | Machine-readable code |",
+        "| `error_message` | `str` | Human-readable message |",
+        "| `request_id` | `str` | Correlation ID |",
+        "",
+        "### Error Codes",
+        "",
+        "| Code | Meaning |",
+        "|------|---------|",
+    ]
+    for code in ToolErrorCode:
+        lines.append(f"| `{code.value}` | {code.name.replace('_', ' ').title()} |")
+
+    lines.extend([
+        "",
+        "## Available Tools",
+        "",
+        "| Tool | Description |",
+        "|------|-------------|",
+    ])
+    for t in TOOL_DEFINITIONS:
+        lines.append(f"| `{t['name']}` | {t['description'][:80]} |")
+
+    lines.extend([
+        "",
+        "## HTTP Endpoints",
+        "",
+        "| Method | Path | Description |",
+        "|--------|------|-------------|",
+        "| `POST` | `/tools/invoke` | Execute a tool invocation |",
+        "| `GET` | `/tools/list` | List available tools |",
+        "| `GET` | `/tools/stream` | SSE stream of tool events |",
+        "| `POST` | `/request` | Legacy bridge request (supports `invoke_tool`, `list_tools` kinds) |",
+        "",
+        "## CLI Usage",
+        "",
+        "```",
+        "codex tool list              # list all tools",
+        "codex tool run <name> --arg key=value",
+        "codex tool schema <name>     # show tool schema",
+        "```",
+        "",
+        "## Plugin Tool Registration",
+        "",
+        "Plugins can register custom tools via the `REGISTER_TOOL` hook:",
+        "",
+        "```python",
+        'def on_hook(self, hook, data):',
+        '    if hook == PluginHook.REGISTER_TOOL:',
+        '        data["tools"].append({',
+        '            "name": "my_tool",',
+        '            "description": "My custom tool",',
+        '            "parameters": {"input": {"type": "string", "required": True}},',
+        '            "handler": my_handler_function,',
+        '        })',
+        '    return data',
+        "```",
+        "",
+        "## Safety Guardrails",
+        "",
+        "- Tools are deterministic and read-only (no code execution)",
+        "- All arguments are validated against declared schemas",
+        "- Plugin tools cannot overwrite built-in tool names",
+        "- Error codes are typed for reliable machine parsing",
+        "",
+    ])
+    return "\n".join(lines)
+
+
 def generate_all_docs(output_dir: Path) -> list[str]:
     """Generate all documentation files into the output directory.
 
@@ -937,6 +1062,14 @@ def generate_all_docs(output_dir: Path) -> list[str]:
         wi_md = generate_workflow_intelligence_reference()
         (output_dir / "WORKFLOW_INTELLIGENCE.md").write_text(wi_md, encoding="utf-8")
         generated.append("WORKFLOW_INTELLIGENCE.md")
+    except Exception:
+        pass
+
+    # AI Tool Protocol reference (Phase 19)
+    try:
+        atp_md = generate_ai_tool_protocol_reference()
+        (output_dir / "AI_TOOL_PROTOCOL.md").write_text(atp_md, encoding="utf-8")
+        generated.append("AI_TOOL_PROTOCOL.md")
     except Exception:
         pass
 
