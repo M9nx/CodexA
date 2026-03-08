@@ -589,4 +589,4 @@ class TestRouterPhase8:
 
         group = click.Group()
         register_commands(group)
-        assert len(group.commands) == 34
+        assert len(group.commands) == 35

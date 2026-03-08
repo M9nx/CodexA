@@ -1,4 +1,11 @@
-"""Vector store — FAISS-based storage and retrieval of code embeddings."""
+"""Vector store — FAISS-based storage and retrieval of code embeddings.
+
+Supports two index modes:
+- **Flat** (default): Brute-force exact search — best for <50 k vectors.
+- **IVF**: Inverted-file approximate search — faster for large repos (>50 k).
+  Enabled automatically when the vector count crosses *IVF_THRESHOLD* or by
+  passing ``use_ivf=True`` to the constructor.
+"""
 
 from __future__ import annotations
 
@@ -13,6 +20,11 @@ import numpy as np
 from semantic_code_intelligence.utils.logging import get_logger
 
 logger = get_logger("storage")
+
+# If the store has more vectors than this, it can benefit from IVF.
+IVF_THRESHOLD = 50_000
+IVF_NLIST = 100  # number of Voronoi cells
+IVF_NPROBE = 10  # cells probed at search time
 
 
 @dataclass
@@ -33,16 +45,23 @@ class VectorStore:
 
     Maintains a FAISS index and parallel metadata list.
     Supports save/load to disk for persistence.
+
+    When *use_ivf* is ``True`` (or the vector count exceeds *IVF_THRESHOLD*),
+    the store transparently migrates to a ``faiss.IndexIVFFlat`` for faster
+    approximate nearest-neighbour search.
     """
 
-    def __init__(self, dimension: int) -> None:
-        """Initialize the vector store.
-
-        Args:
-            dimension: Dimensionality of the embedding vectors.
-        """
+    def __init__(self, dimension: int, *, use_ivf: bool = False) -> None:
         self.dimension = dimension
-        self.index = faiss.IndexFlatIP(dimension)  # Inner product (cosine for normalized vecs)
+        self._use_ivf = use_ivf
+        if use_ivf:
+            quantizer = faiss.IndexFlatIP(dimension)
+            self.index = faiss.IndexIVFFlat(quantizer, dimension, IVF_NLIST, faiss.METRIC_INNER_PRODUCT)
+            self.index.nprobe = IVF_NPROBE
+            self._ivf_trained = False
+        else:
+            self.index = faiss.IndexFlatIP(dimension)
+            self._ivf_trained = True  # flat doesn't need training
         self.metadata: list[ChunkMetadata] = []
 
     @property
@@ -57,12 +76,9 @@ class VectorStore:
     ) -> None:
         """Add embeddings and their metadata to the store.
 
-        Args:
-            embeddings: NumPy array of shape (n, dimension).
-            metadata_list: List of metadata, one per embedding.
-
-        Raises:
-            ValueError: If embeddings and metadata counts don't match.
+        If the store uses an IVF index that hasn't been trained yet, the first
+        batch of vectors is used to train it.  If the store is in flat mode and
+        the total count crosses *IVF_THRESHOLD*, it auto-upgrades to IVF.
         """
         if len(embeddings) != len(metadata_list):
             raise ValueError(
@@ -72,8 +88,25 @@ class VectorStore:
             return
 
         embeddings = np.ascontiguousarray(embeddings, dtype=np.float32)
+
+        # Train IVF index on first batch if needed
+        if self._use_ivf and not self._ivf_trained:
+            if len(embeddings) >= IVF_NLIST:
+                self.index.train(embeddings)
+                self._ivf_trained = True
+            else:
+                # Not enough vectors to train — fall back to flat temporarily
+                logger.debug("Not enough vectors to train IVF (%d < %d), using flat.", len(embeddings), IVF_NLIST)
+                self.index = faiss.IndexFlatIP(self.dimension)
+                self._use_ivf = False
+                self._ivf_trained = True
+
         self.index.add(embeddings)
         self.metadata.extend(metadata_list)
+
+        # Auto-upgrade from flat to IVF when threshold is crossed
+        if not self._use_ivf and self.size >= IVF_THRESHOLD:
+            self._upgrade_to_ivf()
 
     def search(
         self,
@@ -199,3 +232,25 @@ class VectorStore:
         """Remove all vectors and metadata."""
         self.index.reset()
         self.metadata.clear()
+
+    # ------------------------------------------------------------------
+    # IVF helpers
+    # ------------------------------------------------------------------
+
+    def _upgrade_to_ivf(self) -> None:
+        """Migrate an in-memory flat index to IVF for faster search."""
+        n = self.size
+        if n < IVF_NLIST:
+            return  # not enough vectors
+        logger.info("Auto-upgrading index to IVF (%d vectors).", n)
+        all_vecs = np.vstack(
+            [self.index.reconstruct(i).reshape(1, -1) for i in range(n)]
+        ).astype(np.float32)
+        quantizer = faiss.IndexFlatIP(self.dimension)
+        ivf = faiss.IndexIVFFlat(quantizer, self.dimension, IVF_NLIST, faiss.METRIC_INNER_PRODUCT)
+        ivf.nprobe = IVF_NPROBE
+        ivf.train(all_vecs)
+        ivf.add(all_vecs)
+        self.index = ivf
+        self._use_ivf = True
+        self._ivf_trained = True

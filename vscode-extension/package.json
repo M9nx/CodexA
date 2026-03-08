@@ -1,0 +1,85 @@
+{
+  "name": "codexa",
+  "displayName": "CodexA — Developer Intelligence",
+  "description": "Semantic code search, call graphs, and AI-assisted understanding powered by CodexA.",
+  "version": "0.1.0",
+  "publisher": "M9nx",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/M9nx/CodexA"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:codexa.search",
+    "onCommand:codexa.askCodexA",
+    "onView:codexaSearchView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codexa.search",
+        "title": "CodexA: Search Codebase",
+        "icon": "$(search)"
+      },
+      {
+        "command": "codexa.askCodexA",
+        "title": "CodexA: Ask a Question"
+      },
+      {
+        "command": "codexa.callGraph",
+        "title": "CodexA: Show Call Graph"
+      },
+      {
+        "command": "codexa.models",
+        "title": "CodexA: List Models"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codexa",
+          "title": "CodexA",
+          "icon": "$(symbol-method)"
+        }
+      ]
+    },
+    "views": {
+      "codexa": [
+        {
+          "type": "webview",
+          "id": "codexaSearchView",
+          "name": "Search"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "codexa.search",
+        "key": "ctrl+shift+f5",
+        "mac": "cmd+shift+f5"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  }
+}

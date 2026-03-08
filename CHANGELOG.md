@@ -2,6 +2,50 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.27.0] — Phase 27: Power Features (P1–P6)
+
+### Added — P1: Rich Textual TUI
+- **Full Textual split-pane TUI** (`tui/__init__.py`) — split-pane layout with result list + syntax-highlighted preview, mode cycling (semantic/keyword/regex/hybrid), keyboard bindings (Ctrl+Q quit, Ctrl+M mode, Escape clear)
+- **Graceful fallback REPL** when `textual` is not installed
+
+### Added — P2: Grep Flag Parity + JSONL
+- **`--context-lines / -C N`** — show N context lines before/after each match (grep-style)
+- **`--files-only / -l`** — print only file paths with matches (like `grep -l`)
+- **`--files-without-match / -L`** — print file paths without any matches (like `grep -L`)
+- **`--line-numbers / -n`** — prefix output lines with line numbers (like `grep -n`)
+- **`--jsonl`** — output one JSON object per line for piping into `jq`/`fzf`
+- **`format_results_jsonl()`** in `search/formatter.py`
+- **`_expand_context()`** — reads extra context lines from disk for `-C` flag
+
+### Added — P3: VS Code Extension
+- **`vscode-extension/`** scaffold with `package.json`, `tsconfig.json`, `src/extension.ts`
+- 4 commands: Search Codebase, Ask a Question, Show Call Graph, List Models
+- Sidebar webview search panel with real-time results
+- Keybinding: `Ctrl+Shift+F5` for search
+
+### Added — P4: Single-Binary Distribution
+- **`build.py`** — PyInstaller build script for standalone `codex` binary
+- Supports `--onefile` (default) and `--onedir` modes
+- `pyproject.toml` optional dependency group `[build]` with `pyinstaller>=6.0.0`
+
+### Added — P5: Performance Hardening
+- **IVF index support** in `storage/vector_store.py` — `IndexIVFFlat` approximate search for large repos (>50k vectors)
+- **Auto-upgrade**: flat index transparently migrates to IVF when vector count crosses `IVF_THRESHOLD` (50,000)
+- **`use_ivf=True` constructor option** for explicit IVF mode
+- **Graceful fallback** to flat when too few vectors to train IVF (<100)
+
+### Added — P6: `codex models` CLI
+- **`codex models list [--json]`** — table or JSON of all 5 built-in embedding models
+- **`codex models info <name>`** — detailed model info panel
+- **`codex models download <name> [--backend auto|onnx|torch]`** — pre-download for offline use
+- **`codex models switch <name> [-p PATH]`** — switch active model + prompt re-index
+- `pyproject.toml` optional dependency group `[tui]` with `textual>=0.40.0`
+
+### Changed
+- CLI now registers **35 commands** (up from 34)
+- `search_cmd.py` extended with 5 new grep-compatible flags
+- `vector_store.py` supports both flat and IVF FAISS indices
+
 ## [0.26.0] — Phase 26: Priority Feature Implementation (P1–P5)
 
 ### Added — P1: Close the Search Gap

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codex-ai"
-version = "0.26.0"
+version = "0.27.0"
 description = "Developer intelligence CLI — semantic code search, AI-assisted understanding, and workspace tooling"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -47,6 +47,12 @@ dependencies = [
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+]
+tui = [
+    "textual>=0.40.0",
+]
+build = [
+    "pyinstaller>=6.0.0",
 ]
 
 [project.urls]

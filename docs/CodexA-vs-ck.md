@@ -12,7 +12,7 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 | Tagline | Developer intelligence engine | Semantic grep / code search |
 | Language | Python 3.11+ | Rust |
 | Install | `pip install codex-ai` | `cargo install ck-search` |
-| Version | 0.26.0 | 0.7.4 |
+| Version | 0.27.0 | 0.7.4 |
 | License | MIT | MIT / Apache-2.0 |
 | Stars | Private / early-stage | ~1.5 k |
 | Offline | Yes | Yes |
@@ -37,14 +37,14 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 |---------|--------|-----|
 | Semantic search | ✅ Natural-language queries via FAISS | ✅ Embedding-based via custom ANN index |
 | Keyword search (BM25) | ✅ Built-in BM25 engine with camelCase/underscore-aware tokenizer (`--mode keyword`) | ✅ Tantivy full-text index |
-| Regex search | ✅ Grep-compatible pattern matching (`--mode regex`, `--case-sensitive`) | ✅ Full grep-compatible CLI (`-n`, `-i`, `-A`, `-B`, `-l`, `-L`, etc.) |
+| Regex search | ✅ Grep-compatible pattern matching (`--mode regex`, `-C`, `-l`, `-L`, `-n`, `--case-sensitive`) | ✅ Full grep-compatible CLI (`-n`, `-i`, `-A`, `-B`, `-l`, `-L`, etc.) |
 | Hybrid search (semantic + keyword) | ✅ Reciprocal Rank Fusion with k=60 (`--mode hybrid`) | ✅ Reciprocal Rank Fusion |
 | Threshold / score filtering | ✅ `--threshold` | ✅ `--threshold`, `--scores` |
 | Full-section extraction | ✅ `--full-section` expands to enclosing function/class via symbol registry | ✅ `--full-section` returns entire functions/classes |
-| JSONL / JSON output | ✅ `--json` on all commands | ✅ `--json`, `--jsonl` |
+| JSONL / JSON output | ✅ `--json` and `--jsonl` on search (pipe into `jq`/`fzf`) | ✅ `--json`, `--jsonl` |
 | Streaming output | ✅ `--stream` for token-by-token chat/investigate responses | ❌ |
 
-**Verdict:** Search parity achieved — both tools now support semantic, keyword, regex, and hybrid modes. ck retains an edge in grep flag compatibility; CodexA adds full-section extraction via its symbol registry and streaming LLM output.
+**Verdict:** Full search parity — both tools support semantic, keyword, regex, and hybrid modes with grep-style flags (`-C`, `-l`, `-L`, `-n`) and JSONL output. CodexA adds full-section extraction via its symbol registry and streaming LLM output.
 
 ---
 
@@ -54,9 +54,9 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 |---------|--------|-----|
 | Embedding library | sentence-transformers (Python) + optional ONNX runtime | FastEmbed (Rust) |
 | Default model | `all-MiniLM-L6-v2` (384-dim) | `bge-small` (384-dim) |
-| Model options | 5 built-in: MiniLM-L6, MiniLM-L12, MPNet, BGE-Small, CodeBERT (model registry) | 4 built-in: BGE-Small, Mixedbread xsmall, Nomic V1.5, Jina Code |
+| Model options | 5 built-in models with `codex models list/info/download/switch` CLI | 4 built-in: BGE-Small, Mixedbread xsmall, Nomic V1.5, Jina Code |
 | ONNX acceleration | ✅ Auto-detected via `optimum`/`onnxruntime`, PyTorch fallback | ✅ Native ONNX via FastEmbed |
-| Vector store | FAISS `IndexFlatIP` + BM25 inverted index | Custom ANN index + Tantivy full-text |
+| Vector store | FAISS `IndexFlatIP` (+ auto-upgrade to `IndexIVFFlat` for >50 k vectors) + BM25 inverted index | Custom ANN index + Tantivy full-text |
 | Incremental indexing | ✅ Chunk-level SHA-256 hashing + stale vector removal | ✅ Chunk-level caching, 80-90% hit rate |
 | Chunk-level delta | ✅ Chunk-level (SHA-256 per `file:start:end`, skips unchanged) | ✅ Chunk-level (only re-embeds changed chunks) |
 | Parallel indexing | ✅ ThreadPoolExecutor with configurable workers | ✅ Rayon parallel iterators |
@@ -106,15 +106,15 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 
 | Feature | CodexA | ck |
 |---------|--------|-----|
-| CLI commands | 34 click-based commands | Single multi-flag binary |
+| CLI commands | 35 click-based commands | Single multi-flag binary |
 | Web UI | ✅ 4-page server-rendered UI (search, symbols, workspace, viz) | ❌ |
 | REST API | ✅ 8 endpoints | ❌ (MCP only) |
-| TUI (terminal UI) | ✅ Interactive REPL with `/mode`, `/view`, `/quit` commands | ✅ ratatui-based interactive search |
+| TUI (terminal UI) | ✅ Rich Textual split-pane TUI with syntax preview, mode cycling, keybindings + fallback REPL | ✅ ratatui-based interactive search |
 | MCP server | ✅ JSON-RPC over stdio (protocol v2024-11-05, 8 tools) | ✅ JSON-RPC MCP server |
-| VS Code extension | ❌ | ✅ (in development) |
+| VS Code extension | ✅ Sidebar search, call graph, Ask CodexA, model management | ✅ (in development) |
 | Mermaid visualizations | ✅ Call graphs + dependency graphs | ❌ |
 
-**Verdict:** CodexA now matches ck on TUI and MCP while retaining its web UI, REST API, and Mermaid visualizations. ck has the edge on VS Code integration.
+**Verdict:** CodexA now matches or exceeds ck on all UI dimensions — rich TUI, MCP, web UI, REST API, VS Code extension, and Mermaid visualizations.
 
 ---
 
@@ -123,9 +123,9 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 | Metric | CodexA | ck |
 |--------|--------|-----|
 | Implementation | Python (interpreted) + optional ONNX/C++ acceleration | Rust (compiled, native speed) |
-| Indexing speed | Moderate — parallel indexing + chunk-level skip improves re-index | Fast (~1M LOC in <2 min) |
-| Search latency | Sub-second (FAISS) | Sub-500ms |
-| Binary size | N/A (Python package) | Single static binary |
+| Indexing speed | Moderate — parallel indexing + chunk-level skip + IVF for large repos | Fast (~1M LOC in <2 min) |
+| Search latency | Sub-second (FAISS flat); faster with IVF on large repos | Sub-500ms |
+| Binary size | ✅ Single binary via PyInstaller (`python build.py`) | Single static binary |
 | Memory | Higher (Python + PyTorch + FAISS) | Lower (Rust + ONNX runtime) |
 
 **Verdict:** ck is faster and leaner — Rust's performance advantage is real for a search-focused tool.
@@ -139,7 +139,7 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 | Fast semantic grep replacement on the terminal | **ck** |
 | AI agent that needs deep codebase context (call graphs, deps, symbols) | **CodexA** |
 | CI pipeline quality gates (complexity, dead code, metrics) | **CodexA** |
-| Interactive terminal search with preview panes | **ck** (richer TUI); CodexA TUI available |
+| Interactive terminal search with preview panes | **Both** (CodexA Textual TUI, ck ratatui TUI) |
 | Web dashboard for codebase exploration | **CodexA** |
 | Drop-in grep replacement with semantic boost | **ck** |
 | LLM-powered code investigation / chat | **CodexA** |
@@ -152,6 +152,6 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 
 **ck** is a polished, fast, Rust-based *semantic grep* — it does search exceptionally well with grep compatibility, hybrid modes, a TUI, and MCP integration.
 
-**CodexA** is a broader *developer intelligence engine* — search is one of 34 capabilities including code analysis, quality CI, AI-agent tooling, LLM orchestration, visualization, and a self-improving development loop. As of v0.26.0, CodexA has closed the search and indexing gaps — it now matches ck on keyword, regex, hybrid search, chunk-level incremental indexing, auto-index, TUI, and MCP support.
+**CodexA** is a broader *developer intelligence engine* — search is one of 35 capabilities including code analysis, quality CI, AI-agent tooling, LLM orchestration, visualization, and a self-improving development loop. As of v0.27.0, CodexA has closed **all remaining gaps** — grep flag parity (`-C`, `-l`, `-L`, `-n`, `--jsonl`), a rich Textual TUI, VS Code extension, model management CLI, IVF-accelerated search, and single-binary distribution via PyInstaller.
 
 They solve different problems at different layers of the stack and could complement each other: ck for blazing-fast Rust-native terminal search, CodexA for deep analysis, AI cooperation, and the full developer intelligence platform.

@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.26.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.27.0-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2413%2B-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -371,7 +371,7 @@ Supported providers: `openai`, `ollama` (local), `mock` (testing).
 
 ## All CLI Commands
 
-CodexA provides **34 commands** organized by capability:
+CodexA provides **35 commands** organized by capability:
 
 ### Core
 
@@ -431,6 +431,7 @@ CodexA provides **34 commands** organized by capability:
 | `codex plugin list\|scaffold\|discover` | Plugin management |
 | `codex tui` | Interactive terminal REPL |
 | `codex mcp` | Start MCP (Model Context Protocol) server |
+| `codex models list\|info\|download\|switch` | Manage embedding models |
 
 ---
 
@@ -460,7 +461,7 @@ Additional tools can be registered via the plugin system using the
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    CLI Layer (click)                 │
-│  34 commands · --json · --pipe · --verbose           │
+│  35 commands · --json · --pipe · --verbose           │
 ├─────────────────────────────────────────────────────┤
 │               AI Agent Tooling Protocol              │
 │  ToolExecutor · ToolInvocation · ToolExecutionResult │
