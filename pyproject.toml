@@ -44,6 +44,7 @@ dependencies = [
     "radon>=6.0.0",
     "bandit>=1.7.0",
     "mcp>=1.0.0",
+    "watchfiles>=1.0.0",
 ]
 
 [project.optional-dependencies]

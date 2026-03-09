@@ -1,7 +1,8 @@
 """Background intelligence subsystem — file watching and async indexing.
 
 Provides:
-- FileWatcher: monitors filesystem for changes using polling
+- NativeFileWatcher: uses ``watchfiles`` (Rust-backed) for instant change detection
+- FileWatcher: legacy polling fallback for environments without watchfiles
 - IndexingDaemon: runs incremental indexing in background
 - AsyncIndexer: queue-based async indexing pipeline
 """
@@ -14,6 +15,12 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
+
+try:
+    from watchfiles import watch, Change
+    _HAS_WATCHFILES = True
+except ImportError:
+    _HAS_WATCHFILES = False
 
 from semantic_code_intelligence.config.settings import AppConfig, load_config
 from semantic_code_intelligence.indexing.scanner import compute_file_hash, scan_repository
@@ -44,6 +51,119 @@ class FileChangeEvent:
             "change_type": self.change_type,
             "timestamp": self.timestamp,
         }
+
+
+# ---------------------------------------------------------------------------
+# Native File Watcher (watchfiles / Rust-backed — instant OS notifications)
+# ---------------------------------------------------------------------------
+
+class NativeFileWatcher:
+    """Rust-backed file watcher using ``watchfiles`` for instant change detection.
+
+    Uses OS-native APIs (inotify/FSEvents/ReadDirectoryChanges) instead of
+    polling. Falls back to polling automatically if watchfiles is unavailable.
+    """
+
+    def __init__(
+        self,
+        project_root: Path,
+        debounce: float = 0.5,
+    ) -> None:
+        self._root = project_root.resolve()
+        self._debounce = int(debounce * 1000)  # watchfiles uses ms
+        self._config = load_config(self._root)
+        self._running = False
+        self._thread: threading.Thread | None = None
+        self._callbacks: list[Callable[[list[FileChangeEvent]], None]] = []
+        # Build set of supported extensions for filtering
+        self._extensions = set(self._config.index.extensions)
+
+    @property
+    def is_running(self) -> bool:
+        return self._running
+
+    def on_change(self, callback: Callable[[list[FileChangeEvent]], None]) -> None:
+        self._callbacks.append(callback)
+
+    def _should_watch(self, path: Path) -> bool:
+        """Filter out files that don't match indexed extensions."""
+        return path.suffix in self._extensions
+
+    def _watch_loop(self) -> None:
+        """Main watching loop using watchfiles."""
+        logger.info("Native file watcher started for %s (Rust-backed)", self._root)
+        try:
+            for changes in watch(
+                self._root,
+                debounce=self._debounce,
+                step=100,
+                stop_event=threading.Event() if not self._running else None,
+                recursive=True,
+                rust_timeout=5000,
+            ):
+                if not self._running:
+                    break
+
+                events: list[FileChangeEvent] = []
+                now = time.time()
+
+                for change_type, path_str in changes:
+                    path = Path(path_str)
+
+                    # Skip non-indexed files
+                    if not self._should_watch(path):
+                        continue
+
+                    # Skip hidden/ignored directories
+                    try:
+                        rel = str(path.relative_to(self._root))
+                    except ValueError:
+                        continue
+                    if any(part.startswith(".") for part in Path(rel).parts[:-1]):
+                        continue
+
+                    if change_type == Change.added:
+                        ct = "created"
+                    elif change_type == Change.modified:
+                        ct = "modified"
+                    elif change_type == Change.deleted:
+                        ct = "deleted"
+                    else:
+                        continue
+
+                    events.append(FileChangeEvent(
+                        path=path,
+                        relative_path=rel,
+                        change_type=ct,
+                        timestamp=now,
+                    ))
+
+                if events:
+                    logger.info("Native watcher detected %d change(s)", len(events))
+                    for cb in self._callbacks:
+                        try:
+                            cb(events)
+                        except Exception:
+                            logger.exception("Error in native watcher callback")
+        except Exception:
+            if self._running:
+                logger.exception("Error in native file watcher")
+
+    def start(self) -> None:
+        if self._running:
+            return
+        self._running = True
+        self._thread = threading.Thread(
+            target=self._watch_loop, daemon=True, name="codex-native-watcher",
+        )
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._running = False
+        if self._thread is not None:
+            self._thread.join(timeout=3.0)
+            self._thread = None
+        logger.info("Native file watcher stopped.")
 
 
 # ---------------------------------------------------------------------------
@@ -324,6 +444,8 @@ class IndexingDaemon:
     """High-level daemon that watches for file changes and triggers indexing.
 
     Combines FileWatcher + AsyncIndexer into a single start/stop API.
+    Automatically uses the Rust-backed NativeFileWatcher when ``watchfiles``
+    is installed, falling back to polling otherwise.
     """
 
     def __init__(
@@ -333,7 +455,14 @@ class IndexingDaemon:
         debounce: float = 0.5,
     ) -> None:
         self._root = project_root.resolve()
-        self._watcher = FileWatcher(project_root, poll_interval, debounce)
+        if _HAS_WATCHFILES:
+            logger.info("Using Rust-backed native file watcher (watchfiles)")
+            self._watcher: FileWatcher | NativeFileWatcher = NativeFileWatcher(
+                project_root, debounce,
+            )
+        else:
+            logger.info("watchfiles not installed, using polling watcher (%.1fs)", poll_interval)
+            self._watcher = FileWatcher(project_root, poll_interval, debounce)
         self._indexer = AsyncIndexer(project_root)
         self._watcher.on_change(self._on_file_changes)
         self._event_log: list[FileChangeEvent] = []
