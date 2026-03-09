@@ -195,7 +195,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codex --version    # → codex, version 0.24.0
+codex --version    # → codex, version 0.28.0
 ```
 
 ### Step 2 — Initialize your target project

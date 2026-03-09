@@ -12,7 +12,7 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 | Tagline | Developer intelligence engine | Semantic grep / code search |
 | Language | Python 3.11+ | Rust |
 | Install | `pip install codex-ai` | `cargo install ck-search` |
-| Version | 0.27.0 | 0.7.4 |
+| Version | 0.28.0 | 0.7.4 |
 | License | MIT | MIT / Apache-2.0 |
 | Stars | Private / early-stage | ~1.5 k |
 | Offline | Yes | Yes |
@@ -106,9 +106,9 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 
 | Feature | CodexA | ck |
 |---------|--------|-----|
-| CLI commands | 35 click-based commands | Single multi-flag binary |
-| Web UI | ✅ 4-page server-rendered UI (search, symbols, workspace, viz) | ❌ |
-| REST API | ✅ 8 endpoints | ❌ (MCP only) |
+| CLI commands | 36 click-based commands | Single multi-flag binary |
+| Web UI | ✅ 7-page server-rendered UI (search, symbols, tools, quality, ask, workspace, viz) | ❌ |
+| REST API | ✅ 14 endpoints | ❌ (MCP only) |
 | TUI (terminal UI) | ✅ Rich Textual split-pane TUI with syntax preview, mode cycling, keybindings + fallback REPL | ✅ ratatui-based interactive search |
 | MCP server | ✅ JSON-RPC over stdio (protocol v2024-11-05, 8 tools) | ✅ JSON-RPC MCP server |
 | VS Code extension | ✅ Sidebar search, call graph, Ask CodexA, model management | ✅ (in development) |
@@ -152,6 +152,6 @@ A side-by-side comparison of **CodexA** (Developer Intelligence Engine) and
 
 **ck** is a polished, fast, Rust-based *semantic grep* — it does search exceptionally well with grep compatibility, hybrid modes, a TUI, and MCP integration.
 
-**CodexA** is a broader *developer intelligence engine* — search is one of 35 capabilities including code analysis, quality CI, AI-agent tooling, LLM orchestration, visualization, and a self-improving development loop. As of v0.27.0, CodexA has closed **all remaining gaps** — grep flag parity (`-C`, `-l`, `-L`, `-n`, `--jsonl`), a rich Textual TUI, VS Code extension, model management CLI, IVF-accelerated search, and single-binary distribution via PyInstaller.
+**CodexA** is a broader *developer intelligence engine* — search is one of 36 capabilities including code analysis, quality CI, AI-agent tooling, LLM orchestration, visualization, and a self-improving development loop. As of v0.28.0, CodexA has closed **all remaining gaps** — grep flag parity (`-C`, `-l`, `-L`, `-n`, `--jsonl`), a rich Textual TUI, VS Code extension, model management CLI, IVF-accelerated search, single-binary distribution via PyInstaller, and polished UI/UX across all interfaces (CLI, TUI, Web, VS Code).
 
 They solve different problems at different layers of the stack and could complement each other: ck for blazing-fast Rust-native terminal search, CodexA for deep analysis, AI cooperation, and the full developer intelligence platform.

@@ -30,6 +30,11 @@ All notable changes to CodexA are documented in this file.
 - CLI registers **36 commands** (up from 35)
 - 2595 tests, all passing
 
+### Bugfixes (Post-Release)
+- **JSON output contamination**: Fixed `explain --json`, `summary --json`, `deps --json` mixing diagnostic text into JSON output
+- **Web API /api/hotspots 500**: Fixed missing arguments to `analyze_hotspots()` — now properly builds symbols, call_graph, dep_map before analysis
+- **MCP server version**: Bumped from 0.26.0 to 0.28.0
+
 ## [0.27.0] — Phase 27: Power Features (P1–P6)
 
 ### Added — P1: Rich Textual TUI
