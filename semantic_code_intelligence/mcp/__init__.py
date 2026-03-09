@@ -1,8 +1,8 @@
 """MCP server — Model Context Protocol server for AI agent integration.
 
-Implements the MCP (Model Context Protocol) JSON-RPC interface so that
-Claude Desktop, Cursor, and other MCP-compatible clients can use CodexA
-as a tool provider.
+Uses the official ``mcp`` SDK (https://pypi.org/project/mcp/) to expose
+CodexA as a tool provider for Claude Desktop, Cursor, and other
+MCP-compatible clients.
 
 Exposes 8 tools: semantic_search, keyword_search, hybrid_search,
 regex_search, explain_symbol, get_call_graph, index_status, reindex.
@@ -10,12 +10,16 @@ regex_search, explain_symbol, get_call_graph, index_status, reindex.
 
 from __future__ import annotations
 
+import asyncio
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
-from semantic_code_intelligence.config.settings import AppConfig, load_config
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
+from mcp.types import TextContent, Tool
+
+from semantic_code_intelligence.config.settings import AppConfig
 from semantic_code_intelligence.utils.logging import get_logger
 
 logger = get_logger("mcp")
@@ -24,10 +28,10 @@ logger = get_logger("mcp")
 # ---- Tool definitions ---------------------------------------------------
 
 MCP_TOOLS = [
-    {
-        "name": "semantic_search",
-        "description": "Semantic vector similarity search over the indexed codebase.",
-        "inputSchema": {
+    Tool(
+        name="semantic_search",
+        description="Semantic vector similarity search over the indexed codebase.",
+        inputSchema={
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Natural language search query."},
@@ -35,11 +39,11 @@ MCP_TOOLS = [
             },
             "required": ["query"],
         },
-    },
-    {
-        "name": "keyword_search",
-        "description": "BM25-ranked keyword search over indexed code chunks.",
-        "inputSchema": {
+    ),
+    Tool(
+        name="keyword_search",
+        description="BM25-ranked keyword search over indexed code chunks.",
+        inputSchema={
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Keyword query."},
@@ -47,11 +51,11 @@ MCP_TOOLS = [
             },
             "required": ["query"],
         },
-    },
-    {
-        "name": "hybrid_search",
-        "description": "Fused semantic + BM25 search via Reciprocal Rank Fusion.",
-        "inputSchema": {
+    ),
+    Tool(
+        name="hybrid_search",
+        description="Fused semantic + BM25 search via Reciprocal Rank Fusion.",
+        inputSchema={
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Search query."},
@@ -59,11 +63,11 @@ MCP_TOOLS = [
             },
             "required": ["query"],
         },
-    },
-    {
-        "name": "regex_search",
-        "description": "Grep-compatible regex search over indexed code.",
-        "inputSchema": {
+    ),
+    Tool(
+        name="regex_search",
+        description="Grep-compatible regex search over indexed code.",
+        inputSchema={
             "type": "object",
             "properties": {
                 "pattern": {"type": "string", "description": "Regex pattern."},
@@ -72,38 +76,38 @@ MCP_TOOLS = [
             },
             "required": ["pattern"],
         },
-    },
-    {
-        "name": "explain_symbol",
-        "description": "Get detailed info about a code symbol (function, class, method).",
-        "inputSchema": {
+    ),
+    Tool(
+        name="explain_symbol",
+        description="Get detailed info about a code symbol (function, class, method).",
+        inputSchema={
             "type": "object",
             "properties": {
                 "symbol_name": {"type": "string", "description": "Name of the symbol."},
             },
             "required": ["symbol_name"],
         },
-    },
-    {
-        "name": "index_status",
-        "description": "Get the current index health and stats.",
-        "inputSchema": {"type": "object", "properties": {}},
-    },
-    {
-        "name": "reindex",
-        "description": "Trigger a full or incremental re-index of the codebase.",
-        "inputSchema": {
+    ),
+    Tool(
+        name="index_status",
+        description="Get the current index health and stats.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="reindex",
+        description="Trigger a full or incremental re-index of the codebase.",
+        inputSchema={
             "type": "object",
             "properties": {
                 "force": {"type": "boolean", "default": False},
             },
         },
-    },
-    {
-        "name": "health_check",
-        "description": "Check if the MCP server is running and responsive.",
-        "inputSchema": {"type": "object", "properties": {}},
-    },
+    ),
+    Tool(
+        name="health_check",
+        description="Check if the MCP server is running and responsive.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
 ]
 
 
@@ -182,97 +186,48 @@ def _dispatch_tool(name: str, args: dict[str, Any], project_root: Path) -> Any:
     return {"error": f"Unknown tool: {name}"}
 
 
-# ---- JSON-RPC over stdio ------------------------------------------------
+# ---- Server factory ------------------------------------------------------
 
-def _read_message() -> dict[str, Any] | None:
-    """Read a JSON-RPC message from stdin."""
-    line = sys.stdin.readline()
-    if not line:
-        return None
-    try:
-        return json.loads(line)
-    except json.JSONDecodeError:
-        return None
+def _create_server(project_root: Path) -> Server:
+    """Create and configure an MCP ``Server`` with all CodexA tools."""
+    server = Server("codex-mcp")
 
+    @server.list_tools()
+    async def handle_list_tools() -> list[Tool]:
+        return MCP_TOOLS
 
-def _write_message(msg: dict[str, Any]) -> None:
-    """Write a JSON-RPC response to stdout."""
-    sys.stdout.write(json.dumps(msg, ensure_ascii=False) + "\n")
-    sys.stdout.flush()
-
-
-def _handle_request(request: dict[str, Any], project_root: Path) -> dict[str, Any]:
-    """Handle a single JSON-RPC request."""
-    req_id = request.get("id")
-    method = request.get("method", "")
-    params = request.get("params", {})
-
-    if method == "initialize":
-        return {
-            "jsonrpc": "2.0",
-            "id": req_id,
-            "result": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {"tools": {}},
-                "serverInfo": {"name": "codex-mcp", "version": "0.28.0"},
-            },
-        }
-
-    if method == "tools/list":
-        return {
-            "jsonrpc": "2.0",
-            "id": req_id,
-            "result": {"tools": MCP_TOOLS},
-        }
-
-    if method == "tools/call":
-        tool_name = params.get("name", "")
-        tool_args = params.get("arguments", {})
+    @server.call_tool()
+    async def handle_call_tool(name: str, arguments: dict | None) -> list[TextContent]:
+        args = arguments or {}
         try:
-            result = _dispatch_tool(tool_name, tool_args, project_root)
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {
-                    "content": [{"type": "text", "text": json.dumps(result, indent=2)}],
-                },
-            }
+            result = _dispatch_tool(name, args, project_root)
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
         except Exception as e:
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {
-                    "content": [{"type": "text", "text": f"Error: {e}"}],
-                    "isError": True,
-                },
-            }
+            return [TextContent(type="text", text=f"Error: {e}")]
 
-    # notifications (no id) — acknowledge silently
-    if req_id is None:
-        return {}
+    return server
 
-    return {
-        "jsonrpc": "2.0",
-        "id": req_id,
-        "error": {"code": -32601, "message": f"Method not found: {method}"},
-    }
 
+# ---- Entry point ---------------------------------------------------------
 
 def run_mcp_server(project_root: Path) -> None:
     """Run the MCP server in stdio mode.
 
-    Reads JSON-RPC messages from stdin and writes responses to stdout.
-    Terminates on EOF.
+    Uses the official MCP SDK to handle JSON-RPC over stdio.
+    Compatible with Claude Desktop, Cursor, and other MCP clients.
     """
     project_root = project_root.resolve()
     logger.info("MCP server starting for %s", project_root)
 
-    while True:
-        msg = _read_message()
-        if msg is None:
-            break
-        response = _handle_request(msg, project_root)
-        if response:
-            _write_message(response)
+    server = _create_server(project_root)
 
+    async def _run() -> None:
+        async with stdio_server() as (read_stream, write_stream):
+            await server.run(
+                read_stream,
+                write_stream,
+                server.create_initialization_options(),
+            )
+
+    asyncio.run(_run())
     logger.info("MCP server stopped.")

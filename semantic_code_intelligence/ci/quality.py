@@ -3,6 +3,11 @@
 All analyzers operate on parsed ``Symbol`` lists and raw file content,
 returning structured reports that are both human-readable (via Rich) and
 machine-parsable (``to_dict()`` → JSON).
+
+Uses `radon <https://radon.readthedocs.io/>`_ for AST-based cyclomatic
+complexity analysis on Python files, with a regex fallback for other languages.
+Optionally integrates `bandit <https://bandit.readthedocs.io/>`_ for Python
+security linting.
 """
 
 from __future__ import annotations
@@ -20,9 +25,19 @@ from semantic_code_intelligence.utils.logging import get_logger
 
 logger = get_logger("ci.quality")
 
+# ── Radon (optional — used for Python AST-based complexity) ──────────
+
+try:
+    from radon.complexity import cc_visit
+    from radon.metrics import mi_visit
+
+    _HAS_RADON = True
+except ImportError:  # pragma: no cover
+    _HAS_RADON = False
+
 # ── Cyclomatic complexity ────────────────────────────────────────────
 
-# Decision keywords/patterns that increase cyclomatic complexity.
+# Decision keywords/patterns — used as fallback for non-Python files.
 _DECISION_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"\bif\b"),
     re.compile(r"\belif\b"),
@@ -73,11 +88,8 @@ def _rate_complexity(score: int) -> str:
     return "very_high"
 
 
-def compute_complexity(symbol: Symbol) -> ComplexityResult:
-    """Compute cyclomatic complexity for a single symbol.
-
-    Counts decision points in the symbol body and returns a structured result.
-    """
+def _compute_complexity_regex(symbol: Symbol) -> ComplexityResult:
+    """Regex-based fallback for non-Python files."""
     body = symbol.body or ""
     score = 1  # base path
     for line in body.splitlines():
@@ -96,6 +108,48 @@ def compute_complexity(symbol: Symbol) -> ComplexityResult:
         complexity=score,
         rating=_rate_complexity(score),
     )
+
+
+def _compute_complexity_radon(symbol: Symbol) -> ComplexityResult:
+    """AST-based complexity via radon for Python symbols."""
+    body = symbol.body or ""
+
+    # If the body is not a complete function/class definition, wrap it so
+    # radon can parse it.  Symbols store the body content which may or may
+    # not include the ``def`` line.
+    code = body
+    if not body.lstrip().startswith(("def ", "class ", "async def ")):
+        # Indent all body lines and wrap in a temporary function
+        indented = "\n".join("    " + ln for ln in body.splitlines())
+        code = f"def _wrapper():\n{indented}\n"
+
+    try:
+        results = cc_visit(code)
+        # Sum complexities from all top-level blocks (usually 1 function).
+        score = max((r.complexity for r in results), default=1)
+    except SyntaxError:
+        # If radon can't parse the snippet, fall back to regex
+        return _compute_complexity_regex(symbol)
+
+    return ComplexityResult(
+        symbol_name=symbol.name,
+        file_path=symbol.file_path,
+        start_line=symbol.start_line,
+        end_line=symbol.end_line,
+        complexity=score,
+        rating=_rate_complexity(score),
+    )
+
+
+def compute_complexity(symbol: Symbol) -> ComplexityResult:
+    """Compute cyclomatic complexity for a single symbol.
+
+    Uses radon's AST analysis for Python files, falling back to regex-based
+    counting for other languages.
+    """
+    if _HAS_RADON and symbol.file_path.endswith(".py"):
+        return _compute_complexity_radon(symbol)
+    return _compute_complexity_regex(symbol)
 
 
 def analyze_complexity(
@@ -309,6 +363,73 @@ def detect_duplicates(
     return results
 
 
+# ── Bandit security linting (optional) ───────────────────────────────
+
+try:
+    from bandit.core import manager as _bandit_manager
+    from bandit.core import config as _bandit_config
+
+    _HAS_BANDIT = True
+except ImportError:  # pragma: no cover
+    _HAS_BANDIT = False
+
+
+@dataclass
+class BanditIssue:
+    """A security issue found by Bandit."""
+
+    test_id: str
+    severity: str       # LOW / MEDIUM / HIGH
+    confidence: str     # LOW / MEDIUM / HIGH
+    text: str
+    file_path: str
+    line: int
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "test_id": self.test_id,
+            "severity": self.severity,
+            "confidence": self.confidence,
+            "text": self.text,
+            "file_path": self.file_path,
+            "line": self.line,
+        }
+
+
+def run_bandit_scan(file_paths: list[str]) -> list[BanditIssue]:
+    """Run Bandit static analysis on the given Python files.
+
+    Returns an empty list when Bandit is not installed or when no
+    Python files are provided.
+    """
+    if not _HAS_BANDIT:
+        return []
+
+    py_files = [f for f in file_paths if f.endswith(".py")]
+    if not py_files:
+        return []
+
+    try:
+        conf = _bandit_config.BanditConfig()
+        mgr = _bandit_manager.BanditManager(conf, "file")
+        mgr.discover_files(py_files)
+        mgr.run_tests()
+        return [
+            BanditIssue(
+                test_id=iss.test_id,
+                severity=str(iss.severity).upper(),
+                confidence=str(iss.confidence).upper(),
+                text=iss.text,
+                file_path=iss.fname,
+                line=iss.lineno,
+            )
+            for iss in mgr.get_issue_list()
+        ]
+    except Exception as exc:
+        logger.debug("Bandit scan failed: %s", exc)
+        return []
+
+
 # ── Quality report (aggregate) ───────────────────────────────────────
 
 @dataclass
@@ -321,10 +442,13 @@ class QualityReport:
     dead_code: list[DeadCodeResult] = field(default_factory=list)
     duplicates: list[DuplicateResult] = field(default_factory=list)
     safety: SafetyReport | None = None
+    bandit_issues: list[BanditIssue] = field(default_factory=list)
+    maintainability_index: float | None = None
 
     @property
     def issue_count(self) -> int:
         n = len(self.complexity_issues) + len(self.dead_code) + len(self.duplicates)
+        n += len(self.bandit_issues)
         if self.safety:
             n += len(self.safety.issues)
         return n
@@ -338,6 +462,8 @@ class QualityReport:
             "dead_code": [d.to_dict() for d in self.dead_code],
             "duplicates": [d.to_dict() for d in self.duplicates],
             "safety": self.safety.to_dict() if self.safety else None,
+            "bandit_issues": [b.to_dict() for b in self.bandit_issues],
+            "maintainability_index": round(self.maintainability_index, 2) if self.maintainability_index is not None else None,
         }
 
 
@@ -404,6 +530,25 @@ def analyze_project(
     report.duplicates = detect_duplicates(
         all_symbols, threshold=duplicate_threshold
     )
+
+    # Bandit security scan (Python files only)
+    report.bandit_issues = run_bandit_scan(files)
+
+    # Maintainability index (average across Python files)
+    if _HAS_RADON:
+        mi_scores: list[float] = []
+        for fpath in files:
+            if not fpath.endswith(".py"):
+                continue
+            try:
+                code = Path(fpath).read_text(encoding="utf-8", errors="replace")
+                score = mi_visit(code, True)
+                if isinstance(score, (int, float)):
+                    mi_scores.append(float(score))
+            except Exception:
+                pass
+        if mi_scores:
+            report.maintainability_index = sum(mi_scores) / len(mi_scores)
 
     if run_safety:
         validator = SafetyValidator()

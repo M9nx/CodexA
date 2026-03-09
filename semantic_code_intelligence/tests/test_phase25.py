@@ -363,7 +363,9 @@ class TestQualityCmdHelpers:
         report.complexity_issues = []
         report.dead_code = []
         report.duplicates = []
+        report.bandit_issues = []
         report.safety = None
+        report.maintainability_index = None
 
         import click
         from click.testing import CliRunner

@@ -431,7 +431,7 @@ class TestTUI:
 # ===========================================================================
 
 class TestMCPServer:
-    """Tests for the MCP JSON-RPC server."""
+    """Tests for the MCP server (official SDK)."""
 
     def test_mcp_import(self):
         from semantic_code_intelligence.mcp import run_mcp_server, MCP_TOOLS
@@ -441,7 +441,7 @@ class TestMCPServer:
     def test_mcp_tool_definitions(self):
         from semantic_code_intelligence.mcp import MCP_TOOLS
 
-        names = {t["name"] for t in MCP_TOOLS}
+        names = {t.name for t in MCP_TOOLS}
         assert "semantic_search" in names
         assert "keyword_search" in names
         assert "hybrid_search" in names
@@ -449,41 +449,23 @@ class TestMCPServer:
         assert "explain_symbol" in names
         assert "health_check" in names
 
-    def test_mcp_handle_initialize(self):
-        from semantic_code_intelligence.mcp import _handle_request
+    def test_mcp_dispatch_health_check(self):
+        from semantic_code_intelligence.mcp import _dispatch_tool
 
-        request = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "initialize",
-            "params": {},
-        }
-        response = _handle_request(request, Path("."))
-        assert response["result"]["protocolVersion"] == "2024-11-05"
+        result = _dispatch_tool("health_check", {}, Path("."))
+        assert result["status"] == "ok"
 
-    def test_mcp_handle_tools_list(self):
-        from semantic_code_intelligence.mcp import _handle_request
+    def test_mcp_dispatch_unknown_tool(self):
+        from semantic_code_intelligence.mcp import _dispatch_tool
 
-        request = {
-            "jsonrpc": "2.0",
-            "id": 2,
-            "method": "tools/list",
-            "params": {},
-        }
-        response = _handle_request(request, Path("."))
-        assert "tools" in response["result"]
+        result = _dispatch_tool("nonexistent_tool", {}, Path("."))
+        assert "error" in result
 
-    def test_mcp_handle_unknown_method(self):
-        from semantic_code_intelligence.mcp import _handle_request
+    def test_mcp_create_server(self):
+        from semantic_code_intelligence.mcp import _create_server
 
-        request = {
-            "jsonrpc": "2.0",
-            "id": 3,
-            "method": "nonexistent/method",
-            "params": {},
-        }
-        response = _handle_request(request, Path("."))
-        assert "error" in response
+        server = _create_server(Path("."))
+        assert server is not None
 
 
 # ===========================================================================

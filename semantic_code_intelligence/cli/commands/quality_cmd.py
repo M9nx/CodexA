@@ -52,13 +52,16 @@ def _output_safety(safety: "SafetyResult", count: int, *, json_mode: bool, pipe:
 
 def _output_report_pipe(report: "QualityReport") -> None:
     """Emit full quality report in pipe-friendly plain text."""
-    click.echo(f"Files: {report.files_analyzed}  Symbols: {report.symbol_count}  Issues: {report.issue_count}")
+    mi_str = f"  MI: {report.maintainability_index:.1f}" if report.maintainability_index is not None else ""
+    click.echo(f"Files: {report.files_analyzed}  Symbols: {report.symbol_count}  Issues: {report.issue_count}{mi_str}")
     for c in report.complexity_issues:
         click.echo(f"  COMPLEXITY  {c.symbol_name} ({c.file_path}:{c.start_line}) score={c.complexity} [{c.rating}]")
     for d in report.dead_code:
         click.echo(f"  DEAD_CODE   {d.symbol_name} ({d.file_path}:{d.start_line}) kind={d.kind}")
     for dup in report.duplicates:
         click.echo(f"  DUPLICATE   {dup.symbol_a} ↔ {dup.symbol_b} sim={dup.similarity:.2f}")
+    for b in report.bandit_issues:
+        click.echo(f"  SECURITY    [{b.test_id}] {b.text} ({b.file_path}:{b.line}) sev={b.severity}")
     if report.safety and not report.safety.safe:
         for i in report.safety.issues:
             click.echo(f"  SAFETY      L{i.line_number}: {i.description}")
@@ -69,7 +72,10 @@ def _output_report_rich(report: "QualityReport", root: Path) -> None:
     console.print(f"\n[bold cyan]Quality Report[/bold cyan] — {root}\n")
     console.print(f"  Files analyzed: {report.files_analyzed}")
     console.print(f"  Symbols: {report.symbol_count}")
-    console.print(f"  Issues: {report.issue_count}\n")
+    console.print(f"  Issues: {report.issue_count}")
+    if report.maintainability_index is not None:
+        console.print(f"  Maintainability Index: {report.maintainability_index:.1f}")
+    console.print()
 
     if report.complexity_issues:
         console.print("[bold yellow]High Complexity Functions:[/bold yellow]")
@@ -87,6 +93,12 @@ def _output_report_rich(report: "QualityReport", root: Path) -> None:
         console.print("[bold yellow]Duplicate Logic:[/bold yellow]")
         for dup in report.duplicates:
             console.print(f"  {dup.symbol_a} ↔ {dup.symbol_b} — {dup.similarity:.0%} similar")
+        console.print()
+
+    if report.bandit_issues:
+        console.print("[bold red]Security Issues (Bandit):[/bold red]")
+        for b in report.bandit_issues:
+            console.print(f"  [{b.test_id}] {b.text} ({b.file_path}:{b.line}) — {b.severity}")
         console.print()
 
     if report.safety and not report.safety.safe:
