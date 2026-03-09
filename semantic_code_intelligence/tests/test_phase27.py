@@ -276,7 +276,7 @@ class TestLSPCLI:
 
     def test_command_count_is_36(self):
         """Verify we now have 36 top-level commands (35 + lsp)."""
-        assert len(cli.commands) == 37
+        assert len(cli.commands) == 38
 
 
 # =========================================================================

@@ -796,7 +796,7 @@ class TestRouter:
 
         group = click.Group("test")
         register_commands(group)
-        assert len(group.commands) == 37
+        assert len(group.commands) == 38
 
     def test_hotspots_registered(self):
         import click

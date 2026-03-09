@@ -19,11 +19,13 @@ class TestRouter:
         assert "init" in command_names
         assert "index" in command_names
         assert "search" in command_names
+        assert "grep" in command_names
+        assert "benchmark" in command_names
 
     def test_register_commands_count(self):
         group = click.Group(name="test")
         register_commands(group)
-        assert len(group.commands) == 37
+        assert len(group.commands) == 38
 
     def test_registered_commands_are_click_commands(self):
         group = click.Group(name="test")

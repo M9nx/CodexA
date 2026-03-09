@@ -812,7 +812,7 @@ class TestRouterPhase19:
     def test_command_count_31(self):
         from semantic_code_intelligence.cli.main import cli
 
-        assert len(cli.commands) == 37
+        assert len(cli.commands) == 38
 
     def test_tool_command_registered(self):
         from semantic_code_intelligence.cli.main import cli

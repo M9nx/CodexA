@@ -41,6 +41,7 @@ from semantic_code_intelligence.cli.commands.mcp_cmd import mcp_cmd
 from semantic_code_intelligence.cli.commands.lsp_cmd import lsp_cmd
 from semantic_code_intelligence.cli.commands.models_cmd import models_cmd
 from semantic_code_intelligence.cli.commands.benchmark_cmd import benchmark_cmd
+from semantic_code_intelligence.cli.commands.grep_cmd import grep_cmd
 
 
 def register_commands(cli: click.Group) -> None:
@@ -86,3 +87,4 @@ def register_commands(cli: click.Group) -> None:
     cli.add_command(lsp_cmd)
     cli.add_command(models_cmd)
     cli.add_command(benchmark_cmd)
+    cli.add_command(grep_cmd)
