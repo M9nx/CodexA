@@ -492,7 +492,7 @@ class TestPipelineMode:
     def test_version_option(self):
         runner = CliRunner()
         result = runner.invoke(cli, ["--version"])
-        assert "0.27.0" in result.output
+        assert "0.28.0" in result.output
 
 
 # =========================================================================
@@ -523,7 +523,7 @@ class TestRouterRegistration:
 
     def test_total_command_count(self):
         """Verify we now have 17 top-level commands."""
-        assert len(cli.commands) == 35
+        assert len(cli.commands) == 36
 
 
 # =========================================================================
@@ -652,7 +652,7 @@ class TestProjectMetadata:
 
     def test_version_is_0_13(self):
         from semantic_code_intelligence import __version__
-        assert __version__ == "0.27.0"
+        assert __version__ == "0.28.0"
 
     def test_app_name(self):
         from semantic_code_intelligence import __app_name__

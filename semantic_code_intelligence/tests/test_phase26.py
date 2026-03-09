@@ -18,7 +18,7 @@ from semantic_code_intelligence.cli.main import cli
 
 class TestVersion027:
     def test_version_is_027(self):
-        assert __version__ == "0.27.0"
+        assert __version__ == "0.28.0"
 
 
 # =========================================================================
@@ -170,8 +170,8 @@ class TestModelsCLI:
         assert result.exit_code != 0
 
     def test_model_count_is_35(self):
-        """Verify we now have 35 top-level commands."""
-        assert len(cli.commands) == 35
+        """Verify we now have 36 top-level commands."""
+        assert len(cli.commands) == 36
 
 
 class TestModelRegistry:

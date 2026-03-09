@@ -202,6 +202,7 @@ class IndexingTask:
     """A queued indexing task."""
 
     file_paths: list[str]
+    deleted_paths: list[str] = field(default_factory=list)
     force: bool = False
     timestamp: float = 0.0
 
@@ -243,16 +244,23 @@ class AsyncIndexer:
         self._on_complete = on_complete
         self._on_error = on_error
 
-    def enqueue(self, file_paths: list[str], force: bool = False) -> None:
+    def enqueue(
+        self,
+        file_paths: list[str],
+        deleted_paths: list[str] | None = None,
+        force: bool = False,
+    ) -> None:
         """Add an indexing task to the queue."""
         task = IndexingTask(
             file_paths=file_paths,
+            deleted_paths=deleted_paths or [],
             force=force,
             timestamp=time.time(),
         )
         with self._lock:
             self._queue.append(task)
-        logger.debug("Enqueued indexing task for %d files", len(file_paths))
+        logger.debug("Enqueued indexing task for %d files (%d deleted)",
+                     len(file_paths), len(task.deleted_paths))
 
     def _process_loop(self) -> None:
         """Main processing loop."""
@@ -267,9 +275,18 @@ class AsyncIndexer:
                 continue
 
             try:
-                # Import here to avoid circular dependency
-                from semantic_code_intelligence.services.indexing_service import run_indexing
-                result = run_indexing(self._root, force=task.force)
+                if task.force or not task.file_paths:
+                    # Full re-index when forced or no specific files
+                    from semantic_code_intelligence.services.indexing_service import run_indexing
+                    result = run_indexing(self._root, force=task.force)
+                else:
+                    # Per-file incremental indexing (Phase 27)
+                    from semantic_code_intelligence.services.indexing_service import run_incremental_indexing
+                    result = run_incremental_indexing(
+                        self._root,
+                        changed_files=task.file_paths,
+                        deleted_files=task.deleted_paths,
+                    )
                 self._tasks_processed += 1
                 logger.info("Async indexing complete: %s", result)
                 if self._on_complete:
@@ -342,8 +359,9 @@ class IndexingDaemon:
                 self._event_log = self._event_log[-1000:]
 
         changed_paths = [str(e.path) for e in events if e.change_type != "deleted"]
-        if changed_paths:
-            self._indexer.enqueue(changed_paths)
+        deleted_paths = [str(e.path) for e in events if e.change_type == "deleted"]
+        if changed_paths or deleted_paths:
+            self._indexer.enqueue(changed_paths, deleted_paths=deleted_paths)
 
     def start(self) -> None:
         """Start the daemon (watcher + indexer)."""

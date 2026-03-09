@@ -390,3 +390,212 @@ def run_indexing(
 
     logger.info("Indexing complete. %s", result)
     return result
+
+
+# ── Per-file incremental indexing (Phase 27) ─────────────────────────
+
+def run_incremental_indexing(
+    project_root: Path,
+    changed_files: list[str],
+    deleted_files: list[str] | None = None,
+) -> IndexingResult:
+    """Re-index only specific changed/deleted files without a full repo scan.
+
+    This is the key performance optimisation for the daemon: instead of
+    scanning the entire repository on every file change, it processes only
+    the files that the watcher detected as created/modified/deleted.
+
+    Changed files are re-chunked, re-embedded, and their vectors replaced
+    in the FAISS store.  Deleted files have their vectors, hashes, and
+    symbols removed.
+
+    Args:
+        project_root: Root directory of the project.
+        changed_files: Absolute paths of files that were created or modified.
+        deleted_files: Absolute paths of files that were deleted.
+
+    Returns:
+        IndexingResult with statistics for the incremental operation.
+    """
+    project_root = project_root.resolve()
+    config = load_config(project_root)
+    index_dir = AppConfig.index_dir(project_root)
+    index_dir.mkdir(parents=True, exist_ok=True)
+    deleted_files = deleted_files or []
+
+    indexing_start = time.time()
+    result = IndexingResult()
+
+    # Load existing stores
+    hash_store = HashStore.load(index_dir)
+    chunk_hash_store = ChunkHashStore.load(index_dir)
+
+    try:
+        store = VectorStore.load(index_dir)
+    except FileNotFoundError:
+        # No existing index — fall back to full indexing
+        logger.info("No existing index found; falling back to full indexing.")
+        return run_indexing(project_root, force=False)
+
+    dimension = store.dimension
+
+    # Step 1: Handle deleted files
+    deleted_rel: list[str] = []
+    for dp in deleted_files:
+        p = Path(dp)
+        if p.is_absolute():
+            try:
+                rel = str(p.relative_to(project_root))
+            except ValueError:
+                rel = str(p)
+        else:
+            rel = dp
+        store.remove_by_file(dp)
+        hash_store.remove(rel)
+        chunk_hash_store.remove_by_file(dp)
+        deleted_rel.append(rel)
+
+    # Step 2: Process changed files
+    scanned_files: list[ScannedFile] = []
+    for fp in changed_files:
+        p = Path(fp)
+        if not p.is_file():
+            continue
+        try:
+            rel = str(p.relative_to(project_root))
+        except ValueError:
+            rel = str(p)
+        content_hash = _safe_compute_hash(p)
+        if content_hash is None:
+            continue
+        scanned_files.append(ScannedFile(
+            path=p,
+            relative_path=rel,
+            extension=p.suffix,
+            size_bytes=p.stat().st_size,
+            content_hash=content_hash,
+        ))
+    result.files_scanned = len(scanned_files)
+
+    # Step 3: Filter to files that actually changed (hash check)
+    files_to_index: list[ScannedFile] = []
+    for sf in scanned_files:
+        if hash_store.has_changed(sf.relative_path, sf.content_hash):
+            files_to_index.append(sf)
+        else:
+            result.files_skipped += 1
+
+    if not files_to_index and not deleted_files:
+        logger.info("Incremental: nothing to update.")
+        return result
+
+    # Step 4: Chunk changed files
+    all_chunks: list[CodeChunk] = []
+    chunk_file_hashes: list[str] = []
+
+    for sf in files_to_index:
+        # Remove old vectors for this file before re-adding
+        store.remove_by_file(str(sf.path))
+        chunk_hash_store.remove_by_file(str(sf.path))
+
+        chunks = chunk_file(
+            sf.path,
+            chunk_size=config.embedding.chunk_size,
+            chunk_overlap=config.embedding.chunk_overlap,
+        )
+        for c in chunks:
+            all_chunks.append(c)
+            chunk_file_hashes.append(sf.content_hash)
+        result.files_indexed += 1
+
+    result.chunks_created = len(all_chunks)
+
+    # Step 5: Embed and add to store
+    if all_chunks:
+        texts = [chunk.content for chunk in all_chunks]
+        logger.info("Incremental: embedding %d chunks from %d files...",
+                     len(texts), len(files_to_index))
+        embeddings = generate_embeddings(
+            texts,
+            model_name=config.embedding.model_name,
+            show_progress=False,
+        )
+
+        metadata_list = [
+            ChunkMetadata(
+                file_path=chunk.file_path,
+                start_line=chunk.start_line,
+                end_line=chunk.end_line,
+                chunk_index=chunk.chunk_index,
+                language=chunk.language,
+                content=chunk.content,
+                content_hash=chunk_file_hashes[i],
+            )
+            for i, chunk in enumerate(all_chunks)
+        ]
+
+        store.add(embeddings, metadata_list)
+
+    # Step 6: Persist stores
+    store.save(index_dir)
+
+    for sf in files_to_index:
+        hash_store.set(sf.relative_path, sf.content_hash)
+    for chunk in all_chunks:
+        c_key = ChunkHashStore.chunk_key(
+            chunk.file_path, chunk.start_line, chunk.end_line,
+        )
+        chunk_hash_store.set(c_key, compute_chunk_hash(chunk.content))
+
+    hash_store.save(index_dir)
+    chunk_hash_store.save(index_dir)
+    result.total_vectors = store.size
+
+    # Step 7: Update symbol registry for changed files only
+    registry = SymbolRegistry.load(index_dir)
+    sym_count = 0
+    for dp in deleted_rel:
+        registry.remove_file(dp)
+    for sf in files_to_index:
+        registry.remove_file(sf.relative_path)
+        try:
+            symbols = parse_file(sf.path)
+            entries = [
+                SymbolEntry(
+                    name=sym.name,
+                    kind=sym.kind,
+                    file_path=sf.relative_path,
+                    start_line=sym.start_line,
+                    end_line=sym.end_line,
+                    parent=sym.parent,
+                    parameters=sym.parameters,
+                    decorators=sym.decorators,
+                    language=detect_language(str(sf.path)),
+                )
+                for sym in symbols
+            ]
+            registry.add_many(entries)
+            sym_count += len(entries)
+        except Exception:
+            logger.debug("Symbol extraction failed for %s", sf.relative_path)
+    registry.save(index_dir)
+    result.symbols_extracted = sym_count
+
+    # Step 8: Update index manifest
+    manifest = IndexManifest.load(index_dir) or IndexManifest()
+    manifest.total_chunks = store.size
+    manifest.total_symbols = registry.size
+    manifest.touch()
+    manifest.save(index_dir)
+
+    logger.info("Incremental indexing complete. %s", result)
+    return result
+
+
+def _safe_compute_hash(path: Path) -> str | None:
+    """Compute file hash, returning None on error."""
+    try:
+        from semantic_code_intelligence.indexing.scanner import compute_file_hash
+        return compute_file_hash(path)
+    except (OSError, PermissionError):
+        return None
