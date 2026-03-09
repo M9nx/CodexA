@@ -528,6 +528,28 @@ After `codex init`, your project has `.codex/config.json`:
 
 ---
 
+## Documentation
+
+CodexA ships with a full MkDocs documentation site.
+
+```bash
+# Install docs dependencies
+pip install -e ".[docs]"
+
+# Serve locally (live-reload)
+mkdocs serve
+
+# Build static site
+mkdocs build
+
+# Deploy to GitHub Pages
+mkdocs gh-deploy
+```
+
+Browse the docs at **http://127.0.0.1:8000** after running `mkdocs serve`.
+
+---
+
 ## Development
 
 ```bash

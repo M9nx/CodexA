@@ -16,6 +16,9 @@ build/
 htmlcov/
 .coverage
 
+# MkDocs build output
+site/
+
 # VS Code extension build artifacts
 vscode-extension/node_modules/
 vscode-extension/out/
