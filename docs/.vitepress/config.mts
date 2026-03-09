@@ -27,6 +27,7 @@ export default defineConfig({
             { text: 'Quick Start', link: '/guide/quickstart' },
             { text: 'AI Agent Setup', link: '/guide/ai-agent-setup' },
             { text: 'Configuration', link: '/guide/configuration' },
+            { text: 'Contributing', link: '/guide/contributing' },
             { text: 'Roadmap', link: '/guide/roadmap' },
           ],
         },

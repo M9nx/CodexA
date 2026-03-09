@@ -11,7 +11,7 @@ development workflow. It's designed for:
 
 ## Key Capabilities
 
-### 🔍 Semantic Search
+### Semantic Search
 
 Find code by concept, not keywords:
 
@@ -21,7 +21,7 @@ codex search "authentication middleware"
 codex search "database connection pooling"
 ```
 
-### ⚡ 36 CLI Commands
+### 36 CLI Commands
 
 Comprehensive tooling from the terminal:
 
@@ -32,7 +32,7 @@ codex impact                # Blast radius analysis
 codex explain MyClass       # Structural explanation
 ```
 
-### 🤖 AI Agent Integration
+### AI Agent Integration
 
 Built-in tool protocol for AI coding assistants:
 
@@ -42,7 +42,7 @@ codex serve --port 24842     # HTTP bridge
 codex mcp                    # MCP server for Claude/Cursor
 ```
 
-### 📊 Quality & Metrics
+### Quality & Metrics
 
 Full quality pipeline with CI integration:
 
@@ -64,24 +64,24 @@ codex metrics --trend        # Track quality over time
 
 ### vs. grep/ripgrep
 
-- ✅ Understands code meaning, not just text patterns
-- ✅ Finds related code even with different terminology
-- ✅ Quality analysis, hotspots, impact analysis built-in
-- ✅ AI agent integration via MCP/HTTP/CLI
+- Understands code meaning, not just text patterns
+- Finds related code even with different terminology
+- Quality analysis, hotspots, impact analysis built-in
+- AI agent integration via MCP/HTTP/CLI
 
 ### vs. IDE search
 
-- ✅ Works across entire codebase from the command line
-- ✅ Scriptable and automatable for CI/CD
-- ✅ Semantic understanding beyond symbol search
-- ✅ 8 structured tools for AI agents
+- Works across entire codebase from the command line
+- Scriptable and automatable for CI/CD
+- Semantic understanding beyond symbol search
+- 8 structured tools for AI agents
 
 ### vs. cloud code search
 
-- ✅ 100% offline — no code leaves your machine
-- ✅ No API keys or subscriptions required
-- ✅ Fast local inference with sentence-transformers
-- ✅ Privacy-first design
+- 100% offline — no code leaves your machine
+- No API keys or subscriptions required
+- Fast local inference with sentence-transformers
+- Privacy-first design
 
 ## Design Philosophy
 
