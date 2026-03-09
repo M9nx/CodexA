@@ -16,8 +16,10 @@ build/
 htmlcov/
 .coverage
 
-# MkDocs build output
-site/
+# VitePress build output
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+node_modules/
 
 # VS Code extension build artifacts
 vscode-extension/node_modules/

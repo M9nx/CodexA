@@ -27,7 +27,7 @@ codex search "error handling" --json
 # Explain a function or class
 codex explain process_payment
 
-# Get the call graph
+# Get rich context
 codex context process_payment
 
 # Trace dependencies
@@ -36,8 +36,9 @@ codex deps src/api/handlers.py
 
 ## 4. AI-Powered Analysis
 
-!!! note "Requires LLM Configuration"
-    Set up an LLM provider in `.codex/config.json` first. See [Installation](installation.md#llm-configuration-optional).
+::: tip Requires LLM Configuration
+Set up an LLM provider in `.codex/config.json` first. See [Installation](installation#llm-configuration-optional).
+:::
 
 ```bash
 # Ask questions about your code
@@ -77,7 +78,7 @@ Add CodexA as a Copilot instruction source for your project:
 mkdir -p .github
 ```
 
-Create `.github/copilot-instructions.md` referencing CodexA commands. See the [AI Tool Protocol](AI_TOOL_PROTOCOL.md) for the full integration guide.
+Create `.github/copilot-instructions.md` referencing CodexA commands. See the [AI Agent Setup](ai-agent-setup) for the full integration guide.
 
 Configure VS Code settings:
 
@@ -103,7 +104,7 @@ Agents can then call `http://127.0.0.1:24842/tools/invoke` directly.
 
 ## What's Next?
 
-- [CLI Reference](CLI.md) — All 36 commands
-- [Architecture](architecture.md) — How CodexA works internally
-- [Plugin System](PLUGINS.md) — Extend with custom hooks
-- [AI Workflows](AI_WORKFLOWS.md) — Multi-turn chat, investigation chains
+- [CLI Reference](../reference/cli) — All 36 commands
+- [Architecture](../reference/architecture) — How CodexA works internally
+- [Plugin System](../features/plugin-system) — Extend with custom hooks
+- [AI Workflows](../features/ai-tools) — Multi-turn chat, investigation chains

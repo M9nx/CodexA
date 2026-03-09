@@ -18,35 +18,23 @@ pip install -e "."
 
 Install with optional dependencies for additional features:
 
-=== "Development"
+::: code-group
 
-    ```bash
-    pip install -e ".[dev]"
-    ```
+```bash [Development]
+pip install -e ".[dev]"
+# Includes: pytest, pytest-cov
+```
 
-    Includes: pytest, pytest-cov
+```bash [TUI]
+pip install -e ".[tui]"
+# Includes: textual (interactive terminal UI)
+```
 
-=== "TUI"
+```bash [Everything]
+pip install -e ".[dev,tui]"
+```
 
-    ```bash
-    pip install -e ".[tui]"
-    ```
-
-    Includes: textual (interactive terminal UI)
-
-=== "Documentation"
-
-    ```bash
-    pip install -e ".[docs]"
-    ```
-
-    Includes: mkdocs, mkdocs-material
-
-=== "Everything"
-
-    ```bash
-    pip install -e ".[dev,tui,docs]"
-    ```
+:::
 
 ## Verify Installation
 
@@ -94,3 +82,9 @@ For AI-powered commands (`ask`, `review`, `refactor`, `chat`, etc.), configure a
 ```
 
 Supported providers: `openai`, `ollama` (local), `mock` (testing).
+
+## Next Steps
+
+- [Quick Start](quickstart) — Index a project and start searching
+- [Configuration](configuration) — Full configuration reference
+- [AI Agent Setup](ai-agent-setup) — Integrate with VS Code Copilot

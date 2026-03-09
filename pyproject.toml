@@ -57,10 +57,6 @@ tui = [
 build = [
     "pyinstaller>=6.0.0",
 ]
-docs = [
-    "mkdocs>=1.6.0",
-    "mkdocs-material>=9.5.0",
-]
 
 [project.urls]
 Homepage = "https://github.com/M9nx/CodexA"

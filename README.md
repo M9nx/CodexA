@@ -530,23 +530,23 @@ After `codex init`, your project has `.codex/config.json`:
 
 ## Documentation
 
-CodexA ships with a full MkDocs documentation site.
+CodexA ships with a full VitePress documentation site.
 
 ```bash
 # Install docs dependencies
-pip install -e ".[docs]"
+npm install
 
 # Serve locally (live-reload)
-mkdocs serve
+npm run docs:dev
 
 # Build static site
-mkdocs build
+npm run docs:build
 
-# Deploy to GitHub Pages
-mkdocs gh-deploy
+# Preview the build
+npm run docs:preview
 ```
 
-Browse the docs at **http://127.0.0.1:8000** after running `mkdocs serve`.
+Browse the docs at **http://localhost:5173** after running `npm run docs:dev`.
 
 ---
 

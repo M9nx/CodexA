@@ -100,8 +100,8 @@ Orchestrates AI-powered features and tool execution.
 |---------|---------|
 | `tools` | `ToolExecutor`, `ToolInvocation`, `ToolRegistry` — 8 built-in tools |
 | `llm` | Provider abstraction: OpenAI, Ollama, Mock with caching and streaming |
-| `context` | `ContextBuilder`, `ContextWindow`, `CallGraph`, `DependencyMap`, `SessionMemory` |
-| `evolution` | `EvolutionEngine`, `BudgetGuard`, `TaskSelector`, `PatchGenerator`, `TestRunner` |
+| `context` | `ContextBuilder`, `ContextWindow`, `CallGraph`, `DependencyMap` |
+| `evolution` | `EvolutionEngine`, `BudgetGuard`, `TaskSelector`, `PatchGenerator` |
 
 ### Analysis Layer
 
@@ -109,7 +109,7 @@ Code quality, metrics, and workflow intelligence.
 
 | Package | Purpose |
 |---------|---------|
-| `ci` | Quality analysis, metrics snapshots, hotspot detection, impact analysis, quality gates |
+| `ci` | Quality analysis, metrics snapshots, hotspot detection, impact analysis |
 | `analysis` | `RepoSummary`, `CodeExplanation`, `LanguageStats` |
 | `services` | `IndexingResult`, `SearchResult` — service-layer abstractions |
 
@@ -201,7 +201,6 @@ semantic_code_intelligence/
 ├── search/          # FAISS vector + BM25 + hybrid search
 ├── services/        # Service-layer result types
 ├── storage/         # VectorStore, SymbolRegistry, caches
-├── tests/           # 2595+ tests
 ├── tools/           # AI Agent Tool Protocol (8 tools)
 ├── tui/             # Textual interactive terminal
 ├── utils/           # Logging utilities

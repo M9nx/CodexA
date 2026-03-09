@@ -16,8 +16,6 @@ Code explanation and repository summarization.
 | `explain_file()` | function | Explain all symbols in a file |
 | `detect_languages()` | function | Detect languages in the codebase |
 
----
-
 ## bridge
 
 HTTP bridge server for IDE extensions and AI agents.
@@ -34,10 +32,6 @@ HTTP bridge server for IDE extensions and AI agents.
 | `start_bridge()` | function | Start the bridge server |
 | `handle_request()` | function | Process a single bridge request |
 
-See [Bridge Protocol](BRIDGE.md) for the full HTTP API specification.
-
----
-
 ## ci
 
 Quality analysis, metrics, hotspots, impact analysis, and CI gates.
@@ -49,7 +43,6 @@ Quality analysis, metrics, hotspots, impact analysis, and CI gates.
 | `QualityTrend` | class | Trend analysis over snapshots |
 | `QualityGate` | class | Configurable pass/fail gates |
 | `Hotspot` | class | High-risk code location |
-| `HotspotFactor` | class | Individual risk factor for a hotspot |
 | `HotspotAnalyzer` | class | Detects hotspots via complexity, churn, fan-in |
 | `ImpactReport` | class | Blast radius analysis result |
 | `ImpactAnalyzer` | class | Predicts change impact via call graph BFS |
@@ -61,17 +54,11 @@ Quality analysis, metrics, hotspots, impact analysis, and CI gates.
 | `detect_hotspots()` | function | Find high-risk code areas |
 | `analyze_impact()` | function | Compute blast radius of changes |
 
-See [Quality Metrics](QUALITY_METRICS.md) and [CI/CD Integration](CI.md) for usage guides.
-
----
-
 ## cli
 
 36 Click commands organized by capability. All commands support `--json` for machine-readable output.
 
-See [CLI Reference](CLI.md) for the complete command documentation.
-
----
+See [CLI Reference](cli) for the complete command documentation.
 
 ## config
 
@@ -86,8 +73,6 @@ Pydantic configuration models loaded from `.codex/config.json`.
 | `LLMConfig` | class | Provider, model, API key, temperature |
 | `QualityConfig` | class | Quality gate thresholds |
 | `load_config()` | function | Load config from `.codex/config.json` |
-
----
 
 ## context
 
@@ -104,8 +89,6 @@ Context building for AI consumption — symbol resolution, call graphs, dependen
 | `TokenCounter` | class | Estimates token count for context budgets |
 | `ReferenceCollector` | class | Collects all references to a symbol |
 
----
-
 ## daemon
 
 Background file watching and incremental indexing.
@@ -116,8 +99,6 @@ Background file watching and incremental indexing.
 | `FileWatcher` | class | Filesystem event watcher |
 | `AsyncIndexer` | class | Async incremental indexer |
 | `DaemonConfig` | class | Daemon configuration |
-
----
 
 ## embeddings
 
@@ -133,8 +114,6 @@ Sentence-transformer model management and vector encoding.
 | `download_model()` | function | Download a model by name |
 | `switch_model()` | function | Switch active embedding model |
 | `get_model_info()` | function | Get model metadata |
-
----
 
 ## evolution
 
@@ -152,8 +131,6 @@ Self-improving development loop with budget awareness.
 | `EvolutionBudget` | class | Budget configuration |
 | `evolve()` | function | Run one evolution cycle |
 
----
-
 ## indexing
 
 File scanning, code chunking, and semantic chunk creation.
@@ -167,8 +144,6 @@ File scanning, code chunking, and semantic chunk creation.
 | `chunk_file()` | function | Split a file into semantic chunks |
 | `run_indexing()` | function | Full indexing pipeline |
 | `incremental_index()` | function | Index only changed files |
-
----
 
 ## llm
 
@@ -186,8 +161,6 @@ LLM provider abstraction with caching, streaming, and investigation chains.
 | `StreamHandler` | class | Handles streaming LLM responses |
 | `create_provider()` | function | Factory for LLM providers |
 
----
-
 ## lsp
 
 Language Server Protocol implementation.
@@ -196,8 +169,6 @@ Language Server Protocol implementation.
 |--------|------|-------------|
 | `LSPServer` | class | LSP server for editor integration |
 | `start_lsp()` | function | Start the LSP server |
-
----
 
 ## mcp
 
@@ -208,8 +179,6 @@ Model Context Protocol server using the official MCP SDK.
 | `run_mcp_server()` | function | Start the MCP stdio server |
 | `_create_server()` | function | Create and configure MCP server instance |
 | `_dispatch_tool()` | function | Route tool calls to the executor |
-
----
 
 ## parsing
 
@@ -224,8 +193,6 @@ Tree-sitter AST parsing for 12 programming languages.
 
 **Supported languages:** Python, JavaScript, TypeScript, Java, Go, Rust, Ruby, C, C++, C#, PHP, Swift
 
----
-
 ## plugins
 
 Extensible plugin system with 22 hook points.
@@ -239,10 +206,6 @@ Extensible plugin system with 22 hook points.
 | `PluginRegistry` | class | Registry of loaded plugins |
 | `load_plugins()` | function | Discover and load plugins from directory |
 
-See [Plugin System](PLUGINS.md) for the full guide.
-
----
-
 ## scalability
 
 Performance optimizations for large codebases.
@@ -253,8 +216,6 @@ Performance optimizations for large codebases.
 | `MemoryAwareEmbedder` | class | Embedder that respects memory limits |
 | `ParallelScanner` | class | Multi-threaded file scanning |
 | `StreamingIndexer` | class | Streaming indexer for large repos |
-
----
 
 ## search
 
@@ -269,8 +230,6 @@ FAISS vector search, BM25 keyword search, and hybrid RRF fusion.
 | `vector_search()` | function | Pure vector similarity search |
 | `keyword_search()` | function | Pure BM25 keyword search |
 
----
-
 ## services
 
 Service-layer abstractions for indexing and search results.
@@ -279,8 +238,6 @@ Service-layer abstractions for indexing and search results.
 |--------|------|-------------|
 | `IndexingResult` | class | Result of an indexing operation |
 | `SearchResult` | class | Normalized search result |
-
----
 
 ## storage
 
@@ -295,8 +252,6 @@ Persistent storage for vectors, symbols, and metadata.
 | `ChunkStore` | class | Stores code chunks with metadata |
 | `CacheManager` | class | Manages disk caches |
 
----
-
 ## tools
 
 AI Agent Tool Protocol — structured tool invocation for LLM agents.
@@ -310,10 +265,6 @@ AI Agent Tool Protocol — structured tool invocation for LLM agents.
 | `ToolRegistry` | class | Registry of available tools |
 | `ToolSchema` | class | JSON Schema for a tool |
 
-See [AI Tool Protocol](AI_TOOL_PROTOCOL.md) for the complete specification.
-
----
-
 ## tui
 
 Textual-based interactive terminal UI.
@@ -323,8 +274,6 @@ Textual-based interactive terminal UI.
 | `CodexaTUI` | class | Main TUI application |
 | `start_tui()` | function | Launch the interactive terminal |
 
----
-
 ## utils
 
 Logging and utility functions.
@@ -333,8 +282,6 @@ Logging and utility functions.
 |--------|------|-------------|
 | `setup_logging()` | function | Configure rich logging |
 | `get_logger()` | function | Get a named logger |
-
----
 
 ## web
 
@@ -346,10 +293,6 @@ Web UI and REST API server.
 | `APIHandler` | class | REST API request handler |
 | `UIHandler` | class | Static file and UI handler |
 | `start_web()` | function | Start the web server |
-
-See [Web Interface](WEB.md) for the REST API documentation.
-
----
 
 ## workspace
 

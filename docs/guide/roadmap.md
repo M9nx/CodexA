@@ -31,8 +31,6 @@ Replace rough `len(text) // 4` estimation with model-specific tokenizers:
 - Accurate context window budgeting
 - Token usage reporting
 
----
-
 ## Medium Priority
 
 ### Field-Scoped Search
@@ -79,67 +77,24 @@ Add resilience for LLM provider calls:
 - Request timeout configuration
 - Rate limit awareness
 
----
-
 ## Low Priority
 
-### Docker Image
+### Fine-Tuned Embedding Models
 
-Official Docker image for CI and deployment:
+Train custom embedding models on codebases:
 
-```dockerfile
-FROM python:3.12-slim
-RUN pip install codex-ai
-ENTRYPOINT ["codex"]
-```
+- Domain-specific vocabulary handling
+- Language-aware fine-tuning
+- Benchmark against general-purpose models
 
-### CLI Aliases
+### Distributed Indexing
 
-User-definable command shortcuts:
+Support indexing across multiple machines:
 
-```json
-{
-  "aliases": {
-    "s": "search",
-    "q": "quality",
-    "h": "hotspots"
-  }
-}
-```
+- Sharded FAISS indices
+- Distributed embedding computation
+- Merged search results
 
-### YAML Configuration
+## Contributing
 
-Support YAML as an alternative to JSON configuration:
-
-```yaml
-embedding:
-  model_name: all-MiniLM-L6-v2
-  chunk_size: 512
-search:
-  top_k: 10
-```
-
-### Incremental Quality Cache
-
-Cache quality analysis results per-file, invalidating only on file changes. Speeds up repeated `codex quality` runs on large codebases.
-
-### TUI Export
-
-Export TUI views and dashboards to HTML, PNG, or PDF for reports and documentation.
-
-### Additional Language Grammars
-
-Expand tree-sitter support beyond the current 12 languages:
-
-- Kotlin, Scala, Dart, Lua, Elixir, Haskell, OCaml, Zig
-
----
-
-## Completed (Recent)
-
-- [x] **Radon integration** — AST-based cyclomatic complexity and maintainability index (v0.28.0)
-- [x] **Bandit integration** — Security linting in quality pipeline (v0.28.0)
-- [x] **Official MCP SDK** — Replaced custom JSON-RPC with official `mcp` package (v0.28.0)
-- [x] **2595+ tests** — Comprehensive test coverage across all packages
-- [x] **Plugin system** — 22 hook points with full lifecycle management
-- [x] **Evolution engine** — Self-improving development loop with budget control
+Interested in working on any of these? Check the [GitHub issues](https://github.com/M9nx/CodexA/issues) for related discussions.
