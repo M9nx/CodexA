@@ -109,5 +109,4 @@ def explain_cmd(
         for exp in explanations:
             console.print(exp.render(), markup=False)
             console.print()
-
-    print_info(f"Found {len(explanations)} match(es) for '{target}'.")
+        print_info(f"Found {len(explanations)} match(es) for '{target}'.")

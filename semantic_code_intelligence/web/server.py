@@ -143,7 +143,23 @@ class _CombinedHandler(BaseHTTPRequestHandler):
         elif path == "/api/hotspots":
             try:
                 from semantic_code_intelligence.ci.hotspots import analyze_hotspots
-                report = analyze_hotspots(self.project_root)
+                from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder, DependencyMap
+                builder = ContextBuilder()
+                dep_map = DependencyMap()
+                root = self.project_root
+                py_files = sorted(root.rglob("*.py"))
+                py_files = [f for f in py_files if ".venv" not in f.parts and "__pycache__" not in f.parts]
+                for fp in py_files:
+                    try:
+                        content = fp.read_text(encoding="utf-8", errors="replace")
+                        builder.index_file(str(fp), content)
+                        dep_map.add_file(str(fp), content)
+                    except Exception:
+                        continue
+                symbols = builder.get_all_symbols()
+                call_graph = CallGraph()
+                call_graph.build(symbols)
+                report = analyze_hotspots(symbols, call_graph, dep_map, root)
                 self._json(200, report.to_dict())
             except Exception as exc:
                 self._json(500, {"error": str(exc)})

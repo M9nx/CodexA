@@ -67,7 +67,8 @@ def deps_cmd(ctx: click.Context, target: str, path: str, json_mode: bool) -> Non
         # Whole project
         config = load_config(root)
         scanned = scan_repository(root, config.index)
-        print_info(f"Analyzing dependencies across {len(scanned)} files...")
+        if not json_mode:
+            print_info(f"Analyzing dependencies across {len(scanned)} files...")
         for sf in scanned:
             full_path = root / sf.relative_path
             try:
@@ -79,7 +80,7 @@ def deps_cmd(ctx: click.Context, target: str, path: str, json_mode: bool) -> Non
     data = dep_map.to_dict()
 
     if json_mode:
-        console.print(json_mod.dumps(data, indent=2))
+        click.echo(json_mod.dumps(data, indent=2))
     else:
         for file_path, deps_list in data.items():
             console.print(f"\n[bold]{file_path}[/bold]")

@@ -59,7 +59,8 @@ def summary_cmd(ctx: click.Context, path: str, json_mode: bool) -> None:
         print_error("No source files found in the project.")
         return
 
-    print_info(f"Analyzing {len(scanned)} files...")
+    if not json_mode:
+        print_info(f"Analyzing {len(scanned)} files...")
     builder = ContextBuilder()
     for sf in scanned:
         full_path = str(root / sf.relative_path)
@@ -74,5 +75,4 @@ def summary_cmd(ctx: click.Context, path: str, json_mode: bool) -> None:
         click.echo(summary.to_json())
     else:
         console.print(summary.render(), markup=False)
-
-    print_success(f"Summary generated for {summary.total_files} files.")
+        print_success(f"Summary generated for {summary.total_files} files.")

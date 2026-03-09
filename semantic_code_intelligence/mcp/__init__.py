@@ -214,7 +214,7 @@ def _handle_request(request: dict[str, Any], project_root: Path) -> dict[str, An
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "codex-mcp", "version": "0.26.0"},
+                "serverInfo": {"name": "codex-mcp", "version": "0.28.0"},
             },
         }
 
