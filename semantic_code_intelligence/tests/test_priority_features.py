@@ -433,6 +433,10 @@ class TestTUI:
 class TestMCPServer:
     """Tests for the MCP server (official SDK)."""
 
+    @pytest.fixture(autouse=True)
+    def _require_mcp(self):
+        pytest.importorskip("mcp", reason="mcp SDK not installed")
+
     def test_mcp_import(self):
         from semantic_code_intelligence.mcp import run_mcp_server, MCP_TOOLS
         assert callable(run_mcp_server)

@@ -15,9 +15,16 @@ import json
 from pathlib import Path
 from typing import Any
 
-from mcp.server import Server
-from mcp.server.stdio import stdio_server
-from mcp.types import TextContent, Tool
+try:
+    from mcp.server import Server
+    from mcp.server.stdio import stdio_server
+    from mcp.types import TextContent, Tool
+    _HAS_MCP = True
+except ImportError:  # mcp SDK not installed (e.g. Python 3.13)
+    _HAS_MCP = False
+    Server = None  # type: ignore[assignment,misc]
+    TextContent = None  # type: ignore[assignment,misc]
+    Tool = None  # type: ignore[assignment,misc]
 
 from semantic_code_intelligence.config.settings import AppConfig
 from semantic_code_intelligence.utils.logging import get_logger
@@ -27,88 +34,91 @@ logger = get_logger("mcp")
 
 # ---- Tool definitions ---------------------------------------------------
 
-MCP_TOOLS = [
-    Tool(
-        name="semantic_search",
-        description="Semantic vector similarity search over the indexed codebase.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "Natural language search query."},
-                "top_k": {"type": "integer", "description": "Number of results.", "default": 10},
+if _HAS_MCP:
+    MCP_TOOLS = [
+        Tool(
+            name="semantic_search",
+            description="Semantic vector similarity search over the indexed codebase.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Natural language search query."},
+                    "top_k": {"type": "integer", "description": "Number of results.", "default": 10},
+                },
+                "required": ["query"],
             },
-            "required": ["query"],
-        },
-    ),
-    Tool(
-        name="keyword_search",
-        description="BM25-ranked keyword search over indexed code chunks.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "Keyword query."},
-                "top_k": {"type": "integer", "default": 10},
+        ),
+        Tool(
+            name="keyword_search",
+            description="BM25-ranked keyword search over indexed code chunks.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Keyword query."},
+                    "top_k": {"type": "integer", "default": 10},
+                },
+                "required": ["query"],
             },
-            "required": ["query"],
-        },
-    ),
-    Tool(
-        name="hybrid_search",
-        description="Fused semantic + BM25 search via Reciprocal Rank Fusion.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "Search query."},
-                "top_k": {"type": "integer", "default": 10},
+        ),
+        Tool(
+            name="hybrid_search",
+            description="Fused semantic + BM25 search via Reciprocal Rank Fusion.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Search query."},
+                    "top_k": {"type": "integer", "default": 10},
+                },
+                "required": ["query"],
             },
-            "required": ["query"],
-        },
-    ),
-    Tool(
-        name="regex_search",
-        description="Grep-compatible regex search over indexed code.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "pattern": {"type": "string", "description": "Regex pattern."},
-                "top_k": {"type": "integer", "default": 10},
-                "case_insensitive": {"type": "boolean", "default": True},
+        ),
+        Tool(
+            name="regex_search",
+            description="Grep-compatible regex search over indexed code.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "pattern": {"type": "string", "description": "Regex pattern."},
+                    "top_k": {"type": "integer", "default": 10},
+                    "case_insensitive": {"type": "boolean", "default": True},
+                },
+                "required": ["pattern"],
             },
-            "required": ["pattern"],
-        },
-    ),
-    Tool(
-        name="explain_symbol",
-        description="Get detailed info about a code symbol (function, class, method).",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "symbol_name": {"type": "string", "description": "Name of the symbol."},
+        ),
+        Tool(
+            name="explain_symbol",
+            description="Get detailed info about a code symbol (function, class, method).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "symbol_name": {"type": "string", "description": "Name of the symbol."},
+                },
+                "required": ["symbol_name"],
             },
-            "required": ["symbol_name"],
-        },
-    ),
-    Tool(
-        name="index_status",
-        description="Get the current index health and stats.",
-        inputSchema={"type": "object", "properties": {}},
-    ),
-    Tool(
-        name="reindex",
-        description="Trigger a full or incremental re-index of the codebase.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "force": {"type": "boolean", "default": False},
+        ),
+        Tool(
+            name="index_status",
+            description="Get the current index health and stats.",
+            inputSchema={"type": "object", "properties": {}},
+        ),
+        Tool(
+            name="reindex",
+            description="Trigger a full or incremental re-index of the codebase.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "force": {"type": "boolean", "default": False},
+                },
             },
-        },
-    ),
-    Tool(
-        name="health_check",
-        description="Check if the MCP server is running and responsive.",
-        inputSchema={"type": "object", "properties": {}},
-    ),
-]
+        ),
+        Tool(
+            name="health_check",
+            description="Check if the MCP server is running and responsive.",
+            inputSchema={"type": "object", "properties": {}},
+        ),
+    ]
+else:
+    MCP_TOOLS: list = []  # type: ignore[no-redef]
 
 
 # ---- Tool dispatch -------------------------------------------------------
@@ -188,16 +198,18 @@ def _dispatch_tool(name: str, args: dict[str, Any], project_root: Path) -> Any:
 
 # ---- Server factory ------------------------------------------------------
 
-def _create_server(project_root: Path) -> Server:
+def _create_server(project_root: Path) -> "Server":
     """Create and configure an MCP ``Server`` with all CodexA tools."""
+    if not _HAS_MCP:
+        raise RuntimeError("The 'mcp' package is required but not installed.")
     server = Server("codex-mcp")
 
     @server.list_tools()
-    async def handle_list_tools() -> list[Tool]:
+    async def handle_list_tools() -> list:
         return MCP_TOOLS
 
     @server.call_tool()
-    async def handle_call_tool(name: str, arguments: dict | None) -> list[TextContent]:
+    async def handle_call_tool(name: str, arguments: dict | None) -> list:
         args = arguments or {}
         try:
             result = _dispatch_tool(name, args, project_root)
@@ -216,6 +228,8 @@ def run_mcp_server(project_root: Path) -> None:
     Uses the official MCP SDK to handle JSON-RPC over stdio.
     Compatible with Claude Desktop, Cursor, and other MCP clients.
     """
+    if not _HAS_MCP:
+        raise RuntimeError("The 'mcp' package is required but not installed.")
     project_root = project_root.resolve()
     logger.info("MCP server starting for %s", project_root)
 
