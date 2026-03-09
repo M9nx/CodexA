@@ -15,3 +15,8 @@ build/
 .tox/
 htmlcov/
 .coverage
+
+# VS Code extension build artifacts
+vscode-extension/node_modules/
+vscode-extension/out/
+vscode-extension/*.vsix
