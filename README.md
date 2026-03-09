@@ -6,8 +6,8 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.27.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-2556-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/version-0.28.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/tests-2595-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
@@ -372,7 +372,7 @@ Supported providers: `openai`, `ollama` (local), `mock` (testing).
 
 ## All CLI Commands
 
-CodexA provides **35 commands** (plus subcommands) organized by capability:
+CodexA provides **36 commands** (plus subcommands) organized by capability:
 
 ### Core
 
@@ -475,7 +475,7 @@ Additional tools can be registered via the plugin system using the
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    CLI Layer (click)                 │
-│  35 commands · --json · --pipe · --verbose           │
+│  36 commands · --json · --pipe · --verbose           │
 ├─────────────────────────────────────────────────────┤
 │               AI Agent Tooling Protocol              │
 │  ToolExecutor · ToolInvocation · ToolExecutionResult │

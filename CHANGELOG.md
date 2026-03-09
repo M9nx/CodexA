@@ -2,6 +2,34 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.28.0] — Phase 28: UI/UX Polish Across All Interfaces
+
+### VS Code Extension
+- **SymbolsViewProvider**: Added Find References feature with HTML input fields and card-based result rendering
+- **ToolsViewProvider**: Complete rewrite with dynamic parameter inputs generated from tool SCHEMAS, client-side validation, corrected `--json` flag placement, rich result rendering, 6 quick action buttons, loading spinners and animations
+- **SHARED_CSS**: Enhanced shared stylesheet for consistent panel styling
+
+### Web UI
+- **3 new pages**: Tools, Quality, Ask — accessible from the navigation bar
+- **4 new API endpoints**: `/api/quality`, `/api/metrics`, `/api/hotspots`, `/api/tools/run`
+- Updated navigation links across all pages
+
+### CLI
+- **Global error handler** in `main.py` for graceful exception handling
+- **Rich tables** in `tool_cmd.py` for tool listing and results
+- **Error handling** added to `metrics_cmd`, `impact_cmd`, `hotspots_cmd`, `ask_cmd` with try/except blocks
+- **`print_separator()`** and **`print_header()`** utility functions for consistent output formatting
+
+### TUI
+- **Improved Textual CSS** for better layout and styling
+- **Ctrl+K / Ctrl+J** keybindings for top-k adjustment
+- **Rich tables and syntax highlighting** in fallback REPL mode
+- **New commands**: `/help`, `/topk`, `/explain` in the REPL
+
+### Changed
+- CLI registers **36 commands** (up from 35)
+- 2595 tests, all passing
+
 ## [0.27.0] — Phase 27: Power Features (P1–P6)
 
 ### Added — P1: Rich Textual TUI

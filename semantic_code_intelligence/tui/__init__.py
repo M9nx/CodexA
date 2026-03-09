@@ -318,11 +318,16 @@ def _run_fallback_repl(
     try:
         from rich.console import Console as RichConsole
         c = RichConsole()
-        c.rule("[bold cyan]CodexA Interactive Search[/bold cyan]", style="cyan")
-        c.print(f"  [dim]Mode:[/dim] {mode}  [dim]Top-K:[/dim] {top_k}  [dim]Project:[/dim] {project_root.name}")
-        c.print("  [dim]Commands:[/dim] /mode <m>  /topk <n>  /view <n>  /explain <sym>  /help  /quit")
-        c.rule(style="dim")
-        c.print()
+        try:
+            c.rule("[bold cyan]CodexA Interactive Search[/bold cyan]", style="cyan")
+            c.print(f"  [dim]Mode:[/dim] {mode}  [dim]Top-K:[/dim] {top_k}  [dim]Project:[/dim] {project_root.name}")
+            c.print("  [dim]Commands:[/dim] /mode <m>  /topk <n>  /view <n>  /explain <sym>  /help  /quit")
+            c.rule(style="dim")
+            c.print()
+        except (UnicodeEncodeError, OSError):
+            print(f"\n  CodexA Interactive Search  (mode={mode}, top_k={top_k})")
+            print(f"  Project: {project_root}")
+            print("  Commands: /mode <m>  /topk <n>  /view <n>  /explain <sym>  /help  /quit\n")
     except ImportError:
         print(f"\n  CodexA Interactive Search  (mode={mode}, top_k={top_k})")
         print(f"  Project: {project_root}")

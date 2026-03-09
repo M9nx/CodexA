@@ -29,24 +29,32 @@ CodexA/
 ├── semantic_code_intelligence/     # Main package
 │   ├── analysis/                   # AI features & code explanations
 │   ├── bridge/                     # HTTP bridge & IDE integration
+│   ├── ci/                         # Quality analysis, metrics, hotspots, impact
 │   ├── cli/                        # Click-based CLI commands
 │   │   └── commands/               # Individual command modules
 │   ├── config/                     # Pydantic-based configuration
 │   ├── context/                    # Context engine, call graph, deps
 │   ├── daemon/                     # File watcher daemon
+│   ├── docs/                       # Auto-documentation generator
 │   ├── embeddings/                 # Sentence-transformer embeddings
+│   ├── evolution/                  # Self-improving development loop
 │   ├── indexing/                   # Scanner, chunker, semantic chunker
 │   ├── llm/                        # LLM providers & reasoning engine
-│   ├── parsing/                    # Tree-sitter parser (11 languages)
-│   ├── plugins/                    # Plugin SDK & hook system
+│   ├── lsp/                        # Language Server Protocol server
+│   ├── mcp/                        # Model Context Protocol server
+│   ├── parsing/                    # Tree-sitter parser (12 languages)
+│   ├── plugins/                    # Plugin SDK & hook system (22 hooks)
 │   ├── scalability/                # Batch processing utilities
-│   ├── search/                     # Search result formatting
+│   ├── search/                     # Search backends & formatting
 │   ├── services/                   # Indexing & search service layer
 │   ├── storage/                    # FAISS vector store & hash store
-│   ├── tools/                      # AI tool-calling interface
+│   ├── tools/                      # AI tool-calling interface (8 tools)
+│   ├── tui/                        # Textual TUI & fallback REPL
 │   ├── utils/                      # Logging & shared utilities
+│   ├── web/                        # Web UI, REST API, visualization
 │   ├── workspace/                  # Multi-repo workspace management
-│   └── tests/                      # All test files
+│   └── tests/                      # All test files (2595 tests)
+├── vscode-extension/               # VS Code sidebar extension
 ├── pyproject.toml
 ├── requirements.txt
 ├── ROADMAP.md
@@ -87,7 +95,7 @@ CodexA/
 
 ## Plugin Development
 
-CodexA has a plugin system with 13 hook points. See `codex docs --section plugins` for the full reference, or check the [Plugin SDK](semantic_code_intelligence/plugins/__init__.py).
+CodexA has a plugin system with 22 hook points. See `codex docs --section plugins` for the full reference, or check the [Plugin SDK](semantic_code_intelligence/plugins/__init__.py).
 
 ### Minimal Plugin
 

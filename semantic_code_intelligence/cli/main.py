@@ -51,9 +51,13 @@ def main() -> None:
         click.echo("\nInterrupted.", err=True)
         sys.exit(130)
     except Exception as exc:  # noqa: BLE001
-        from semantic_code_intelligence.utils.logging import error_console
-        error_console.print(f"[bold red]Fatal error:[/bold red] {exc}")
-        error_console.print("[dim]Run with --verbose for full traceback.[/dim]")
+        try:
+            from semantic_code_intelligence.utils.logging import error_console
+            error_console.print(f"[bold red]Fatal error:[/bold red] {exc}")
+            error_console.print("[dim]Run with --verbose for full traceback.[/dim]")
+        except (UnicodeEncodeError, OSError):
+            click.echo(f"Fatal error: {exc}", err=True)
+            click.echo("Run with --verbose for full traceback.", err=True)
         sys.exit(1)
 
 

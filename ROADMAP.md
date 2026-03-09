@@ -408,16 +408,72 @@ Major rewrite of the VS Code extension from basic 4-command wrapper to a rich mu
 
 ---
 
+### Phase 26: Priority Feature Implementation (P1–P5) ✅
+
+| Feature | Status |
+|---|---|
+| BM25 keyword search with configurable k1/b parameters | ✅ |
+| Regex search with case-sensitivity control | ✅ |
+| Hybrid search with Reciprocal Rank Fusion (RRF) | ✅ |
+| Full-section expansion via symbol registry | ✅ |
+| Auto-index on first search | ✅ |
+| Chunk-level content hashing (SHA-256) for incremental indexing | ✅ |
+| Model registry with 5 curated embedding models | ✅ |
+| ONNX runtime backend for embeddings | ✅ |
+| Parallel indexing with ThreadPoolExecutor | ✅ |
+| Interactive TUI with /mode, /view, /quit commands | ✅ |
+| MCP server (JSON-RPC over stdio, 8 tools) | ✅ |
+| `.codexaignore` support | ✅ |
+| AST-based call graphs via tree-sitter | ✅ |
+| Cross-repo search modes (semantic/keyword/regex/hybrid) | ✅ |
+| Streaming responses for chat and investigate | ✅ |
+| 34 CLI commands | ✅ |
+
+**2413 tests, all passing**
+
+---
+
+### Phase 27: Power Features (P1–P6) ✅
+
+| Feature | Status |
+|---|---|
+| Rich Textual split-pane TUI with mode cycling and keyboard bindings | ✅ |
+| Graceful fallback REPL when Textual not installed | ✅ |
+| Grep flag parity (--context-lines, --files-only, --files-without-match, --line-numbers, --jsonl) | ✅ |
+| VS Code extension scaffold with 4 commands and sidebar search panel | ✅ |
+| Single-binary distribution via PyInstaller | ✅ |
+| IVF index support for large repos (>50k vectors) | ✅ |
+| `codex models` CLI (list, info, download, switch) | ✅ |
+| 35 CLI commands | ✅ |
+
+**2556 tests, all passing**
+
+---
+
+### Phase 28: UI/UX Polish Across All Interfaces ✅
+
+| Feature | Status |
+|---|---|
+| **VS Code Extension**: Find References in SymbolsViewProvider | ✅ |
+| **VS Code Extension**: ToolsViewProvider rewrite — dynamic parameter inputs from SCHEMAS | ✅ |
+| **VS Code Extension**: Client-side validation, `--json` flag fix, rich result rendering | ✅ |
+| **VS Code Extension**: 6 quick action buttons, spinners, animations | ✅ |
+| **VS Code Extension**: Enhanced SHARED_CSS for consistent styling | ✅ |
+| **Web UI**: 3 new pages (Tools, Quality, Ask) | ✅ |
+| **Web UI**: 4 new API endpoints (/api/quality, /api/metrics, /api/hotspots, /api/tools/run) | ✅ |
+| **CLI**: Global error handler in main.py | ✅ |
+| **CLI**: Rich tables in tool_cmd.py, try/except in metrics/impact/hotspots/ask commands | ✅ |
+| **CLI**: print_separator() and print_header() utilities | ✅ |
+| **TUI**: Improved Textual CSS, Ctrl+K/J for top-k adjustment | ✅ |
+| **TUI**: Rich tables and syntax highlighting in fallback REPL | ✅ |
+| **TUI**: /help, /topk, /explain commands | ✅ |
+| 36 CLI commands | ✅ |
+
+**2595 tests, all passing**
+
+---
+
 ## Upcoming Phases
-
-### Phase 26: LSP Server
-Turn CodexA into a full Language Server Protocol server so any editor (Neovim, Sublime, JetBrains) can consume semantic search, hover-explain, and diagnostics natively.
-
-### Phase 27: Incremental Indexing
-Watch for file changes and update the FAISS index incrementally instead of full re-index. Critical for large repos.
-
-### Phase 28: Multi-Repo Workspace Enhancements
-Index and search across multiple repositories simultaneously with unified results ranking, cross-repo symbol resolution, and workspace-level quality reports.
 
 ### Phase 29: Remote / Cloud Mode
 Package CodexA as a Docker container with a REST API so teams can share one index server. Add auth, rate limiting, team dashboards.
@@ -555,7 +611,7 @@ Three targeted improvements: debugging UX, observability, and documentation.
 ## Architecture
 
 ```
-codex CLI (Click) — 32 commands
+codex CLI (Click) — 36 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
