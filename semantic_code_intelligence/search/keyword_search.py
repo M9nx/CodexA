@@ -2,10 +2,12 @@
 
 Provides grep-compatible text search and BM25-ranked keyword search
 over indexed code chunks, without requiring external dependencies.
+Supports persistent BM25 index serialization for fast startup.
 """
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from dataclasses import dataclass
@@ -121,6 +123,62 @@ class BM25Index:
         ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         return ranked[:top_k]
 
+    def save(self, directory: Path) -> None:
+        """Persist BM25 index to disk for fast reload.
+
+        Saves inverted index, doc lengths, and stats as JSON.
+        """
+        directory = Path(directory)
+        bm25_path = directory / "bm25_index.json"
+        data = {
+            "n": self.n,
+            "avgdl": self.avgdl,
+            "doc_lengths": self.doc_lengths,
+            # Convert int keys to strings for JSON
+            "inverted": {
+                term: {str(k): v for k, v in postings.items()}
+                for term, postings in self.inverted.items()
+            },
+        }
+        bm25_path.write_text(
+            json.dumps(data, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        logger.debug("Saved BM25 index (%d docs, %d terms) to %s",
+                      self.n, len(self.inverted), directory)
+
+    @classmethod
+    def load(cls, directory: Path, metadata: list[ChunkMetadata]) -> "BM25Index | None":
+        """Load a persisted BM25 index if available and valid.
+
+        Returns None if the file doesn't exist or the doc count doesn't
+        match (indicating the FAISS index has changed).
+        """
+        bm25_path = Path(directory) / "bm25_index.json"
+        if not bm25_path.exists():
+            return None
+        try:
+            data = json.loads(bm25_path.read_text(encoding="utf-8"))
+            if data["n"] != len(metadata):
+                logger.debug("BM25 cache stale (%d vs %d docs), rebuilding.",
+                             data["n"], len(metadata))
+                return None
+            idx = cls.__new__(cls)
+            idx.metadata = metadata
+            idx.n = data["n"]
+            idx.avgdl = data["avgdl"]
+            idx.doc_lengths = data["doc_lengths"]
+            idx.doc_tokens = []  # not needed for search
+            idx.inverted = {
+                term: {int(k): v for k, v in postings.items()}
+                for term, postings in data["inverted"].items()
+            }
+            logger.debug("Loaded BM25 index from disk (%d docs).", idx.n)
+            return idx
+        except (json.JSONDecodeError, KeyError, TypeError):
+            logger.debug("BM25 cache corrupt, rebuilding.")
+            return None
+
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -130,13 +188,26 @@ _bm25_cache: dict[str, BM25Index] = {}
 
 
 def _get_bm25(index_dir: Path, store: VectorStore) -> BM25Index:
-    """Get or build a BM25 index for the given vector store."""
+    """Get or build a BM25 index for the given vector store.
+
+    Checks (in order): in-memory cache, disk cache, then builds fresh.
+    Persists newly built indexes to disk for faster future loads.
+    """
     cache_key = str(index_dir)
     cached = _bm25_cache.get(cache_key)
     if cached is not None and cached.n == store.size:
         return cached
+
+    # Try loading from disk
+    loaded = BM25Index.load(index_dir, store.metadata)
+    if loaded is not None:
+        _bm25_cache[cache_key] = loaded
+        return loaded
+
+    # Build fresh and persist
     logger.debug("Building BM25 index over %d chunks.", store.size)
     idx = BM25Index(store.metadata)
+    idx.save(index_dir)
     _bm25_cache[cache_key] = idx
     return idx
 
