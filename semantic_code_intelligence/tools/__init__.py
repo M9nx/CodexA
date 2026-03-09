@@ -120,6 +120,29 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
             "symbol_name": {"type": "string", "required": True, "description": "Focal symbol name"},
         },
     },
+    {
+        "name": "get_quality_score",
+        "description": "Run code quality analysis: complexity, dead code, duplicates, and safety issues.",
+        "parameters": {
+            "file_path": {"type": "string", "required": False, "description": "Specific file to analyze (omit for full project)"},
+        },
+    },
+    {
+        "name": "find_duplicates",
+        "description": "Detect duplicate or near-duplicate code blocks across the codebase.",
+        "parameters": {
+            "threshold": {"type": "float", "required": False, "default": 0.75, "description": "Similarity threshold (0-1)"},
+        },
+    },
+    {
+        "name": "grep_files",
+        "description": "Search raw files using regex — no index required. Uses ripgrep when available.",
+        "parameters": {
+            "pattern": {"type": "string", "required": True, "description": "Regex pattern to search for"},
+            "file_glob": {"type": "string", "required": False, "description": "Glob to filter files (e.g. '*.py')"},
+            "max_results": {"type": "integer", "required": False, "default": 50, "description": "Max matches"},
+        },
+    },
 ]
 
 
@@ -352,4 +375,68 @@ class ToolRegistry:
                 "symbol_name": symbol_name,
                 "contexts": [c.to_dict() for c in contexts],
             },
+        )
+
+    def _tool_get_quality_score(self, file_path: str | None = None) -> ToolResult:
+        from semantic_code_intelligence.ci.quality import analyze_project
+
+        file_paths = [file_path] if file_path else None
+        report = analyze_project(self._root, file_paths=file_paths)
+
+        return ToolResult(
+            tool_name="get_quality_score",
+            success=True,
+            data={
+                "complexity_issues": len(report.complexity_issues),
+                "dead_code": len(report.dead_code),
+                "duplicates": len(report.duplicates),
+                "safety_issues": len(report.bandit_issues),
+                "maintainability_index": report.maintainability_index,
+                "high_complexity": [
+                    {"symbol": c.symbol_name, "file": c.file_path,
+                     "complexity": c.complexity}
+                    for c in report.complexity_issues[:10]
+                ],
+            },
+        )
+
+    def _tool_find_duplicates(self, threshold: float = 0.75) -> ToolResult:
+        from semantic_code_intelligence.ci.quality import detect_duplicates
+
+        builder = self._ensure_builder()
+        all_syms = builder.get_all_symbols()
+        duplicates = detect_duplicates(all_syms, threshold=threshold)
+
+        return ToolResult(
+            tool_name="find_duplicates",
+            success=True,
+            data={
+                "duplicate_count": len(duplicates),
+                "duplicates": [
+                    {
+                        "symbol_a": d.symbol_a,
+                        "symbol_b": d.symbol_b,
+                        "similarity": round(d.similarity, 3),
+                        "file_a": d.file_a,
+                        "file_b": d.file_b,
+                    }
+                    for d in duplicates[:20]
+                ],
+            },
+        )
+
+    def _tool_grep_files(
+        self, pattern: str, file_glob: str | None = None, max_results: int = 50
+    ) -> ToolResult:
+        from semantic_code_intelligence.search.grep import grep_search
+
+        result = grep_search(
+            pattern, self._root,
+            max_results=max_results, file_glob=file_glob,
+        )
+
+        return ToolResult(
+            tool_name="grep_files",
+            success=True,
+            data=result.to_dict(),
         )

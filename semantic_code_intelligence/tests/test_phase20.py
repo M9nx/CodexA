@@ -1861,7 +1861,7 @@ from semantic_code_intelligence.tools import ToolResult, ToolRegistry, TOOL_DEFI
 
 class TestToolDefinitions:
     def test_count(self):
-        assert len(TOOL_DEFINITIONS) == 8
+        assert len(TOOL_DEFINITIONS) == 11
 
     def test_all_have_required_fields(self):
         for td in TOOL_DEFINITIONS:
@@ -1904,7 +1904,7 @@ class TestToolRegistryDeep:
     def test_available_tools(self):
         tr = ToolRegistry(Path("."))
         tools = tr.tool_definitions
-        assert len(tools) == 8
+        assert len(tools) == 11
 
     def test_invoke_unknown(self):
         tr = ToolRegistry(Path("."))

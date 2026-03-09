@@ -4,8 +4,9 @@ Uses the official ``mcp`` SDK (https://pypi.org/project/mcp/) to expose
 CodexA as a tool provider for Claude Desktop, Cursor, and other
 MCP-compatible clients.
 
-Exposes 8 tools: semantic_search, keyword_search, hybrid_search,
-regex_search, explain_symbol, get_call_graph, index_status, reindex.
+Exposes 11 tools: semantic_search, keyword_search, hybrid_search,
+regex_search, explain_symbol, index_status, reindex, health_check,
+get_quality_score, find_duplicates, grep_files.
 """
 
 from __future__ import annotations
@@ -116,6 +117,39 @@ if _HAS_MCP:
             description="Check if the MCP server is running and responsive.",
             inputSchema={"type": "object", "properties": {}},
         ),
+        Tool(
+            name="get_quality_score",
+            description="Run code quality analysis: complexity, dead code, duplicates, safety.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "file_path": {"type": "string", "description": "Specific file to analyze (omit for full project)."},
+                },
+            },
+        ),
+        Tool(
+            name="find_duplicates",
+            description="Detect duplicate or near-duplicate code blocks.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "threshold": {"type": "number", "default": 0.75, "description": "Similarity threshold (0-1)."},
+                },
+            },
+        ),
+        Tool(
+            name="grep_files",
+            description="Search raw files using regex — no index required. Uses ripgrep when available.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "pattern": {"type": "string", "description": "Regex pattern."},
+                    "file_glob": {"type": "string", "description": "Glob filter (e.g. '*.py')."},
+                    "max_results": {"type": "integer", "default": 50},
+                },
+                "required": ["pattern"],
+            },
+        ),
     ]
 else:
     MCP_TOOLS: list = []  # type: ignore[no-redef]
@@ -192,6 +226,50 @@ def _dispatch_tool(name: str, args: dict[str, Any], project_root: Path) -> Any:
 
     if name == "health_check":
         return {"status": "ok", "project_root": str(project_root)}
+
+    if name == "get_quality_score":
+        from semantic_code_intelligence.ci.quality import analyze_project
+        file_paths = [args["file_path"]] if args.get("file_path") else None
+        report = analyze_project(project_root, file_paths=file_paths)
+        return {
+            "complexity_issues": len(report.complexity_issues),
+            "dead_code": len(report.dead_code),
+            "duplicates": len(report.duplicates),
+            "safety_issues": len(report.bandit_issues),
+            "maintainability_index": report.maintainability_index,
+        }
+
+    if name == "find_duplicates":
+        from semantic_code_intelligence.ci.quality import detect_duplicates
+        from semantic_code_intelligence.context.engine import ContextBuilder
+        builder = ContextBuilder()
+        from semantic_code_intelligence.indexing.scanner import scan_repository
+        from semantic_code_intelligence.config.settings import load_config
+        config = load_config(project_root)
+        scanned = scan_repository(project_root, config.index)
+        for sf in scanned:
+            try:
+                builder.index_file(str(project_root / sf.relative_path))
+            except Exception:
+                pass
+        all_syms = builder.get_all_symbols()
+        threshold = args.get("threshold", 0.75)
+        dupes = detect_duplicates(all_syms, threshold=threshold)
+        return [
+            {"symbol_a": d.symbol_a, "symbol_b": d.symbol_b,
+             "similarity": round(d.similarity, 3),
+             "file_a": d.file_a, "file_b": d.file_b}
+            for d in dupes[:20]
+        ]
+
+    if name == "grep_files":
+        from semantic_code_intelligence.search.grep import grep_search
+        result = grep_search(
+            args["pattern"], project_root,
+            max_results=args.get("max_results", 50),
+            file_glob=args.get("file_glob"),
+        )
+        return result.to_dict()
 
     return {"error": f"Unknown tool: {name}"}
 
