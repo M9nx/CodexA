@@ -16,6 +16,9 @@ tools via CLI, HTTP, or MCP.
 | `get_dependencies` | Import/dependency map for a file |
 | `get_call_graph` | Callers and callees of a function |
 | `get_context` | Rich context window for AI-assisted tasks |
+| `get_quality_score` | Code quality analysis — complexity, dead code, duplicates, safety |
+| `find_duplicates` | Detect near-duplicate code blocks across the codebase |
+| `grep_files` | Raw filesystem regex search (ripgrep backend, no index needed) |
 
 ## Invocation Methods
 
@@ -51,7 +54,7 @@ curl http://127.0.0.1:24842/tools/stream
 codex mcp --path /your/project
 ```
 
-All 8 tools are exposed as MCP tools with proper schemas.
+All 11 tools are exposed as MCP tools with proper schemas.
 
 ## Protocol Dataclasses
 

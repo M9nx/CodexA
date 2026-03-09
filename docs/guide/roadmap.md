@@ -2,6 +2,17 @@
 
 Planned improvements for CodexA, organized by priority.
 
+## Recently Completed (v0.29.0)
+
+- **O(1) vector removal**: File-level index for instant vector lookup and batch FAISS reconstruction
+- **True incremental indexing**: Content-hash caching — unchanged chunks skip embedding entirely
+- **BM25 persistence**: BM25 index cached to disk with 3-tier loading (memory/disk/build)
+- **Native file watcher**: Rust-backed `watchfiles` with OS-native APIs (inotify/FSEvents/ReadDirectoryChanges)
+- **Raw filesystem grep**: `codex grep` command with ripgrep backend, no index required
+- **Performance benchmarking**: `codex benchmark` command measuring indexing, search, and memory
+- **Enhanced init**: `codex init --index --vscode` for one-command setup
+- **11 AI tools**: Added `get_quality_score`, `find_duplicates`, `grep_files` to tools and MCP
+
 ## High Priority
 
 ### RAG Pipeline for LLM Commands

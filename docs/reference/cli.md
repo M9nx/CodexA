@@ -10,6 +10,9 @@ Initialize a project for semantic code indexing. Creates a `.codex/` directory w
 
 ```bash
 codex init [PATH]
+codex init --index          # Init + build index
+codex init --vscode         # Init + VS Code MCP config
+codex init --index --vscode # Full setup in one command
 ```
 
 ### `codex index`
@@ -352,10 +355,49 @@ codex web --port 9000 --host 0.0.0.0
 
 ### `codex mcp`
 
-Start the MCP server for Claude/Cursor.
+Start the MCP server for Claude/Cursor. Exposes 11 tools.
 
 ```bash
 codex mcp --path /your/project
+```
+
+## Performance & Diagnostics
+
+### `codex grep`
+
+Search raw files using regex — no index required.
+
+```bash
+codex grep "TODO|FIXME"
+codex grep "def authenticate" -g "*.py"
+codex grep "password" --case-sensitive
+codex grep "import re" --json
+codex grep "class.*Service" -l
+```
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--path, -p` | directory | . | Root directory to search |
+| `--case-sensitive, -s` | flag | false | Case-sensitive matching |
+| `--max-results, -n` | integer | 100 | Max matches |
+| `--glob, -g` | text | *(none)* | File glob filter (e.g. `*.py`) |
+| `--no-ripgrep` | flag | false | Force pure-Python search |
+| `--json` | flag | false | JSON output |
+| `--files-only, -l` | flag | false | Print only file paths |
+
+### `codex benchmark`
+
+Performance benchmarking — indexing speed, search latency, memory usage.
+
+```bash
+codex benchmark
+codex benchmark --json
+```
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--path, -p` | directory | . | Project root |
+| `--json` | flag | false | JSON output |
 ```
 
 ### `codex lsp`

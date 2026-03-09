@@ -118,4 +118,33 @@ codex models switch <name>  # Switch active model (requires re-index)
 - **Indexing**: ~1,000 files/minute on typical hardware
 - **Search**: <100ms per query after indexing
 - **Memory**: FAISS index is memory-mapped for large codebases
+- **Incremental**: Only re-embeds changed chunks (content-hash caching)
+- **BM25 persistence**: BM25 index cached to disk, loads in <10ms
+
+## Raw Filesystem Grep
+
+For instant results without an index, use the `codex grep` command:
+
+```bash
+codex grep "TODO|FIXME"                # Search all files
+codex grep "def authenticate" -g "*.py"  # Filter by file type
+codex grep "password" --case-sensitive   # Case-sensitive
+codex grep "import re" --json            # JSON output
+codex grep "class.*Service" -l           # Files-only (like grep -l)
+```
+
+Uses **ripgrep** for speed when available, falls back to pure Python.
+Unlike `codex search --mode regex`, this searches the actual filesystem —
+no index required.
+
+## Benchmarking
+
+Measure real performance on your codebase:
+
+```bash
+codex benchmark
+```
+
+Reports indexing speed, search latency (all 4 modes with p50/p99/QPS), BM25
+persistence speedup, and memory usage.
 - **Incremental**: Only changed files are re-indexed (`codex index --force` for full rebuild)

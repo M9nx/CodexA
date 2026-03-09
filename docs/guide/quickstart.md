@@ -6,9 +6,15 @@ Get from zero to semantic code search in under 60 seconds.
 
 ```bash
 cd /path/to/your-project
+codex init --index  # Creates .codex/ and builds index in one step
+codex doctor        # Verify everything is healthy
+```
+
+Or step by step:
+
+```bash
 codex init          # Creates .codex/ directory
 codex index .       # Index the entire codebase
-codex doctor        # Verify everything is healthy
 ```
 
 ## 2. Search Your Code

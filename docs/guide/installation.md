@@ -40,7 +40,7 @@ pip install -e ".[dev,tui]"
 
 ```bash
 codex --version
-# codex-ai 0.28.0
+# codex-ai 0.29.0
 
 codex doctor
 # Checks environment health
