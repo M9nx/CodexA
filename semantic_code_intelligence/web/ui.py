@@ -334,114 +334,114 @@ async function loadViz(kind) {
 
 
 def page_tools() -> str:
-    """Tool runner page — invoke any CodexA tool interactively."""
+    """Tool runner page — focused quick actions for code exploration."""
     body = """\
-<h1>Tool Runner</h1>
-<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
-  <select id="tool-select" style="flex:1;min-width:200px;padding:0.5rem;background:var(--surface);
-    border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.95rem;">
-  </select>
-  <button id="run-btn" style="padding:0.5rem 1.5rem;background:var(--accent);color:#fff;
-    border:none;border-radius:6px;cursor:pointer;font-weight:600;">Run</button>
+<h1>Tools</h1>
+<p style="color:var(--dim);margin-bottom:1.5rem;">Quick code exploration — explain symbols, trace call graphs, and inspect dependencies.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+  <div class="card" style="cursor:pointer;" onclick="showTool('explain_symbol')">
+    <h3>&#128269; Explain Symbol</h3>
+    <div class="meta">Structural explanation of a class, function, or method</div>
+  </div>
+  <div class="card" style="cursor:pointer;" onclick="showTool('explain_file')">
+    <h3>&#128196; Explain File</h3>
+    <div class="meta">List and explain all symbols in a source file</div>
+  </div>
+  <div class="card" style="cursor:pointer;" onclick="showTool('get_call_graph')">
+    <h3>&#128300; Call Graph</h3>
+    <div class="meta">Show callers and callees for a symbol</div>
+  </div>
+  <div class="card" style="cursor:pointer;" onclick="showTool('get_dependencies')">
+    <h3>&#128279; Dependencies</h3>
+    <div class="meta">Import and dependency map for a file</div>
+  </div>
 </div>
-<div id="tool-desc" style="color:var(--dim);font-style:italic;margin-bottom:1rem;"></div>
-<div id="param-fields" style="margin-bottom:1rem;"></div>
+<div id="tool-form" style="display:none;">
+  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+    <span id="tool-title" style="font-weight:600;font-size:1.1rem;"></span>
+    <span style="flex:1;"></span>
+    <button onclick="hideTool()" style="padding:0.3rem 0.75rem;background:var(--surface);
+      border:1px solid var(--border);border-radius:6px;color:var(--dim);cursor:pointer;">Back</button>
+  </div>
+  <div class="search-box">
+    <input type="text" id="tool-input" placeholder="" autofocus>
+    <button id="tool-run" onclick="runTool()">Run</button>
+  </div>
+</div>
 <div id="loading">Running...</div>
 <div id="results"></div>
 """
     script = """\
-const SCHEMAS = {
-  semantic_search: { desc: 'Search the codebase using natural language.', params: [
-    {name:'query', type:'string', required:true, desc:'Search query'},
-    {name:'top_k', type:'integer', required:false, def:'10', desc:'Max results'},
-  ]},
-  explain_symbol: { desc: 'Explain a code symbol.', params: [
-    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
-    {name:'file_path', type:'string', required:false, desc:'File path'},
-  ]},
-  explain_file: { desc: 'Explain all symbols in a file.', params: [
-    {name:'file_path', type:'string', required:true, desc:'Source file path'},
-  ]},
-  get_dependencies: { desc: 'Get imports for a file.', params: [
-    {name:'file_path', type:'string', required:true, desc:'Source file path'},
-  ]},
-  get_call_graph: { desc: 'Get callers/callees for a symbol.', params: [
-    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
-  ]},
-  get_context: { desc: 'Rich context window around a symbol.', params: [
-    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
-  ]},
-  find_references: { desc: 'Find all references to a symbol.', params: [
-    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
-  ]},
-  summarize_repo: { desc: 'Summarize the entire repository.', params: []},
+const TOOLS = {
+  explain_symbol: {title:'Explain Symbol', placeholder:'Symbol name (e.g. MyClass)', arg:'symbol_name'},
+  explain_file:   {title:'Explain File',   placeholder:'File path (e.g. src/auth.py)', arg:'file_path'},
+  get_call_graph: {title:'Call Graph',      placeholder:'Symbol name (e.g. handle_request)', arg:'symbol_name'},
+  get_dependencies:{title:'Dependencies',   placeholder:'File path (e.g. src/main.py)', arg:'file_path'},
 };
-
-const sel = document.getElementById('tool-select');
-Object.keys(SCHEMAS).forEach(k => {
-  const o = document.createElement('option'); o.value = k; o.textContent = k;
-  sel.appendChild(o);
-});
-
-function buildParams() {
-  const schema = SCHEMAS[sel.value];
-  document.getElementById('tool-desc').textContent = schema ? schema.desc : '';
-  const el = document.getElementById('param-fields');
-  el.innerHTML = '';
-  if (!schema) return;
-  schema.params.forEach(p => {
-    const div = document.createElement('div');
-    div.style.marginBottom = '0.5rem';
-    const label = document.createElement('label');
-    label.textContent = p.name + (p.required ? ' *' : '') + ' (' + p.type + ')';
-    label.style.cssText = 'display:block;font-size:0.85rem;color:var(--dim);margin-bottom:0.25rem;';
-    const input = document.createElement('input');
-    input.id = 'param-' + p.name;
-    input.placeholder = p.desc;
-    input.style.cssText = 'width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.95rem;';
-    if (p.def) input.value = p.def;
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('run-btn').click(); });
-    div.appendChild(label);
-    div.appendChild(input);
-    el.appendChild(div);
-  });
+let currentTool = null;
+function showTool(name) {
+  currentTool = name;
+  const t = TOOLS[name];
+  document.getElementById('tool-title').textContent = t.title;
+  document.getElementById('tool-input').placeholder = t.placeholder;
+  document.getElementById('tool-input').value = '';
+  document.getElementById('tool-form').style.display = 'block';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('tool-input').focus();
 }
-sel.addEventListener('change', buildParams);
-buildParams();
-
-document.getElementById('run-btn').addEventListener('click', async () => {
-  const tool = sel.value;
-  const schema = SCHEMAS[tool];
-  if (!schema) return;
-  const args = {};
-  const missing = [];
-  schema.params.forEach(p => {
-    const inp = document.getElementById('param-' + p.name);
-    const v = inp ? inp.value.trim() : '';
-    if (v) args[p.name] = v;
-    else if (p.required) missing.push(p.name);
-  });
-  if (missing.length) {
-    document.getElementById('results').innerHTML = '<div class="card" style="border-color:var(--red);"><p class="status-err">Missing required: ' + missing.join(', ') + '</p></div>';
-    return;
-  }
+function hideTool() {
+  document.getElementById('tool-form').style.display = 'none';
+  document.getElementById('results').innerHTML = '';
+  currentTool = null;
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && currentTool) runTool();
+});
+async function runTool() {
+  if (!currentTool) return;
+  const t = TOOLS[currentTool];
+  const val = document.getElementById('tool-input').value.trim();
+  if (!val) return;
   document.getElementById('loading').style.display = 'block';
   document.getElementById('results').innerHTML = '';
+  const args = {}; args[t.arg] = val;
   try {
     const res = await fetch('/api/tools/run', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({tool_name: tool, arguments: args}),
+      body: JSON.stringify({tool_name: currentTool, arguments: args}),
     });
     const data = await res.json();
     document.getElementById('loading').style.display = 'none';
     const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    document.getElementById('results').innerHTML = '<div class="card"><h3>' + (data.success !== false ? '<span class="status-ok">Success</span>' : '<span class="status-err">Error</span>') + '</h3><pre><code>' + esc(JSON.stringify(data, null, 2)) + '</code></pre></div>';
+    const payload = data.result_payload || data;
+    const ok = data.success !== false;
+    let html = '';
+    if (!ok) {
+      const err = data.error || {};
+      html = '<div class="card" style="border-color:var(--red);"><p class="status-err">'
+        + esc(err.error_message || JSON.stringify(data)) + '</p></div>';
+    } else if (currentTool === 'explain_symbol' || currentTool === 'explain_file') {
+      const d = payload.data || payload;
+      const syms = d.symbols || d.explanations || [];
+      if (typeof syms === 'object' && !Array.isArray(syms)) {
+        html = '<div class="card"><pre><code>' + esc(JSON.stringify(d, null, 2)) + '</code></pre></div>';
+      } else if (Array.isArray(syms)) {
+        syms.forEach(s => {
+          html += '<div class="card"><h3><span class="badge badge-' + (s.kind||'fn') + '">' + esc(s.kind||'symbol') + '</span> ' + esc(s.name||s.symbol_name||'') + '</h3>'
+            + '<div class="meta">' + esc(s.file_path||'') + ' &middot; ' + esc(s.lines||s.summary||'') + '</div></div>';
+        });
+      }
+      if (!html) html = '<div class="card"><pre><code>' + esc(JSON.stringify(d, null, 2)) + '</code></pre></div>';
+    } else {
+      html = '<div class="card"><pre><code>' + esc(JSON.stringify(payload.data || payload, null, 2)) + '</code></pre></div>';
+    }
+    document.getElementById('results').innerHTML = html;
   } catch(e) {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('results').innerHTML = '<div class="card"><p class="status-err">' + e + '</p></div>';
   }
-});
+}
 """
     return _page("Tools", body, script)
 
@@ -525,12 +525,14 @@ def page_ask() -> str:
     """AI Q&A page — ask questions about the codebase."""
     body = """\
 <h1>Ask CodexA</h1>
+<p style="color:var(--dim);margin-bottom:1rem;">Ask a natural-language question and get an AI-generated answer grounded in your codebase.</p>
 <div class="search-box">
-  <input type="text" id="question" placeholder="Ask a question about your codebase..." autofocus>
+  <input type="text" id="question" placeholder="How does authentication work?" autofocus>
   <button onclick="doAsk()">Ask</button>
 </div>
 <div id="loading">Thinking...</div>
-<div id="results"></div>
+<div id="answer"></div>
+<div id="context"></div>
 """
     script = """\
 document.getElementById('question').addEventListener('keydown', e => {
@@ -540,7 +542,8 @@ async function doAsk() {
   const q = document.getElementById('question').value.trim();
   if (!q) return;
   document.getElementById('loading').style.display = 'block';
-  document.getElementById('results').innerHTML = '';
+  document.getElementById('answer').innerHTML = '';
+  document.getElementById('context').innerHTML = '';
   try {
     const res = await fetch('/api/ask', {
       method: 'POST',
@@ -550,19 +553,29 @@ async function doAsk() {
     const data = await res.json();
     document.getElementById('loading').style.display = 'none';
     const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const snippets = data.snippets || [];
-    let html = '<div class="card"><h3>Answer Context</h3><div class="meta">'
-      + (data.elapsed_ms || 0).toFixed(0) + 'ms &middot; ' + snippets.length + ' relevant snippets</div></div>';
-    snippets.forEach((s, i) => {
-      html += '<div class="card"><h3>#' + (i+1) + ' ' + esc(s.file_path) + '</h3>'
-        + '<div class="meta">Lines ' + s.start_line + '-' + s.end_line
-        + ' &middot; <span class="score">score: ' + (s.score||0).toFixed(4) + '</span></div>'
-        + '<pre><code>' + esc(s.content) + '</code></pre></div>';
-    });
-    document.getElementById('results').innerHTML = html;
+    // Render the answer
+    const answer = data.answer || 'No answer available.';
+    const elapsed = (data.elapsed_ms || 0).toFixed(0);
+    document.getElementById('answer').innerHTML = '<div class="card" style="border-color:var(--accent);">'
+      + '<h3 style="color:var(--accent);">Answer</h3>'
+      + '<div style="white-space:pre-wrap;line-height:1.7;">' + esc(answer) + '</div>'
+      + '<div class="meta" style="margin-top:0.75rem;">' + elapsed + 'ms</div></div>';
+    // Render context snippets (collapsed)
+    const snippets = data.snippets || data.context_snippets || [];
+    if (snippets.length) {
+      let ctx = '<details style="margin-top:0.5rem;"><summary style="cursor:pointer;color:var(--dim);font-size:0.9rem;">'
+        + snippets.length + ' supporting code snippets</summary>';
+      snippets.forEach((s, i) => {
+        ctx += '<div class="card" style="margin-top:0.5rem;"><h3>#' + (i+1) + ' ' + esc(s.file_path||'') + '</h3>'
+          + '<div class="meta">Lines ' + (s.start_line||'?') + '-' + (s.end_line||'?')
+          + '</div><pre><code>' + esc(s.content||s.chunk||'') + '</code></pre></div>';
+      });
+      ctx += '</details>';
+      document.getElementById('context').innerHTML = ctx;
+    }
   } catch(e) {
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('results').innerHTML = '<div class="card"><p class="status-err">' + e + '</p></div>';
+    document.getElementById('answer').innerHTML = '<div class="card"><p class="status-err">' + e + '</p></div>';
   }
 }
 """

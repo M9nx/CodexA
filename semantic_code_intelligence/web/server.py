@@ -188,7 +188,52 @@ class _CombinedHandler(BaseHTTPRequestHandler):
                 return
             top_k = body.get("top_k", 5)
             start = time.monotonic()
+            try:
+                from semantic_code_intelligence.config.settings import load_config, LLMConfig
+                from semantic_code_intelligence.llm.reasoning import ReasoningEngine
+                config = load_config(self.project_root)
+                llm_cfg: LLMConfig = config.llm
+                if llm_cfg.provider == "openai":
+                    from semantic_code_intelligence.llm.openai_provider import OpenAIProvider
+                    provider = OpenAIProvider(
+                        api_key=llm_cfg.api_key, model=llm_cfg.model,
+                        base_url=llm_cfg.base_url or None,
+                        temperature=llm_cfg.temperature, max_tokens=llm_cfg.max_tokens,
+                    )
+                elif llm_cfg.provider == "ollama":
+                    from semantic_code_intelligence.llm.ollama_provider import OllamaProvider
+                    provider = OllamaProvider(
+                        model=llm_cfg.model,
+                        base_url=llm_cfg.base_url or "http://localhost:11434",
+                        temperature=llm_cfg.temperature, max_tokens=llm_cfg.max_tokens,
+                    )
+                else:
+                    provider = None  # type: ignore[assignment]
+                if provider is not None:
+                    engine = ReasoningEngine(provider, self.project_root)
+                    result = engine.ask(question, top_k=top_k)
+                    elapsed = (time.monotonic() - start) * 1000
+                    self._json(200, {
+                        "question": result.question,
+                        "answer": result.answer,
+                        "snippets": result.context_snippets,
+                        "elapsed_ms": round(elapsed, 2),
+                    })
+                    return
+            except Exception:
+                logger.debug("LLM ask failed, falling back to context search", exc_info=True)
+            # Fallback: return snippets with a synthesized answer
             data = self.provider.context_for_query(question, top_k=top_k)
+            snippets = data.get("snippets", [])
+            summary_parts = []
+            for s in snippets[:3]:
+                fp = s.get("file_path", "")
+                sl = s.get("start_line", "")
+                summary_parts.append(f"- {fp} (line {sl})")
+            answer = f"Based on {len(snippets)} relevant code snippets:\n" + "\n".join(summary_parts)
+            if not snippets:
+                answer = "No relevant code found for this question. Try rephrasing or indexing more files."
+            data["answer"] = answer
             data["elapsed_ms"] = round((time.monotonic() - start) * 1000, 2)
             self._json(200, data)
         elif path == "/api/analyze":
