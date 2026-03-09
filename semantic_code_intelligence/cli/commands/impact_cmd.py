@@ -85,10 +85,16 @@ def impact_cmd(
     call_graph = CallGraph()
     call_graph.build(symbols)
 
-    report = analyze_impact(
-        target, symbols, call_graph, dep_map, root,
-        max_depth=max_depth,
-    )
+    try:
+        report = analyze_impact(
+            target, symbols, call_graph, dep_map, root,
+            max_depth=max_depth,
+        )
+    except Exception as exc:
+        logger.debug("Impact analysis failed", exc_info=True)
+        print_error(f"Impact analysis failed: {exc}")
+        ctx.exit(1)
+        return
 
     if json_mode:
         click.echo(json_mod.dumps(report.to_dict(), indent=2))

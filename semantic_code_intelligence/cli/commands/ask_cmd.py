@@ -135,8 +135,14 @@ def ask_cmd(
 
     from semantic_code_intelligence.llm.reasoning import ReasoningEngine
 
-    engine = ReasoningEngine(provider, root)
-    result = engine.ask(question, top_k=top_k)
+    try:
+        engine = ReasoningEngine(provider, root)
+        result = engine.ask(question, top_k=top_k)
+    except Exception as exc:
+        logger.debug("Ask failed", exc_info=True)
+        print_error(f"Failed to answer question: {exc}")
+        ctx.exit(1)
+        return
 
     if json_mode:
         click.echo(json_mod.dumps(result.to_dict(), indent=2))

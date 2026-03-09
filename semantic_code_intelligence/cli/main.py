@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 import click
 
 from semantic_code_intelligence import __version__
@@ -43,7 +45,16 @@ register_commands(cli)
 
 def main() -> None:
     """Entry point for the CLI application."""
-    cli()
+    try:
+        cli()
+    except KeyboardInterrupt:
+        click.echo("\nInterrupted.", err=True)
+        sys.exit(130)
+    except Exception as exc:  # noqa: BLE001
+        from semantic_code_intelligence.utils.logging import error_console
+        error_console.print(f"[bold red]Fatal error:[/bold red] {exc}")
+        error_console.print("[dim]Run with --verbose for full traceback.[/dim]")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -89,10 +89,16 @@ def hotspots_cmd(
     call_graph = CallGraph()
     call_graph.build(symbols)
 
-    report = analyze_hotspots(
-        symbols, call_graph, dep_map, root,
-        top_n=top_n, include_git=include_git,
-    )
+    try:
+        report = analyze_hotspots(
+            symbols, call_graph, dep_map, root,
+            top_n=top_n, include_git=include_git,
+        )
+    except Exception as exc:
+        logger.debug("Hotspot analysis failed", exc_info=True)
+        print_error(f"Hotspot analysis failed: {exc}")
+        ctx.exit(1)
+        return
 
     if json_mode:
         click.echo(json_mod.dumps(report.to_dict(), indent=2))

@@ -11,6 +11,7 @@ import click
 from semantic_code_intelligence.utils.logging import (
     console,
     get_logger,
+    print_error,
     print_info,
     print_success,
 )
@@ -243,11 +244,21 @@ def metrics_cmd(
         return
 
     # ── Compute current metrics ──────────────────────────────────
-    pm = compute_project_metrics(root)
+    try:
+        pm = compute_project_metrics(root)
+    except Exception as exc:
+        logger.debug("Metrics computation failed", exc_info=True)
+        print_error(f"Failed to compute metrics: {exc}")
+        ctx.exit(1)
+        return
 
     saved = None
     if snapshot:
-        report = analyze_project(root)
-        saved = save_snapshot(root, pm, report)
+        try:
+            report = analyze_project(root)
+            saved = save_snapshot(root, pm, report)
+        except Exception as exc:
+            logger.debug("Snapshot save failed", exc_info=True)
+            print_error(f"Failed to save snapshot: {exc}")
 
     _output_current_metrics(pm, root, saved, json_mode=json_mode, pipe=pipe)

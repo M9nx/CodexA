@@ -90,6 +90,9 @@ _NAV = """\
   <div class="links">
     <a href="/">Search</a>
     <a href="/symbols">Symbols</a>
+    <a href="/tools">Tools</a>
+    <a href="/quality">Quality</a>
+    <a href="/ask">Ask</a>
     <a href="/workspace">Workspace</a>
     <a href="/viz">Visualize</a>
   </div>
@@ -330,6 +333,242 @@ async function loadViz(kind) {
     return _page("Visualize", body, script, mermaid=True)
 
 
+def page_tools() -> str:
+    """Tool runner page — invoke any CodexA tool interactively."""
+    body = """\
+<h1>Tool Runner</h1>
+<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+  <select id="tool-select" style="flex:1;min-width:200px;padding:0.5rem;background:var(--surface);
+    border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.95rem;">
+  </select>
+  <button id="run-btn" style="padding:0.5rem 1.5rem;background:var(--accent);color:#fff;
+    border:none;border-radius:6px;cursor:pointer;font-weight:600;">Run</button>
+</div>
+<div id="tool-desc" style="color:var(--dim);font-style:italic;margin-bottom:1rem;"></div>
+<div id="param-fields" style="margin-bottom:1rem;"></div>
+<div id="loading">Running...</div>
+<div id="results"></div>
+"""
+    script = """\
+const SCHEMAS = {
+  semantic_search: { desc: 'Search the codebase using natural language.', params: [
+    {name:'query', type:'string', required:true, desc:'Search query'},
+    {name:'top_k', type:'integer', required:false, def:'10', desc:'Max results'},
+  ]},
+  explain_symbol: { desc: 'Explain a code symbol.', params: [
+    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
+    {name:'file_path', type:'string', required:false, desc:'File path'},
+  ]},
+  explain_file: { desc: 'Explain all symbols in a file.', params: [
+    {name:'file_path', type:'string', required:true, desc:'Source file path'},
+  ]},
+  get_dependencies: { desc: 'Get imports for a file.', params: [
+    {name:'file_path', type:'string', required:true, desc:'Source file path'},
+  ]},
+  get_call_graph: { desc: 'Get callers/callees for a symbol.', params: [
+    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
+  ]},
+  get_context: { desc: 'Rich context window around a symbol.', params: [
+    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
+  ]},
+  find_references: { desc: 'Find all references to a symbol.', params: [
+    {name:'symbol_name', type:'string', required:true, desc:'Symbol name'},
+  ]},
+  summarize_repo: { desc: 'Summarize the entire repository.', params: []},
+};
+
+const sel = document.getElementById('tool-select');
+Object.keys(SCHEMAS).forEach(k => {
+  const o = document.createElement('option'); o.value = k; o.textContent = k;
+  sel.appendChild(o);
+});
+
+function buildParams() {
+  const schema = SCHEMAS[sel.value];
+  document.getElementById('tool-desc').textContent = schema ? schema.desc : '';
+  const el = document.getElementById('param-fields');
+  el.innerHTML = '';
+  if (!schema) return;
+  schema.params.forEach(p => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '0.5rem';
+    const label = document.createElement('label');
+    label.textContent = p.name + (p.required ? ' *' : '') + ' (' + p.type + ')';
+    label.style.cssText = 'display:block;font-size:0.85rem;color:var(--dim);margin-bottom:0.25rem;';
+    const input = document.createElement('input');
+    input.id = 'param-' + p.name;
+    input.placeholder = p.desc;
+    input.style.cssText = 'width:100%;padding:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.95rem;';
+    if (p.def) input.value = p.def;
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('run-btn').click(); });
+    div.appendChild(label);
+    div.appendChild(input);
+    el.appendChild(div);
+  });
+}
+sel.addEventListener('change', buildParams);
+buildParams();
+
+document.getElementById('run-btn').addEventListener('click', async () => {
+  const tool = sel.value;
+  const schema = SCHEMAS[tool];
+  if (!schema) return;
+  const args = {};
+  const missing = [];
+  schema.params.forEach(p => {
+    const inp = document.getElementById('param-' + p.name);
+    const v = inp ? inp.value.trim() : '';
+    if (v) args[p.name] = v;
+    else if (p.required) missing.push(p.name);
+  });
+  if (missing.length) {
+    document.getElementById('results').innerHTML = '<div class="card" style="border-color:var(--red);"><p class="status-err">Missing required: ' + missing.join(', ') + '</p></div>';
+    return;
+  }
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').innerHTML = '';
+  try {
+    const res = await fetch('/api/tools/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({tool_name: tool, arguments: args}),
+    });
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    document.getElementById('results').innerHTML = '<div class="card"><h3>' + (data.success !== false ? '<span class="status-ok">Success</span>' : '<span class="status-err">Error</span>') + '</h3><pre><code>' + esc(JSON.stringify(data, null, 2)) + '</code></pre></div>';
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('results').innerHTML = '<div class="card"><p class="status-err">' + e + '</p></div>';
+  }
+});
+"""
+    return _page("Tools", body, script)
+
+
+def page_quality() -> str:
+    """Quality analysis page — metrics, hotspots, complexity."""
+    body = """\
+<h1>Code Quality</h1>
+<div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;">
+  <button onclick="load('quality')" style="padding:0.6rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Quality</button>
+  <button onclick="load('metrics')" style="padding:0.6rem 1.2rem;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;">Metrics</button>
+  <button onclick="load('hotspots')" style="padding:0.6rem 1.2rem;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;">Hotspots</button>
+</div>
+<div id="loading">Analyzing...</div>
+<div id="results"></div>
+"""
+    script = """\
+async function load(kind) {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').innerHTML = '';
+  try {
+    const res = await fetch('/api/' + kind);
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (kind === 'quality') {
+      const issues = data.complexity_issues || [];
+      let html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-bottom:1rem;">';
+      html += stat(data.files_analyzed || 0, 'Files');
+      html += stat(data.symbol_count || 0, 'Symbols');
+      html += stat(data.issue_count || 0, 'Issues');
+      html += stat(issues.length, 'Complex');
+      html += '</div>';
+      if (issues.length) {
+        html += '<h3>High Complexity</h3>';
+        issues.slice(0, 20).forEach(i => {
+          const cls = i.complexity > 20 ? 'status-err' : i.complexity > 10 ? '' : 'status-ok';
+          html += '<div class="card"><h3>' + esc(i.symbol_name) + ' <span class="' + cls + '">' + i.complexity + '</span></h3>'
+            + '<div class="meta">' + esc(i.file_path) + ':' + i.start_line + '</div></div>';
+        });
+      }
+      document.getElementById('results').innerHTML = html;
+    } else if (kind === 'metrics') {
+      let html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;">';
+      html += stat(data.total_loc || 0, 'Lines of Code');
+      html += stat(data.total_symbols || 0, 'Symbols');
+      html += stat((data.avg_complexity || 0).toFixed(1), 'Avg Complexity');
+      html += stat(data.max_complexity || 0, 'Max Complexity');
+      html += stat(data.files_analyzed || 0, 'Files');
+      html += stat((data.maintainability_index || 0).toFixed(1), 'Maintainability');
+      html += stat((data.comment_ratio || 0).toFixed(3), 'Comment Ratio');
+      html += stat(data.total_comment_lines || 0, 'Comment Lines');
+      html += '</div>';
+      document.getElementById('results').innerHTML = html;
+    } else if (kind === 'hotspots') {
+      const spots = data.hotspots || [];
+      let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem;">';
+      html += stat(data.files_analyzed || 0, 'Files');
+      html += stat(spots.length, 'Hotspots');
+      html += '</div>';
+      spots.forEach(h => {
+        const cls = h.risk_score > 20 ? 'status-err' : h.risk_score > 10 ? '' : 'status-ok';
+        html += '<div class="card"><h3>' + esc(h.name) + ' <span class="badge ' + cls + '">risk ' + (h.risk_score||0).toFixed(1) + '</span></h3>'
+          + '<div class="meta">' + esc(h.file_path||'') + '</div></div>';
+      });
+      document.getElementById('results').innerHTML = html || '<div class="empty">No hotspots found.</div>';
+    }
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('results').innerHTML = '<div class="card"><p class="status-err">' + e + '</p></div>';
+  }
+}
+function stat(val, label) {
+  return '<div class="card" style="text-align:center;padding:1rem;"><div style="font-size:1.5rem;font-weight:700;">' + val + '</div><div style="font-size:0.75rem;color:var(--dim);text-transform:uppercase;">' + label + '</div></div>';
+}
+"""
+    return _page("Quality", body, script)
+
+
+def page_ask() -> str:
+    """AI Q&A page — ask questions about the codebase."""
+    body = """\
+<h1>Ask CodexA</h1>
+<div class="search-box">
+  <input type="text" id="question" placeholder="Ask a question about your codebase..." autofocus>
+  <button onclick="doAsk()">Ask</button>
+</div>
+<div id="loading">Thinking...</div>
+<div id="results"></div>
+"""
+    script = """\
+document.getElementById('question').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doAsk();
+});
+async function doAsk() {
+  const q = document.getElementById('question').value.trim();
+  if (!q) return;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').innerHTML = '';
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: q, top_k: 5}),
+    });
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const snippets = data.snippets || [];
+    let html = '<div class="card"><h3>Answer Context</h3><div class="meta">'
+      + (data.elapsed_ms || 0).toFixed(0) + 'ms &middot; ' + snippets.length + ' relevant snippets</div></div>';
+    snippets.forEach((s, i) => {
+      html += '<div class="card"><h3>#' + (i+1) + ' ' + esc(s.file_path) + '</h3>'
+        + '<div class="meta">Lines ' + s.start_line + '-' + s.end_line
+        + ' &middot; <span class="score">score: ' + (s.score||0).toFixed(4) + '</span></div>'
+        + '<pre><code>' + esc(s.content) + '</code></pre></div>';
+    });
+    document.getElementById('results').innerHTML = html;
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('results').innerHTML = '<div class="card"><p class="status-err">' + e + '</p></div>';
+  }
+}
+"""
+    return _page("Ask", body, script)
+
+
 # ------------------------------------------------------------------
 # HTTP handler mixin
 # ------------------------------------------------------------------
@@ -354,6 +593,9 @@ class UIHandler(BaseHTTPRequestHandler):
         ui_routes: dict[str, str] = {
             "/": page_search(),
             "/symbols": page_symbols(),
+            "/tools": page_tools(),
+            "/quality": page_quality(),
+            "/ask": page_ask(),
             "/workspace": page_workspace(),
             "/viz": page_viz(),
         }

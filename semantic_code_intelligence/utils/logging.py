@@ -94,3 +94,19 @@ def print_warning(message: str) -> None:
 def print_info(message: str) -> None:
     """Print an info message to the console."""
     console.print(f"[info]{_ICON_INFO}[/info] {message}")
+
+
+def print_separator(title: str = "", style: str = "dim") -> None:
+    """Print a visual separator line, optionally with a centered title."""
+    if title:
+        console.rule(f"[bold]{title}[/bold]", style=style)
+    else:
+        console.rule(style=style)
+
+
+def print_header(title: str, subtitle: str = "") -> None:
+    """Print a styled section header."""
+    console.print(f"\n[bold cyan]{title}[/bold cyan]")
+    if subtitle:
+        console.print(f"  [dim]{subtitle}[/dim]")
+    console.print()

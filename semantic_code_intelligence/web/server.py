@@ -23,6 +23,9 @@ from semantic_code_intelligence.web.ui import (
     UIHandler,
     page_search,
     page_symbols,
+    page_tools,
+    page_quality,
+    page_ask,
     page_workspace,
     page_viz,
     _page,
@@ -123,6 +126,27 @@ class _CombinedHandler(BaseHTTPRequestHandler):
         elif path == "/api/summary":
             data = self.provider.context_for_repo()
             self._json(200, data)
+        elif path == "/api/quality":
+            try:
+                from semantic_code_intelligence.ci.quality import analyze_project
+                report = analyze_project(self.project_root)
+                self._json(200, report.to_dict())
+            except Exception as exc:
+                self._json(500, {"error": str(exc)})
+        elif path == "/api/metrics":
+            try:
+                from semantic_code_intelligence.ci.metrics import compute_project_metrics
+                pm = compute_project_metrics(self.project_root)
+                self._json(200, pm.to_dict())
+            except Exception as exc:
+                self._json(500, {"error": str(exc)})
+        elif path == "/api/hotspots":
+            try:
+                from semantic_code_intelligence.ci.hotspots import analyze_hotspots
+                report = analyze_hotspots(self.project_root)
+                self._json(200, report.to_dict())
+            except Exception as exc:
+                self._json(500, {"error": str(exc)})
         elif path.startswith("/api/viz/"):
             kind = path.replace("/api/viz/", "").strip("/")
             target = _qs_first(qs, "target", "")
@@ -182,6 +206,21 @@ class _CombinedHandler(BaseHTTPRequestHandler):
                 self._json(400, {"error": f"Unknown mode: {mode}"})
                 return
             self._json(200, data)
+        elif path == "/api/tools/run":
+            tool_name = body.get("tool_name", "")
+            arguments = body.get("arguments", {})
+            if not tool_name:
+                self._json(400, {"error": "Missing required field: tool_name"})
+                return
+            try:
+                from semantic_code_intelligence.tools.executor import ToolExecutor
+                from semantic_code_intelligence.tools.protocol import ToolInvocation
+                executor = ToolExecutor(self.project_root)
+                invocation = ToolInvocation(tool_name=tool_name, arguments=arguments)
+                result = executor.execute(invocation)
+                self._json(200, result.to_dict())
+            except Exception as exc:
+                self._json(500, {"error": str(exc)})
         else:
             self._json(404, {"error": "Not found"})
 
@@ -193,6 +232,9 @@ class _CombinedHandler(BaseHTTPRequestHandler):
         pages: dict[str, str] = {
             "/": page_search(),
             "/symbols": page_symbols(),
+            "/tools": page_tools(),
+            "/quality": page_quality(),
+            "/ask": page_ask(),
             "/workspace": page_workspace(),
             "/viz": page_viz(),
         }
