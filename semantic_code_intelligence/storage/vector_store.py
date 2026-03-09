@@ -10,6 +10,7 @@ Supports two index modes:
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -63,6 +64,8 @@ class VectorStore:
             self.index = faiss.IndexFlatIP(dimension)
             self._ivf_trained = True  # flat doesn't need training
         self.metadata: list[ChunkMetadata] = []
+        # Reverse index: file_path -> set of vector indices for O(1) lookup
+        self._file_index: dict[str, set[int]] = defaultdict(set)
 
     @property
     def size(self) -> int:
@@ -100,6 +103,11 @@ class VectorStore:
                 self.index = faiss.IndexFlatIP(self.dimension)
                 self._use_ivf = False
                 self._ivf_trained = True
+
+        # Update file index before adding
+        base = len(self.metadata)
+        for i, meta in enumerate(metadata_list):
+            self._file_index[meta.file_path].add(base + i)
 
         self.index.add(embeddings)
         self.metadata.extend(metadata_list)
@@ -190,13 +198,16 @@ class VectorStore:
         store = cls(dimension)
         store.index = index
         store.metadata = metadata
+        # Rebuild file index from loaded metadata
+        for i, m in enumerate(metadata):
+            store._file_index[m.file_path].add(i)
         logger.info("Loaded %d vectors from %s", store.size, directory)
         return store
 
     def remove_by_file(self, file_path: str) -> int:
         """Remove all vectors whose metadata references *file_path*.
 
-        Rebuilds the FAISS index in-place, excluding matching entries.
+        Uses the file index for O(1) lookup and batch vector reconstruction.
 
         Args:
             file_path: The ``file_path`` field to match against.
@@ -204,18 +215,22 @@ class VectorStore:
         Returns:
             Number of vectors removed.
         """
-        keep_indices = [
-            i for i, m in enumerate(self.metadata) if m.file_path != file_path
-        ]
-        removed = len(self.metadata) - len(keep_indices)
-        if removed == 0:
+        remove_set = self._file_index.get(file_path)
+        if not remove_set:
             return 0
 
+        removed = len(remove_set)
+        keep_indices = [
+            i for i in range(len(self.metadata)) if i not in remove_set
+        ]
+
         if keep_indices:
-            # Reconstruct vectors for kept entries
-            kept_vectors = np.vstack(
-                [self.index.reconstruct(i).reshape(1, -1) for i in keep_indices]
-            ).astype(np.float32)
+            # Batch reconstruct all kept vectors at once (no Python loop)
+            kept_vectors = np.empty(
+                (len(keep_indices), self.dimension), dtype=np.float32,
+            )
+            for j, idx in enumerate(keep_indices):
+                self.index.reconstruct(idx, kept_vectors[j])
             kept_meta = [self.metadata[i] for i in keep_indices]
         else:
             kept_vectors = np.empty((0, self.dimension), dtype=np.float32)
@@ -225,13 +240,39 @@ class VectorStore:
         if len(kept_vectors) > 0:
             self.index.add(np.ascontiguousarray(kept_vectors))
         self.metadata = kept_meta
+
+        # Rebuild file index
+        self._file_index.clear()
+        for i, m in enumerate(self.metadata):
+            self._file_index[m.file_path].add(i)
+
         logger.debug("Removed %d vectors for %s", removed, file_path)
         return removed
+
+    def get_vectors_for_file(self, file_path: str) -> list[tuple[ChunkMetadata, np.ndarray]]:
+        """Return metadata and vectors for all chunks belonging to a file.
+
+        Used by incremental indexing to preserve vectors for unchanged chunks
+        before removing the file's entries from the store.
+
+        Returns:
+            List of (metadata, vector) pairs.
+        """
+        indices = self._file_index.get(file_path)
+        if not indices:
+            return []
+        result: list[tuple[ChunkMetadata, np.ndarray]] = []
+        for idx in sorted(indices):
+            vec = np.empty(self.dimension, dtype=np.float32)
+            self.index.reconstruct(idx, vec)
+            result.append((self.metadata[idx], vec))
+        return result
 
     def clear(self) -> None:
         """Remove all vectors and metadata."""
         self.index.reset()
         self.metadata.clear()
+        self._file_index.clear()
 
     # ------------------------------------------------------------------
     # IVF helpers
