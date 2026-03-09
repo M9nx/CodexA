@@ -1,8 +1,8 @@
 {
   "name": "codexa",
   "displayName": "CodexA — Developer Intelligence",
-  "description": "Semantic code search, call graphs, and AI-assisted understanding powered by CodexA.",
-  "version": "0.1.0",
+  "description": "Semantic code search, symbol exploration, code quality analysis, AI Q&A, and agent tooling — powered by the CodexA intelligence engine.",
+  "version": "0.2.0",
   "publisher": "M9nx",
   "license": "MIT",
   "repository": {
@@ -14,12 +14,16 @@
   },
   "categories": [
     "Programming Languages",
+    "Machine Learning",
     "Other"
   ],
   "activationEvents": [
     "onCommand:codexa.search",
     "onCommand:codexa.askCodexA",
-    "onView:codexaSearchView"
+    "onView:codexaSearchView",
+    "onView:codexaSymbolsView",
+    "onView:codexaQualityView",
+    "onView:codexaToolsView"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -31,15 +35,38 @@
       },
       {
         "command": "codexa.askCodexA",
-        "title": "CodexA: Ask a Question"
+        "title": "CodexA: Ask a Question",
+        "icon": "$(comment-discussion)"
       },
       {
         "command": "codexa.callGraph",
-        "title": "CodexA: Show Call Graph"
+        "title": "CodexA: Show Call Graph",
+        "icon": "$(type-hierarchy)"
       },
       {
         "command": "codexa.models",
-        "title": "CodexA: List Models"
+        "title": "CodexA: List Models",
+        "icon": "$(database)"
+      },
+      {
+        "command": "codexa.quality",
+        "title": "CodexA: Code Quality Analysis",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "codexa.explainSymbol",
+        "title": "CodexA: Explain Symbol at Cursor",
+        "icon": "$(lightbulb)"
+      },
+      {
+        "command": "codexa.doctor",
+        "title": "CodexA: Doctor (Health Check)",
+        "icon": "$(heart)"
+      },
+      {
+        "command": "codexa.index",
+        "title": "CodexA: Re-Index Codebase",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -47,7 +74,7 @@
         {
           "id": "codexa",
           "title": "CodexA",
-          "icon": "$(symbol-method)"
+          "icon": "$(telescope)"
         }
       ]
     },
@@ -57,6 +84,21 @@
           "type": "webview",
           "id": "codexaSearchView",
           "name": "Search"
+        },
+        {
+          "type": "webview",
+          "id": "codexaSymbolsView",
+          "name": "Symbols & Graphs"
+        },
+        {
+          "type": "webview",
+          "id": "codexaQualityView",
+          "name": "Quality"
+        },
+        {
+          "type": "webview",
+          "id": "codexaToolsView",
+          "name": "Tools"
         }
       ]
     },
@@ -65,8 +107,33 @@
         "command": "codexa.search",
         "key": "ctrl+shift+f5",
         "mac": "cmd+shift+f5"
+      },
+      {
+        "command": "codexa.explainSymbol",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "codexa.quality",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codexa.explainSymbol",
+          "group": "codexa@1",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "codexa.callGraph",
+          "group": "codexa@2",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
     "configuration": {
       "title": "CodexA",
       "properties": {

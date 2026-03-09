@@ -888,11 +888,13 @@ class TestVSCodeExtension:
     def test_package_json_4_commands(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         commands = data["contributes"]["commands"]
-        assert len(commands) == 4
+        assert len(commands) == 8
         command_ids = {c["command"] for c in commands}
         assert command_ids == {
             "codexa.search", "codexa.askCodexA",
             "codexa.callGraph", "codexa.models",
+            "codexa.quality", "codexa.explainSymbol",
+            "codexa.doctor", "codexa.index",
         }
 
     def test_package_json_activation_events(self):
