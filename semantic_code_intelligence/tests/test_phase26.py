@@ -171,7 +171,7 @@ class TestModelsCLI:
 
     def test_model_count_is_35(self):
         """Verify we now have 36 top-level commands."""
-        assert len(cli.commands) == 36
+        assert len(cli.commands) == 37
 
 
 class TestModelRegistry:

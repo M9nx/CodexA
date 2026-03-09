@@ -523,7 +523,7 @@ class TestRouterRegistration:
 
     def test_total_command_count(self):
         """Verify we now have 17 top-level commands."""
-        assert len(cli.commands) == 36
+        assert len(cli.commands) == 37
 
 
 # =========================================================================

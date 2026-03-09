@@ -117,7 +117,7 @@ class TestCLIBasics:
         assert "codex" in result.output.lower()
 
     def test_command_count(self):
-        assert len(cli.commands) == 36
+        assert len(cli.commands) == 37
 
     def test_all_35_commands_registered(self):
         expected = {

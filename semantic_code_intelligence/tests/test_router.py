@@ -23,7 +23,7 @@ class TestRouter:
     def test_register_commands_count(self):
         group = click.Group(name="test")
         register_commands(group)
-        assert len(group.commands) == 36
+        assert len(group.commands) == 37
 
     def test_registered_commands_are_click_commands(self):
         group = click.Group(name="test")
