@@ -1,22 +1,45 @@
 # CodexA VS Code Extension
 
-Sidebar semantic search, call-graph visualisation, and AI-powered Q&A
-for your codebase — powered by the `codex` CLI.
+Multi-panel developer intelligence sidebar — semantic search, symbol
+exploration, code quality analysis, AI agent tooling, and more — powered
+by the `codex` CLI.
 
 ## Features
 
-| Feature              | Command palette             | Keybinding      |
-| -------------------- | --------------------------- | --------------- |
-| Semantic search      | **CodexA: Search Codebase** | `Ctrl+Shift+F5` |
-| Ask a question       | **CodexA: Ask a Question**  | —               |
-| Show call graph      | **CodexA: Show Call Graph** | —               |
-| List models          | **CodexA: List Models**     | —               |
-| Sidebar search panel | Activity bar → **CodexA**   | —               |
+### Sidebar Panels
+
+| Panel | What it does |
+|-------|-------------|
+| **Search** | Multi-mode search (semantic / keyword / hybrid / regex) with top-K selector, click-to-open results |
+| **Symbols & Graphs** | Explain any symbol, view call graphs, file dependency maps — all inline |
+| **Quality** | One-click quality analysis, code metrics dashboard (LOC, complexity, maintainability), risk hotspots |
+| **Tools** | Doctor health check, re-index, list models, list tools, run any of the 8 agent tools with custom args |
+
+### Commands
+
+| Command | Keybinding | Description |
+|---------|------------|-------------|
+| **CodexA: Search Codebase** | `Ctrl+Shift+F5` | Semantic search via input box |
+| **CodexA: Ask a Question** | — | Natural-language Q&A about the codebase |
+| **CodexA: Show Call Graph** | — | Call graph of symbol at cursor |
+| **CodexA: List Models** | — | Quick-pick list of embedding models |
+| **CodexA: Code Quality Analysis** | `Ctrl+Shift+Q` | Full quality report |
+| **CodexA: Explain Symbol at Cursor** | `Ctrl+Shift+E` | Structural explanation of symbol under cursor |
+| **CodexA: Doctor (Health Check)** | — | Run `codex doctor` and show results |
+| **CodexA: Re-Index Codebase** | — | Trigger a full re-index |
+
+### Editor Integration
+
+- **Context menu**: Right-click → *Explain Symbol* / *Show Call Graph*
+- **CodeLens**: Python `def`/`class` definitions show an inline *Explain* link
+- **Status bar**: Clickable CodexA icon with live operation status
 
 ## Prerequisites
 
 * The `codex` CLI must be installed and available on `PATH`,
-  or set `codexa.binaryPath` in VS Code settings.
+  or configure `codexa.binaryPath` in VS Code settings.
+* If working inside the CodexA repo itself, the extension auto-detects
+  `.venv/Scripts/codex.exe` (Windows) or `.venv/bin/codex` (Unix).
 
 ## Development
 

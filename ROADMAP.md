@@ -383,9 +383,50 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 
 ---
 
+### Phase 25: VS Code Extension v0.2.0 — Full IDE Integration ✅
+Major rewrite of the VS Code extension from basic 4-command wrapper to a rich multi-panel IDE integration.
+
+| Feature | Status |
+|---|---|
+| **Bug fix**: `--pipe` global flag added to all CLI invocations (was missing, causing empty/corrupt output) | ✅ |
+| 4 sidebar webview panels (Search, Symbols & Graphs, Quality, Tools) | ✅ |
+| Multi-mode search panel (semantic/keyword/hybrid/regex) with top-K selector | ✅ |
+| Symbol explorer: explain symbol, call graph, file dependencies — all inline | ✅ |
+| Quality dashboard: one-click quality analysis, metrics grid, risk hotspots | ✅ |
+| Tools panel: Doctor, Re-Index, Models, Tool List, run any of the 8 agent tools with custom args | ✅ |
+| 8 commands (was 4): +quality, +explainSymbol, +doctor, +index | ✅ |
+| 3 keybindings: Ctrl+Shift+F5 (search), Ctrl+Shift+E (explain), Ctrl+Shift+Q (quality) | ✅ |
+| Editor context menu: right-click → Explain Symbol / Show Call Graph | ✅ |
+| CodeLens provider: inline "Explain" links on Python def/class definitions | ✅ |
+| Status bar item: clickable CodexA icon with live status updates | ✅ |
+| Click-to-open: all result cards navigate to file:line in the editor | ✅ |
+| Output channel: all CLI invocations logged to "CodexA" output panel | ✅ |
+| Extension version bumped to 0.2.0 | ✅ |
+| Test updated (4 → 8 commands assertion) | ✅ |
+
+**2556 tests, all passing** | Commit `e11a488`
+
+---
+
 ## Upcoming Phases
 
-### Phase 25: TBD
+### Phase 26: LSP Server
+Turn CodexA into a full Language Server Protocol server so any editor (Neovim, Sublime, JetBrains) can consume semantic search, hover-explain, and diagnostics natively.
+
+### Phase 27: Incremental Indexing
+Watch for file changes and update the FAISS index incrementally instead of full re-index. Critical for large repos.
+
+### Phase 28: Multi-Repo Workspace Enhancements
+Index and search across multiple repositories simultaneously with unified results ranking, cross-repo symbol resolution, and workspace-level quality reports.
+
+### Phase 29: Remote / Cloud Mode
+Package CodexA as a Docker container with a REST API so teams can share one index server. Add auth, rate limiting, team dashboards.
+
+### Phase 30: CI/CD Deep Integration
+GitHub Actions / GitLab CI plugin that runs `codex quality` on PRs, blocks merges on regressions, and posts inline review comments.
+
+### Phase 31: RAG Pipeline
+Connect the vector store to LLMs for retrieval-augmented code generation — "write a function like X but for Y" with real codebase context.
 
 ---
 ### Evolution Cycle 1 ✔️
@@ -578,6 +619,12 @@ codex CLI (Click) — 32 commands
   │     REST API (search, symbols, deps, callgraph, summary, ask, analyze)
   │     Mermaid Visualization (call graph, deps, workspace, symbol map)
   │
+  │
+  ├── VS Code Extension (TypeScript)
+  │     4 sidebar panels (Search, Symbols & Graphs, Quality, Tools)
+  │     8 commands · 3 keybindings · CodeLens · context menus
+  │     Status bar · output channel · click-to-open navigation
+  │
   └── Plugin SDK
         PluginBase · PluginHook (22 hooks) · PluginManager
         Plugin scaffold · Sample plugins · Discovery
@@ -593,5 +640,5 @@ codex CLI (Click) — 32 commands
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
 | Vector Search | FAISS (IndexFlatIP) |
 | Code Parsing | tree-sitter 0.25+ (11 language grammars) |
-| Testing | pytest + pytest-cov (2320 tests) |
+| Testing | pytest + pytest-cov (2556 tests) |
 | Python | 3.12+ |

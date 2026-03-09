@@ -7,7 +7,7 @@
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/version-0.27.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-2413%2B-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-2556-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
@@ -34,6 +34,7 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 | **Interactive TUI** | Terminal REPL with mode switching for interactive exploration |
 | **Streaming Responses** | Token-by-token streaming for chat and investigation commands |
 | **Plugin System** | 22 hooks for extending every layer — from indexing to tool invocation |
+| **VS Code Extension** | 4-panel sidebar (Search, Symbols, Quality, Tools), 8 commands, CodeLens, context menus, status bar |
 
 ---
 
@@ -371,7 +372,7 @@ Supported providers: `openai`, `ollama` (local), `mock` (testing).
 
 ## All CLI Commands
 
-CodexA provides **35 commands** organized by capability:
+CodexA provides **35 commands** (plus subcommands) organized by capability:
 
 ### Core
 
@@ -432,6 +433,19 @@ CodexA provides **35 commands** organized by capability:
 | `codex tui` | Interactive terminal REPL |
 | `codex mcp` | Start MCP (Model Context Protocol) server |
 | `codex models list\|info\|download\|switch` | Manage embedding models |
+
+### VS Code Extension
+
+| Feature | Command / Keybinding |
+|---------|---------------------|
+| Multi-mode search panel (semantic/keyword/hybrid/regex) | Sidebar → Search |
+| Symbol explorer (explain, call graph, deps) | Sidebar → Symbols & Graphs |
+| Code quality dashboard (quality, metrics, hotspots) | Sidebar → Quality |
+| Agent tool runner (doctor, index, models, 8 tools) | Sidebar → Tools |
+| Search codebase | `Ctrl+Shift+F5` |
+| Explain symbol at cursor | `Ctrl+Shift+E` |
+| Code quality analysis | `Ctrl+Shift+Q` |
+| Right-click → Explain / Call Graph | Editor context menu |
 
 ---
 
@@ -520,7 +534,7 @@ After `codex init`, your project has `.codex/config.json`:
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 2320 tests
+# Run all 2556 tests
 pytest
 
 # Run with coverage (gate: 70% minimum)
