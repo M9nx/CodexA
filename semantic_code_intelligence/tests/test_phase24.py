@@ -712,4 +712,4 @@ class TestVersion:
 
     def test_version_is_0_24_0(self):
         from semantic_code_intelligence import __version__
-        assert __version__ == "0.28.0"
+        assert __version__ == "0.29.0"

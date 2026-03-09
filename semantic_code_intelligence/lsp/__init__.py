@@ -70,7 +70,7 @@ def _write_lsp_message(msg: dict[str, Any]) -> None:
 
 _SERVER_INFO = {
     "name": "codex-lsp",
-    "version": "0.28.0",
+    "version": "0.29.0",
 }
 
 _SERVER_CAPABILITIES = {

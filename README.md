@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.28.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.29.0-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2595-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -25,10 +25,10 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 | Area | What you get |
 |------|-------------|
 | **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `.codexaignore` support |
-| **Multi-Mode Search** | Semantic, keyword (BM25), regex, and hybrid (RRF) search with full-section expansion and auto-indexing |
+| **Multi-Mode Search** | Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep (ripgrep backend) |
 | **Code Context** | Rich context windows — imports, dependencies, AST-based call graphs, surrounding code |
 | **Repository Analysis** | Language breakdown, module summaries, component detection |
-| **AI Agent Protocol** | 8 built-in tools exposed via HTTP bridge, MCP server, or CLI for any AI agent to invoke |
+| **AI Agent Protocol** | 11 built-in tools exposed via HTTP bridge, MCP server (11 tools), or CLI for any AI agent to invoke |
 | **Quality & Metrics** | Complexity analysis, maintainability scoring, quality gates for CI |
 | **Multi-Repo Workspaces** | Link multiple repos under one workspace for cross-repo search & refactoring |
 | **Interactive TUI** | Terminal REPL with mode switching for interactive exploration |
@@ -100,6 +100,8 @@ codex quality src/                 # Code quality analysis
 codex hotspots                     # High-risk code hotspots
 codex trace handle_request         # Execution trace of a symbol
 codex evolve                       # Self-improving development loop
+codex grep "TODO|FIXME"            # Raw filesystem grep (ripgrep or Python)
+codex benchmark                    # Performance benchmarking
 ```
 
 ---
@@ -195,13 +197,15 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codex --version    # → codex, version 0.28.0
+codex --version    # → codex, version 0.29.0
 ```
 
 ### Step 2 — Initialize your target project
 
 ```bash
 cd /path/to/your-project
+codex init --index  # Creates .codex/ and indexes immediately
+# Or separately:
 codex init          # Creates .codex/ directory
 codex index .       # Index the entire codebase
 codex doctor        # Verify everything is healthy
@@ -372,20 +376,22 @@ Supported providers: `openai`, `ollama` (local), `mock` (testing).
 
 ## All CLI Commands
 
-CodexA provides **36 commands** (plus subcommands) organized by capability:
+CodexA provides **38 commands** (plus subcommands) organized by capability:
 
 ### Core
 
 | Command | Description |
 |---------|-------------|
-| `codex init [path]` | Initialize project — creates `.codex/` directory |
+| `codex init [path]` | Initialize project — creates `.codex/` directory (supports `--index` and `--vscode`) |
 | `codex index [path]` | Index codebase for semantic search |
 | `codex search "<query>"` | Natural-language semantic search |
 | `codex explain <symbol>` | Structural explanation of a symbol or file |
 | `codex context <symbol>` | Rich context window for AI consumption |
 | `codex summary` | Structured repository summary |
 | `codex deps <file>` | File/project dependency map |
-| `codex watch` | Background indexing daemon |
+| `codex watch` | Background indexing daemon (Rust-backed native file watcher) |
+| `codex grep "<pattern>"` | Raw filesystem grep — no index required (ripgrep backend) |
+| `codex benchmark` | Performance benchmarking (indexing, search, memory) |
 
 ### AI-Powered
 
@@ -464,6 +470,9 @@ or Python API (`ToolExecutor.execute()`):
 | `get_dependencies` | `file_path` (string) | Import / dependency map for a file |
 | `get_call_graph` | `symbol_name` (string) | Call graph — callers and callees |
 | `get_context` | `symbol_name` (string) | Rich context window for AI tasks |
+| `get_quality_score` | `file_path` (string, optional) | Code quality analysis — complexity, dead code, duplicates |
+| `find_duplicates` | `threshold` (float, optional) | Detect near-duplicate code blocks |
+| `grep_files` | `pattern` (string) | Raw filesystem regex search (ripgrep/Python) |
 
 Additional tools can be registered via the plugin system using the
 `REGISTER_TOOL` hook.
@@ -475,7 +484,7 @@ Additional tools can be registered via the plugin system using the
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    CLI Layer (click)                 │
-│  36 commands · --json · --pipe · --verbose           │
+│  38 commands · --json · --pipe · --verbose           │
 ├─────────────────────────────────────────────────────┤
 │               AI Agent Tooling Protocol              │
 │  ToolExecutor · ToolInvocation · ToolExecutionResult │
@@ -577,8 +586,9 @@ codex --verbose search "query"
 - **Python 3.11+** — No heavy frameworks, stdlib-first design
 - **click** — CLI framework
 - **sentence-transformers** — Embedding generation (`all-MiniLM-L6-v2`)
-- **faiss-cpu** — Vector similarity search
+- **faiss-cpu** — Vector similarity search (O(1) file-level index, batch reconstruction)
 - **tree-sitter** — Multi-language code parsing
+- **watchfiles** — Rust-backed native file watching (inotify/FSEvents/ReadDirectoryChanges)
 - **pydantic** — Configuration & data models
 - **rich** — Terminal UI and formatting
 

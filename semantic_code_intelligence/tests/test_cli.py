@@ -38,7 +38,7 @@ class TestCLIMain:
     def test_cli_version(self, runner: CliRunner):
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.28.0" in result.output
+        assert "0.29.0" in result.output
 
     def test_cli_verbose_flag(self, runner: CliRunner):
         result = runner.invoke(cli, ["--verbose", "--help"])

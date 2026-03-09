@@ -1,4 +1,4 @@
-"""Tests for v0.28.0 features: LSP Server (Phase 26) + Incremental Indexing (Phase 27)."""
+"""Tests for v0.29.0 features: LSP Server (Phase 26) + Incremental Indexing (Phase 27)."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from semantic_code_intelligence.cli.main import cli
 
 class TestVersion028:
     def test_version_is_028(self):
-        assert __version__ == "0.28.0"
+        assert __version__ == "0.29.0"
 
 
 # =========================================================================

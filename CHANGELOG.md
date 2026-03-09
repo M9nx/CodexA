@@ -2,6 +2,37 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.29.0] — Performance & Developer Experience Overhaul
+
+### Performance
+- **Vector removal O(1)**: Added `_file_index` (dict→set) for instant file→vector lookup instead of linear scan; batch FAISS reconstruction
+- **Incremental indexing fix**: Extract vectors before removal, cache by content hash, reuse for unchanged chunks — eliminates redundant embedding computation
+- **BM25 persistence**: BM25 index serialized to disk (JSON); 3-tier cache: memory→disk→build; staleness detection
+- **Native file watcher**: Rust-backed `watchfiles` using OS-native APIs (inotify/FSEvents/ReadDirectoryChanges) with polling fallback
+
+### New Commands
+- **`codex grep "<pattern>"`**: Raw filesystem search without requiring an index; ripgrep backend for speed, pure-Python fallback
+- **`codex benchmark`**: Full performance benchmarking — indexing speed, search latency (semantic/keyword/regex/hybrid with avg/p50/p99/QPS), BM25 persistence speedup, memory usage
+
+### Enhanced Commands
+- **`codex init --index`**: Auto-build search index after initialization
+- **`codex init --vscode`**: Generate `.vscode/settings.json` with MCP server config
+- Next steps guidance shown after bare `codex init`
+
+### New AI Tools (11 total)
+- **`get_quality_score`**: Code quality analysis — complexity, dead code, duplicates, safety
+- **`find_duplicates`**: Trigram Jaccard similarity-based duplicate detection
+- **`grep_files`**: Raw filesystem regex search via ripgrep or Python
+- All 3 tools available via both `ToolRegistry` and MCP server
+
+### MCP Server
+- **11 MCP tools** (up from 8): added `get_quality_score`, `find_duplicates`, `grep_files`
+
+### Changed
+- CLI registers **38 commands** (up from 36)
+- Version bumped to 0.29.0
+- `watchfiles>=1.0.0` added to dependencies
+
 ## [0.28.0] — Phase 28: UI/UX Polish Across All Interfaces
 
 ### VS Code Extension
