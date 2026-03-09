@@ -292,11 +292,20 @@ def run_indexing(
 
     if force:
         store = VectorStore(dimension)
+        cached_vectors: dict[str, np.ndarray] = {}
     else:
         try:
             store = VectorStore.load(index_dir)
         except FileNotFoundError:
             store = VectorStore(dimension)
+
+        # Extract existing vectors for unchanged chunks BEFORE removing
+        cached_vectors = {}
+        for sf in files_to_index:
+            for meta, vec in store.get_vectors_for_file(str(sf.path)):
+                # Key by content hash so we can match reused chunks
+                cache_key = f"{meta.file_path}:{meta.start_line}:{meta.end_line}:{meta.content_hash}"
+                cached_vectors[cache_key] = vec
 
         # Remove stale vectors for changed files before adding updated ones
         for sf in files_to_index:
@@ -309,28 +318,48 @@ def run_indexing(
             hash_store.remove(dp)
             chunk_hash_store.remove_by_file(full)
 
-    # Step 7: Build metadata and add ALL chunks for the changed files
-    # For chunks that were reused we still need their vectors. Since we
-    # removed the whole file's vectors above, we re-add everything.
-    # But we only *computed* embeddings for changed chunks; for reused
-    # chunks we need to regenerate their embeddings too (they were removed).
-    #
-    # Optimisation: embed everything for changed files, but benefit from
-    # the chunk hash store on subsequent runs when these chunks don't change.
-    all_texts = [chunk.content for chunk in all_chunks]
-    if not chunks_to_embed or len(chunks_to_embed) < len(all_chunks):
-        # Some chunks were reused content-wise but their vectors were removed
-        # because we remove all vectors for changed files. Re-embed all.
-        if all_texts:
-            all_embeddings = generate_embeddings(
-                all_texts,
-                model_name=config.embedding.model_name,
-                show_progress=True,
-            )
+    # Step 7: Build final embeddings by combining cached + new vectors
+    # For reused chunks, look up their cached vectors instead of re-embedding.
+    # Build a lookup from changed-chunk index to its embedding
+    new_embed_map: dict[int, int] = {}  # all_chunks idx -> new_embeddings idx
+    new_idx = 0
+    for i, chunk in enumerate(all_chunks):
+        if i not in set(reused_indices):
+            new_embed_map[i] = new_idx
+            new_idx += 1
+
+    all_embeddings_list: list[np.ndarray] = []
+    reembedded_count = 0
+    for i, chunk in enumerate(all_chunks):
+        if i in set(reused_indices) and not force:
+            # Try to reuse cached vector for this chunk
+            cache_key = f"{chunk.file_path}:{chunk.start_line}:{chunk.end_line}:{chunk_file_hashes[i]}"
+            cached_vec = cached_vectors.get(cache_key)
+            if cached_vec is not None:
+                all_embeddings_list.append(cached_vec)
+                continue
+            # Cache miss — chunk positions may have shifted; need to embed
+            reembedded_count += 1
+
+        if i in new_embed_map and new_embeddings is not None:
+            all_embeddings_list.append(new_embeddings[new_embed_map[i]])
         else:
-            all_embeddings = np.empty((0, dimension), dtype=np.float32)
+            # Fallback: embed this single chunk (rare — only cache misses)
+            reembedded_count += 1
+            vec = generate_embeddings(
+                [chunk.content],
+                model_name=config.embedding.model_name,
+                show_progress=False,
+            )
+            all_embeddings_list.append(vec[0])
+
+    if reembedded_count > 0:
+        logger.info("Re-embedded %d chunks (cache miss due to position shift).", reembedded_count)
+
+    if all_embeddings_list:
+        all_embeddings = np.vstack([v.reshape(1, -1) for v in all_embeddings_list]).astype(np.float32)
     else:
-        all_embeddings = new_embeddings if new_embeddings is not None else np.empty((0, dimension), dtype=np.float32)
+        all_embeddings = np.empty((0, dimension), dtype=np.float32)
 
     metadata_list = [
         ChunkMetadata(
