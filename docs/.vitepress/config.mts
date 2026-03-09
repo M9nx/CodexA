@@ -3,10 +3,9 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'CodexA',
   description: 'Developer Intelligence Engine — semantic code search, AI-assisted understanding, and workspace tooling',
-  base: '/CodexA/',
 
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/CodexA/logo.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
   ],
 
   themeConfig: {
