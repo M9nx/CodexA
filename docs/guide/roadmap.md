@@ -58,49 +58,95 @@ Planned improvements for CodexA, organized by priority.
 
 > Phases redesigned after self-analysis with CodexA tools and competitive
 > comparison with [ck](https://github.com/BeaconBay/ck) (Rust-based semantic
-> search, v0.7.4). Priorities: close visible UX/performance gaps first, then
-> double down on CodexA's unique AI-powered strengths.
+> search, v0.7.4). **Strategy: replace the Python search/indexing core with
+> Rust first (Phase 32), then build every subsequent feature on the fast
+> native foundation.** Old Phase 34 (Performance & Smart Indexing) is fully
+> absorbed into the Rust core.
 
-### Phase 32 — Search UX & Output Modes
+### Phase 32 — Rust Search Engine Core (`codexa-core`)
 
-Close the biggest visible gaps in search ergonomics:
+Replace the Python search/indexing hot paths with a native Rust library,
+exposed to Python via PyO3.  This is the single largest performance leap —
+every phase after this builds on the Rust foundation.
+
+**Crate structure** (`codexa-core/`):
+
+- `codexa-core` — top-level PyO3 module exporting Python classes
+- `codexa-ann` — HNSW vector index (replaces FAISS `IndexFlatIP` / `IndexIVFFlat`)
+- `codexa-index` — Tantivy full-text search (replaces Python BM25)
+- `codexa-chunk` — tree-sitter AST chunking (Rust-native grammars)
+- `codexa-embed` — ONNX embedding inference via `ort` crate (CPU + GPU)
+- `codexa-scan` — parallel file scanner with `rayon`, blake3 content hashing
+
+**What moves to Rust:**
+
+- Vector store: HNSW index with memory-mapped persistence (replaces FAISS)
+- Full-text search: Tantivy inverted index (replaces Python BM25)
+- Hybrid search: RRF fusion computed in Rust
+- Chunking: Rust-native tree-sitter grammars (12+ languages)
+- File scanning: `rayon`-parallel walk, blake3 hashing, smart binary detection
+- Embedding: `ort` (ONNX Runtime) for model inference, batched
+- Content hashing: blake3 replaces SHA-256 for incremental indexing
+
+**What stays in Python:**
+
+- CLI (Click), LLM integration, RAG pipeline, MCP/bridge server
+- Web UI, quality analysis, plugin system, CI tools
+
+**Python API** (drop-in replacements via PyO3):
+
+```python
+from codexa_core import VectorStore, TextIndex, Chunker, Scanner, Embedder
+
+store = VectorStore(dimension=384)          # HNSW, not FAISS
+store.add(embeddings, metadata)
+results = store.search(query_vec, top_k=10)
+
+index = TextIndex.load(path)                # Tantivy, not BM25
+results = index.search("query", top_k=10)
+
+chunks = Chunker.chunk(content, language)   # Rust tree-sitter
+files = Scanner.scan(root, ignore_patterns) # rayon + blake3
+embeddings = Embedder.encode(texts, model)  # ort ONNX
+```
+
+**Performance targets:**
+
+- Indexing: 1M LOC in < 2 min (vs current ~8 min Python)
+- Search: sub-100ms queries at 100K vectors
+- Memory: 50% reduction via memory-mapped indices
+- Startup: near-instant index loading (mmap, no deserialization)
+
+### Phase 33 — Search UX & Output Modes
+
+Build on the Rust core to close the biggest visible UX gaps:
 
 - `--scores` flag to display similarity scores with color highlighting
 - `--full-section` flag to return complete function/class bodies, not just chunk snippets
 - `--threshold` flag to filter results below a minimum similarity score
 - JSONL streaming output mode (`--jsonl`) for piping into downstream tools
-- `codexa search --inspect <file>` to visualize chunks, token counts, and embeddings for a file
+- `codexa search --inspect <file>` to visualize chunks, token counts, and embeddings
 - `.codexaignore` auto-generation from detected binary/vendored/generated files
-- Smart binary detection to skip non-text files during indexing
+- `codexa index --diff` to index only git-changed files
 
-### Phase 33 — Precise Token Management
+### Phase 34 — Precise Token Management
 
-Replace rough token estimation with model-specific counting (ck already ships exact tokenization):
+Leverage the Rust `tokenizers` crate for exact model-specific counting:
 
-- `tiktoken` for OpenAI models, HuggingFace `tokenizers` for local/Ollama models
+- HuggingFace `tokenizers` in Rust (exposed via PyO3) for local models
+- `tiktoken` integration for OpenAI models
 - Accurate context window budgeting with overflow protection in RAG pipeline
 - Token usage reporting and cost estimation per query
 - Smart context truncation preserving semantic boundaries (function/class edges)
 - `codexa search --tokens` to show token count per result
 
-### Phase 34 — Performance & Smart Indexing
-
-Content-aware incremental indexing to close the speed gap:
-
-- Content-hash (blake3) per chunk — skip re-embedding unchanged code
-- Parallel embedding with configurable worker count
-- Batch FAISS insertion instead of one-by-one vector adds
-- Memory-mapped FAISS indices for low-RAM machines
-- `codexa index --diff` to index only git-changed files
-- Indexing progress bar with ETA and throughput stats
-
 ### Phase 35 — Advanced Embedding & Model Selection
 
-Multiple embedding models and smarter search infrastructure:
+Multi-model support powered by the Rust ONNX backend:
 
 - Support BGE, mxbai-embed, nomic-embed, jina-code-v2 alongside current MiniLM
 - Model switching at query time without full re-index (dual-index mode)
-- GPU-accelerated FAISS with IVF-PQ indices for million-file repos
+- IVF-PQ indices in Rust for million-file repos
 - Field-scoped search filters (`--lang`, `--symbol-type`, `--file`)
 - Configurable RRF weights for hybrid search tuning
 - `codexa models compare` to benchmark models on the user's actual codebase
