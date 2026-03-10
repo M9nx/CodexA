@@ -11,6 +11,12 @@ from semantic_code_intelligence.config.settings import (
     AppConfig,
     init_project,
     load_config,
+    save_config,
+)
+from semantic_code_intelligence.embeddings.model_registry import (
+    MODEL_PROFILES,
+    recommend_profile_for_ram,
+    resolve_profile,
 )
 from semantic_code_intelligence.utils.logging import (
     get_logger,
@@ -81,8 +87,15 @@ def _generate_vscode_mcp_config(root: Path) -> bool:
     default=False,
     help="Generate .vscode/settings.json with MCP server config.",
 )
+@click.option(
+    "--profile",
+    "profile_name",
+    type=click.Choice(["fast", "balanced", "precise"], case_sensitive=False),
+    default=None,
+    help="Embedding model profile: fast (tiny, low RAM), balanced (default), precise (code-optimised).",
+)
 @click.pass_context
-def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool) -> None:
+def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool, profile_name: str | None) -> None:
     """Initialize a project for semantic code indexing.
 
     Creates a .codexa/ directory with default configuration and an empty index.
@@ -121,6 +134,26 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
         print_error(f"Failed to initialize project: {e}")
         ctx.exit(1)
         return
+
+    # Apply model profile (explicit or RAM-auto-detected)
+    profile = None
+    if profile_name:
+        profile = resolve_profile(profile_name)
+    else:
+        # Auto-detect RAM and recommend
+        from semantic_code_intelligence.embeddings.generator import _get_available_memory_bytes
+        available = _get_available_memory_bytes()
+        if available is not None:
+            available_gb = available / (1024 ** 3)
+            profile = recommend_profile_for_ram(available_gb)
+            print_info(f"Detected {available_gb:.1f} GB available RAM → using '{profile.name}' profile ({profile.label})")
+
+    if profile:
+        config.embedding.model_name = profile.model_name
+        save_config(config, root)
+        print_success(f"Model profile: {profile.label} → {profile.model_name}")
+        info = profile
+        print_info(f"  {profile.description}")
 
     if setup_vscode:
         if _generate_vscode_mcp_config(root):

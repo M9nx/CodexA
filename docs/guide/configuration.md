@@ -51,6 +51,20 @@ Controls the sentence-transformer model used for vector encoding.
 | `chunk_size` | int | 512 | Maximum tokens per code chunk |
 | `chunk_overlap` | int | 64 | Overlap between consecutive chunks |
 
+::: tip Model Profiles
+Instead of setting `model_name` manually, use model profiles for one-command setup:
+
+```bash
+codexa init --profile fast       # mxbai-embed-xsmall — fast, low RAM (<1 GB)
+codexa init --profile balanced   # MiniLM — good balance (~2 GB RAM)
+codexa init --profile precise    # jina-code — best quality (~4 GB RAM)
+codexa init                      # Auto-detects RAM and picks the best profile
+```
+
+View profiles: `codexa models profiles`
+Benchmark models: `codexa models benchmark`
+:::
+
 ### `search`
 
 Controls search behavior across all modes.

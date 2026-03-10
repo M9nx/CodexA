@@ -136,6 +136,23 @@ def _check_memory_requirements(use_onnx: bool) -> None:
     )
 
 
+def _show_download_banner(model_name: str) -> None:
+    """Print a friendly message when a model is about to be downloaded."""
+    from semantic_code_intelligence.embeddings.model_registry import get_model_info
+
+    info = get_model_info(model_name)
+    size_str = f" (~{info.size_mb} MB)" if info and info.size_mb else ""
+    try:
+        from rich.console import Console
+
+        _c = Console(stderr=True)
+        _c.print(f"[bold cyan]⬇  Downloading model:[/] {model_name}{size_str}")
+        _c.print("[dim]This is a one-time download. The model will be cached locally.[/dim]")
+    except ImportError:
+        print(f"Downloading model: {model_name}{size_str}")
+        print("This is a one-time download. The model will be cached locally.")
+
+
 def get_model(
     model_name: str = "all-MiniLM-L6-v2",
     backend: str = "auto",
@@ -167,6 +184,8 @@ def get_model(
         local_only = _model_cached_locally(model_name)
         if local_only:
             logger.debug("Model %s found in local cache — skipping network checks.", model_name)
+        else:
+            _show_download_banner(model_name)
         # Quieten HF/transformers loggers that spam HTTP HEAD requests
         for noisy_logger in ("huggingface_hub", "transformers", "sentence_transformers"):
             logging.getLogger(noisy_logger).setLevel(logging.WARNING)

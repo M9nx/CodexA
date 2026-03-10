@@ -2,6 +2,20 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.4.4] — Model Flexibility & Smart Defaults
+
+### New Features
+- **Model Profiles**: Three built-in profiles — `fast` (mxbai-embed-xsmall, <1 GB RAM), `balanced` (MiniLM, ~2 GB), `precise` (jina-embeddings-v2-base-code, ~4 GB)
+- **`codexa init --profile`**: Choose your embedding model tier at initialization. When omitted, auto-detects available RAM and recommends the best profile
+- **`codexa models profiles`**: View all available model profiles with RAM requirements and recommendations
+- **`codexa models benchmark`**: Benchmark embedding models against your actual codebase — measures load time, encoding speed, and throughput
+- **Download progress indicator**: Friendly banner with model size shown when downloading a new embedding model for the first time
+- **RAM-aware model selection**: `recommend_profile_for_ram()` automatically picks the best model for your hardware
+
+### Changed
+- Model registry extended with `ModelProfile` dataclass, `size_mb` and `ram_required_gb` fields on `ModelInfo`
+- Version bumped to 0.4.4
+
 ## [0.4.3] — Packaging and Indexing UX Fixes
 
 ### Packaging & Installation

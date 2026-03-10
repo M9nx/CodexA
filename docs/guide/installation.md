@@ -82,7 +82,7 @@ pip install -e ".[dev,tui,ml]"
 
 ```bash
 codexa --version
-# codexa 0.4.3
+# codexa 0.4.4
 
 codexa doctor
 # Checks environment health

@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.4.3-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.4.4-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2596-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -78,6 +78,15 @@ Navigate to any project you want to analyze and run:
 ```bash
 cd /path/to/your-project
 codexa init
+```
+
+CodexA auto-detects your available RAM and picks the best embedding model.
+Or choose a model profile explicitly:
+
+```bash
+codexa init --profile fast       # mxbai-embed-xsmall — low RAM (<1 GB)
+codexa init --profile balanced   # MiniLM — good balance (~2 GB)
+codexa init --profile precise    # jina-code — best quality (~4 GB)
 ```
 
 This creates a `.codexa/` directory with configuration, index storage, and session data.
@@ -224,7 +233,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codexa --version    # → codexa, version 0.4.3
+codexa --version    # → codexa, version 0.4.4
 ```
 
 ### Step 2 — Initialize your target project
@@ -466,7 +475,7 @@ CodexA provides **39 commands** (plus subcommands) organized by capability:
 | `codexa plugin list\|scaffold\|discover` | Plugin management |
 | `codexa tui` | Interactive terminal REPL |
 | `codexa mcp` | Start MCP (Model Context Protocol) server |
-| `codexa models list\|info\|download\|switch` | Manage embedding models |
+| `codexa models list\|info\|download\|switch\|profiles\|benchmark` | Manage and benchmark embedding models |
 
 ### VS Code Extension
 
@@ -564,6 +573,9 @@ After `codexa init`, your project has `.codexa/config.json`:
   }
 }
 ```
+
+> **Tip:** Instead of editing `model_name` manually, use `codexa init --profile fast|balanced|precise`
+> or run `codexa models profiles` to see recommended models for your hardware.
 
 ---
 

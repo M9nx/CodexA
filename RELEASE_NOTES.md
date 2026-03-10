@@ -1,4 +1,4 @@
-# CodexA v0.4.3 — Release Notes
+# CodexA v0.4.4 — Release Notes
 
 > **Released:** 2025 · **License:** MIT · **Docs:** [codex-a.dev](https://codex-a.dev)
 
@@ -6,27 +6,33 @@
 
 ---
 
-## What's New in v0.4.3
+## What's New in v0.4.4
 
-This release focuses on **packaging reliability**, **indexing UX**, and fixes reported by the community ([#2](https://github.com/M9nx/CodexA/issues/2)).
+This release introduces **model flexibility** — choose the right embedding model for your hardware, benchmark models against your codebase, and let CodexA auto-detect the best configuration.
 
-### Packaging & Installation
-- Tree-sitter grammar packages now **bundled in core dependencies** — language parsing works out of the box after `pip install codexa`
-- Two install tiers documented: `pip install codexa` (lightweight CLI) and `pip install "codexa[ml]"` (semantic indexing + vector search)
-- Reduced repeated HuggingFace model cache/network checks — prefers local model files when already cached
+### Model Profiles
+- **Three profiles**: `fast` (mxbai-embed-xsmall, <1 GB RAM), `balanced` (MiniLM, ~2 GB), `precise` (jina-embeddings-v2-base-code, ~4 GB)
+- **`codexa init --profile fast|balanced|precise`** — pick your tier at init time
+- **Auto-detect**: when no profile is specified, CodexA detects available RAM and recommends the best model
 
-### Indexing & Search
-- New `index.exclude_files` config option — glob-based file exclusions in `.codexa/config.json`
-- `.codexaignore` support documented with examples for secrets and generated files
-- Reduced embedding model re-download noise with smarter cache detection
+### New Commands
+- **`codexa models profiles`** — view available model profiles with RAM requirements and a ⭐ recommendation
+- **`codexa models benchmark`** — benchmark all built-in models against your actual codebase. Reports load time, encode time, and chunks/second
 
-### Reliability
-- Actionable `MemoryError` handling for machines with < 2 GB RAM during embedding model loading
-- Improved `codexa init` and `codexa index` CLI output with hints for ML extras and RAM requirements
+### UX Improvements
+- **Download progress**: friendly banner with model name and size shown when downloading a model for the first time
+- **RAM-aware defaults**: `recommend_profile_for_ram()` picks the best model for your machine automatically
 
 ---
 
 ## Previous Releases
+
+### v0.4.3 — Packaging & Indexing UX Fixes
+- Tree-sitter grammar packages bundled in core dependencies
+- `index.exclude_files` config, `.codexaignore` support
+- MemoryError handling for low-RAM machines
+- Reduced HuggingFace noise, improved CLI guidance
+- Community fixes ([#2](https://github.com/M9nx/CodexA/issues/2))
 
 ### v0.4.2 — NumPy Compatibility
 - Pinned `numpy < 2` to avoid ABI breakage with FAISS on some platforms
@@ -57,7 +63,7 @@ Verify:
 
 ```bash
 codexa --version
-# codexa, version 0.4.3
+# codexa, version 0.4.4
 ```
 
 ## Quick Start
@@ -75,7 +81,7 @@ codexa doctor             # Environment health check
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.4.3 |
+| **Version** | 0.4.4 |
 | **CLI Commands** | 39 |
 | **AI Agent Tools** | 13 |
 | **Plugin Hooks** | 22 |

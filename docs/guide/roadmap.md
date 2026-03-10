@@ -2,7 +2,16 @@
 
 Planned improvements for CodexA, organized by priority.
 
-## Recently Completed (v0.4.3)
+## Recently Completed (v0.4.4)
+
+- **Model Profiles**: Three built-in profiles — `fast`, `balanced`, `precise` — each tuned for different hardware
+- **`codexa init --profile`**: Choose your embedding model tier at init, or let CodexA auto-detect from available RAM
+- **`codexa models profiles`**: View available profiles with RAM requirements and ⭐ recommendation
+- **`codexa models benchmark`**: Benchmark all built-in models against your actual codebase
+- **Download progress banner**: Friendly indicator with model size when downloading for the first time
+- **RAM-aware defaults**: Auto-picks the best model for your machine
+
+### v0.4.3
 
 - **Bundled tree-sitter grammars**: All grammar packages included in core dependencies — parsing works out of the box
 - **`exclude_files` config**: Glob-based file exclusions via `index.exclude_files` in `.codexa/config.json`

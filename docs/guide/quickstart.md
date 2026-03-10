@@ -13,9 +13,21 @@ codexa doctor        # Verify everything is healthy
 Or step by step:
 
 ```bash
-codexa init          # Creates .codexa/ directory
+codexa init          # Creates .codexa/ directory (auto-detects best model for your RAM)
 codexa index .       # Index the entire codebase
 ```
+
+::: tip Model Profiles
+Pick an embedding model tier to match your hardware:
+
+```bash
+codexa init --profile fast       # Tiny model, <1 GB RAM
+codexa init --profile balanced   # Default, ~2 GB RAM
+codexa init --profile precise    # Best quality, ~4 GB RAM
+```
+
+Compare models on your codebase: `codexa models benchmark`
+:::
 
 ## 2. Search Your Code
 

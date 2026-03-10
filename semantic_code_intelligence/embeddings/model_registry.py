@@ -2,12 +2,13 @@
 
 Provides a catalogue of supported embedding models so users can switch
 between models optimised for different use-cases (code-heavy, doc-heavy,
-speed vs quality, etc.).
+speed vs quality, etc.).  Includes pre-defined *profiles* that map to
+curated models based on speed/quality/RAM trade-offs.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -19,10 +20,26 @@ class ModelInfo:
     dimension: int
     description: str
     recommended_for: str
+    size_mb: int = 0  # approximate download size
+    ram_required_gb: float = 0.5  # approximate RAM needed
     backend: str = "sentence-transformers"  # or "onnx"
 
 
-# Built-in model catalogue — mirrors ck's 4 models plus extras
+@dataclass(frozen=True)
+class ModelProfile:
+    """A named model preset that maps a simple label to a curated model."""
+
+    name: str
+    model_name: str
+    label: str
+    description: str
+    min_ram_gb: float
+
+
+# ---------------------------------------------------------------------------
+# Built-in model catalogue
+# ---------------------------------------------------------------------------
+
 AVAILABLE_MODELS: dict[str, ModelInfo] = {
     "all-MiniLM-L6-v2": ModelInfo(
         name="all-MiniLM-L6-v2",
@@ -30,6 +47,8 @@ AVAILABLE_MODELS: dict[str, ModelInfo] = {
         dimension=384,
         description="Default balanced model — good quality, fast inference.",
         recommended_for="General purpose, balanced speed/quality.",
+        size_mb=80,
+        ram_required_gb=0.5,
         backend="sentence-transformers",
     ),
     "BAAI/bge-small-en-v1.5": ModelInfo(
@@ -38,6 +57,8 @@ AVAILABLE_MODELS: dict[str, ModelInfo] = {
         dimension=384,
         description="Compact BGE model — strong text retrieval performance.",
         recommended_for="Retrieval-heavy workloads, lower memory.",
+        size_mb=130,
+        ram_required_gb=0.5,
         backend="sentence-transformers",
     ),
     "nomic-ai/nomic-embed-text-v1.5": ModelInfo(
@@ -46,6 +67,8 @@ AVAILABLE_MODELS: dict[str, ModelInfo] = {
         dimension=768,
         description="High-quality long-context model (8192 tokens).",
         recommended_for="Documentation-heavy repos, long files.",
+        size_mb=550,
+        ram_required_gb=1.5,
         backend="sentence-transformers",
     ),
     "jinaai/jina-embeddings-v2-base-code": ModelInfo(
@@ -54,6 +77,8 @@ AVAILABLE_MODELS: dict[str, ModelInfo] = {
         dimension=768,
         description="Code-specialised model trained on programming languages.",
         recommended_for="Code-heavy repos, programming-specific search.",
+        size_mb=550,
+        ram_required_gb=1.5,
         backend="sentence-transformers",
     ),
     "mixedbread-ai/mxbai-embed-xsmall-v1": ModelInfo(
@@ -62,6 +87,8 @@ AVAILABLE_MODELS: dict[str, ModelInfo] = {
         dimension=384,
         description="Ultra-compact model — fastest inference, smallest footprint.",
         recommended_for="Large repos where speed matters most.",
+        size_mb=60,
+        ram_required_gb=0.3,
         backend="sentence-transformers",
     ),
 }
@@ -76,6 +103,56 @@ MODEL_ALIASES: dict[str, str] = {
 }
 
 DEFAULT_MODEL = "all-MiniLM-L6-v2"
+
+# ---------------------------------------------------------------------------
+# Model Profiles — simple tiers for `codexa init --profile <name>`
+# ---------------------------------------------------------------------------
+
+MODEL_PROFILES: dict[str, ModelProfile] = {
+    "fast": ModelProfile(
+        name="fast",
+        model_name="mixedbread-ai/mxbai-embed-xsmall-v1",
+        label="Fast",
+        description="Smallest model, fastest indexing. Best for large repos or low-RAM machines.",
+        min_ram_gb=0.3,
+    ),
+    "balanced": ModelProfile(
+        name="balanced",
+        model_name="all-MiniLM-L6-v2",
+        label="Balanced (default)",
+        description="Good quality with fast inference. Recommended for most projects.",
+        min_ram_gb=0.5,
+    ),
+    "precise": ModelProfile(
+        name="precise",
+        model_name="jinaai/jina-embeddings-v2-base-code",
+        label="Precise",
+        description="Code-specialised model with higher accuracy. Best for code-heavy repos.",
+        min_ram_gb=1.5,
+    ),
+}
+
+PROFILE_ALIASES: dict[str, str] = {
+    "small": "fast",
+    "default": "balanced",
+    "quality": "precise",
+    "code": "precise",
+}
+
+
+def resolve_profile(name: str) -> ModelProfile | None:
+    """Resolve a profile name or alias to a ModelProfile."""
+    key = PROFILE_ALIASES.get(name.lower(), name.lower())
+    return MODEL_PROFILES.get(key)
+
+
+def recommend_profile_for_ram(available_gb: float) -> ModelProfile:
+    """Return the best profile that fits within the available RAM."""
+    if available_gb >= 1.5:
+        return MODEL_PROFILES["precise"]
+    if available_gb >= 0.5:
+        return MODEL_PROFILES["balanced"]
+    return MODEL_PROFILES["fast"]
 
 
 def resolve_model_name(name_or_alias: str) -> str:
