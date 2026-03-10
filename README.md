@@ -27,8 +27,8 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 | **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `--watch` live re-indexing, `.codexaignore` support |
 | **Multi-Mode Search** | Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep (ripgrep backend) with full `-A/-B/-C/-w/-v/-c` flags |
 | **Code Context** | Rich context windows — imports, dependencies, AST-based call graphs, surrounding code |
-| **Repository Analysis** | Language breakdown, module summaries, component detection |
-| **AI Agent Protocol** | 11 built-in tools exposed via HTTP bridge, MCP server (13 tools), MCP-over-SSE (`--mcp`), or CLI for any AI agent to invoke |
+| **Repository Analysis** | Language breakdown (`codexa languages`), module summaries, component detection |
+| **AI Agent Protocol** | 13 built-in tools exposed via HTTP bridge, MCP server (13 tools), MCP-over-SSE (`--mcp`), or CLI for any AI agent to invoke |
 | **Quality & Metrics** | Complexity analysis, maintainability scoring, quality gates for CI |
 | **Multi-Repo Workspaces** | Link multiple repos under one workspace for cross-repo search & refactoring |
 | **Interactive TUI** | Terminal REPL with mode switching for interactive exploration |
@@ -59,6 +59,17 @@ source .venv/bin/activate
 
 # Install in editable mode with dev dependencies
 pip install -e ".[dev]"
+```
+
+**Alternative installation methods:**
+
+```bash
+# Docker
+docker build -t codexa .
+docker run --rm -v /path/to/project:/workspace codexa search "auth"
+
+# Homebrew (macOS)
+brew install --formula Formula/codexa.rb
 ```
 
 ### 2. Initialize a Project
@@ -197,7 +208,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codexa --version    # → codexa, version 0.29.0
+codexa --version    # → codexa, version 0.30.0
 ```
 
 ### Step 2 — Initialize your target project
@@ -376,7 +387,7 @@ Supported providers: `openai`, `ollama` (local), `mock` (testing).
 
 ## All CLI Commands
 
-CodexA provides **38 commands** (plus subcommands) organized by capability:
+CodexA provides **39 commands** (plus subcommands) organized by capability:
 
 ### Core
 
@@ -392,6 +403,7 @@ CodexA provides **38 commands** (plus subcommands) organized by capability:
 | `codexa watch` | Background indexing daemon (Rust-backed native file watcher) |
 | `codexa grep "<pattern>"` | Raw filesystem grep — no index required (ripgrep backend) |
 | `codexa benchmark` | Performance benchmarking (indexing, search, memory) |
+| `codexa languages` | List supported tree-sitter languages with grammar status |
 
 ### AI-Powered
 
@@ -447,7 +459,7 @@ CodexA provides **38 commands** (plus subcommands) organized by capability:
 | Multi-mode search panel (semantic/keyword/hybrid/regex) | Sidebar → Search |
 | Symbol explorer (explain, call graph, deps) | Sidebar → Symbols & Graphs |
 | Code quality dashboard (quality, metrics, hotspots) | Sidebar → Quality |
-| Agent tool runner (doctor, index, models, 8 tools) | Sidebar → Tools |
+| Agent tool runner (doctor, index, models, 13 tools) | Sidebar → Tools |
 | Search codebase | `Ctrl+Shift+F5` |
 | Explain symbol at cursor | `Ctrl+Shift+E` |
 | Code quality analysis | `Ctrl+Shift+Q` |
@@ -470,9 +482,11 @@ or Python API (`ToolExecutor.execute()`):
 | `get_dependencies` | `file_path` (string) | Import / dependency map for a file |
 | `get_call_graph` | `symbol_name` (string) | Call graph — callers and callees |
 | `get_context` | `symbol_name` (string) | Rich context window for AI tasks |
+| `get_file_context` | `file_path`, `line` or `symbol_name` | Full-section surrounding code retrieval |
 | `get_quality_score` | `file_path` (string, optional) | Code quality analysis — complexity, dead code, duplicates |
 | `find_duplicates` | `threshold` (float, optional) | Detect near-duplicate code blocks |
 | `grep_files` | `pattern` (string) | Raw filesystem regex search (ripgrep/Python) |
+| `list_languages` | *(none)* | List supported tree-sitter languages and grammar status |
 
 Additional tools can be registered via the plugin system using the
 `REGISTER_TOOL` hook.
@@ -484,7 +498,7 @@ Additional tools can be registered via the plugin system using the
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    CLI Layer (click)                 │
-│  38 commands · --json · --pipe · --verbose           │
+│  39 commands · --json · --pipe · --verbose           │
 ├─────────────────────────────────────────────────────┤
 │               AI Agent Tooling Protocol              │
 │  ToolExecutor · ToolInvocation · ToolExecutionResult │
@@ -565,7 +579,7 @@ Browse the docs at **http://localhost:5173** after running `npm run docs:dev`.
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 2556 tests
+# Run all 2595 tests
 pytest
 
 # Run with coverage (gate: 70% minimum)

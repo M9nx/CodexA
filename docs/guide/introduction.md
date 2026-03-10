@@ -21,7 +21,7 @@ codexa search "authentication middleware"
 codexa search "database connection pooling"
 ```
 
-### 36 CLI Commands
+### 39 CLI Commands
 
 Comprehensive tooling from the terminal:
 
@@ -74,7 +74,7 @@ codexa metrics --trend        # Track quality over time
 - Works across entire codebase from the command line
 - Scriptable and automatable for CI/CD
 - Semantic understanding beyond symbol search
-- 8 structured tools for AI agents
+- 13 structured tools for AI agents
 
 ### vs. cloud code search
 
@@ -96,4 +96,4 @@ codexa metrics --trend        # Track quality over time
 - [Install CodexA](installation) and get running in under a minute
 - [Quick Start](quickstart) — Index a project and start searching
 - [AI Agent Setup](ai-agent-setup) — Integrate with Copilot, Claude, or Cursor
-- [CLI Reference](../reference/cli) — All 36 commands documented
+- [CLI Reference](../reference/cli) — All 39 commands documented

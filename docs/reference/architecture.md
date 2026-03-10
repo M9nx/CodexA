@@ -7,7 +7,7 @@ CodexA is organized as a layered system with 26 packages under `semantic_code_in
 ```mermaid
 graph TB
     subgraph "Interface Layer"
-        CLI["CLI<br/>36 click commands"]
+        CLI["CLI<br/>39 click commands"]
         WEB["Web UI<br/>REST API + browser"]
         BRIDGE["Bridge Server<br/>HTTP JSON protocol"]
         MCP["MCP Server<br/>Model Context Protocol"]
@@ -16,7 +16,7 @@ graph TB
     end
 
     subgraph "Intelligence Layer"
-        TOOLS["Tool Protocol<br/>8 built-in tools"]
+        TOOLS["Tool Protocol<br/>13 built-in tools"]
         LLM["LLM Providers<br/>OpenAI · Ollama · Mock"]
         CONTEXT["Context Builder<br/>Symbol · Call Graph · Deps"]
         EVOLUTION["Evolution Engine<br/>Self-improving loop"]
@@ -85,7 +85,7 @@ The entry points for users and AI agents. All interfaces share the same underlyi
 
 | Package | Purpose |
 |---------|---------|
-| `cli` | 36 Click commands with `--json`, `--pipe`, `--verbose` flags |
+| `cli` | 39 Click commands with `--json`, `--pipe`, `--verbose` flags |
 | `web` | Lightweight HTTP server with REST API and browser UI |
 | `bridge` | Stateless JSON/HTTP bridge for IDE extensions |
 | `mcp` | Model Context Protocol server (official MCP SDK) |
@@ -98,7 +98,7 @@ Orchestrates AI-powered features and tool execution.
 
 | Package | Purpose |
 |---------|---------|
-| `tools` | `ToolExecutor`, `ToolInvocation`, `ToolRegistry` — 8 built-in tools |
+| `tools` | `ToolExecutor`, `ToolInvocation`, `ToolRegistry` — 13 built-in tools |
 | `llm` | Provider abstraction: OpenAI, Ollama, Mock with caching and streaming |
 | `context` | `ContextBuilder`, `ContextWindow`, `CallGraph`, `DependencyMap` |
 | `evolution` | `EvolutionEngine`, `BudgetGuard`, `TaskSelector`, `PatchGenerator` |
@@ -201,7 +201,7 @@ semantic_code_intelligence/
 ├── search/          # FAISS vector + BM25 + hybrid search
 ├── services/        # Service-layer result types
 ├── storage/         # VectorStore, SymbolRegistry, caches
-├── tools/           # AI Agent Tool Protocol (8 tools)
+├── tools/           # AI Agent Tool Protocol (13 tools)
 ├── tui/             # Textual interactive terminal
 ├── utils/           # Logging utilities
 ├── web/             # Web UI + REST API

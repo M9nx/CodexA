@@ -21,7 +21,7 @@ features:
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>'
     title: AI Agent Protocol
-    details: 11 structured tools invocable via CLI, HTTP bridge, MCP, or Python API. Designed for autonomous AI coding agents with structured JSON input/output.
+    details: 13 structured tools invocable via CLI, HTTP bridge, MCP, or Python API. Designed for autonomous AI coding agents with structured JSON input/output.
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 10.5V7c0-1.38-1.12-2.5-2.5-2.5S12 5.62 12 7v3.5"/><path d="M7 10.5V7c0-1.38 1.12-2.5 2.5-2.5"/><path d="m2 19 5-5"/><path d="m7 19 5-5"/><path d="m12 19 5-5"/><path d="m17 19 5-5"/></svg>'
     title: Multi-Language Parsing
@@ -40,8 +40,8 @@ features:
     details: Budget-aware evolution engine that autonomously discovers issues, generates patches, validates with tests, and commits improvements to your codebase.
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>'
-    title: 38 CLI Commands
-    details: Comprehensive Click-based CLI with --json, --pipe, and --verbose flags. Every command returns structured output suitable for scripting and automation. Includes grep, benchmark, and raw filesystem search.
+    title: 39 CLI Commands
+    details: Comprehensive Click-based CLI with --json, --pipe, and --verbose flags. Every command returns structured output suitable for scripting and automation. Includes grep, benchmark, languages, and raw filesystem search.
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>'
     title: Multiple Interfaces
@@ -73,9 +73,9 @@ codexa hotspots
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.29.0 |
-| **CLI Commands** | 38 |
-| **AI Agent Tools** | 11 (+ plugin-registered) |
+| **Version** | 0.30.0 |
+| **CLI Commands** | 39 |
+| **AI Agent Tools** | 13 (+ plugin-registered) |
 | **Plugin Hooks** | 22 |
 | **Packages** | 26 |
 | **Parsed Languages** | 12 |
@@ -85,7 +85,7 @@ codexa hotspots
 
 - [Installation](guide/installation) — Get CodexA running in under a minute
 - [Quick Start](guide/quickstart) — Index a project and start searching
-- [CLI Reference](reference/cli) — All 38 commands documented
+- [CLI Reference](reference/cli) — All 39 commands documented
 - [Architecture](reference/architecture) — System design and package map
 - [Plugin System](features/plugin-system) — Extend CodexA with custom hooks
 - [API Reference](reference/api) — REST, Bridge, MCP, and Python APIs

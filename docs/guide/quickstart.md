@@ -110,7 +110,7 @@ Agents can then call `http://127.0.0.1:24842/tools/invoke` directly.
 
 ## What's Next?
 
-- [CLI Reference](../reference/cli) — All 36 commands
+- [CLI Reference](../reference/cli) — All 39 commands
 - [Architecture](../reference/architecture) — How CodexA works internally
 - [Plugin System](../features/plugin-system) — Extend with custom hooks
 - [AI Workflows](../features/ai-tools) — Multi-turn chat, investigation chains

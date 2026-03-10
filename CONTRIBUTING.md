@@ -48,7 +48,7 @@ CodexA/
 │   ├── search/                     # Search backends & formatting
 │   ├── services/                   # Indexing & search service layer
 │   ├── storage/                    # FAISS vector store & hash store
-│   ├── tools/                      # AI tool-calling interface (8 tools)
+│   ├── tools/                      # AI tool-calling interface (13 tools)
 │   ├── tui/                        # Textual TUI & fallback REPL
 │   ├── utils/                      # Logging & shared utilities
 │   ├── web/                        # Web UI, REST API, visualization

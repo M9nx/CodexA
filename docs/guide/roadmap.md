@@ -2,97 +2,114 @@
 
 Planned improvements for CodexA, organized by priority.
 
-## Recently Completed (v0.29.0)
+## Recently Completed (v0.30.0)
 
-- **O(1) vector removal**: File-level index for instant vector lookup and batch FAISS reconstruction
-- **True incremental indexing**: Content-hash caching — unchanged chunks skip embedding entirely
-- **BM25 persistence**: BM25 index cached to disk with 3-tier loading (memory/disk/build)
-- **Native file watcher**: Rust-backed `watchfiles` with OS-native APIs (inotify/FSEvents/ReadDirectoryChanges)
-- **Raw filesystem grep**: `codexa grep` command with ripgrep backend, no index required
-- **Performance benchmarking**: `codexa benchmark` command measuring indexing, search, and memory
-- **Enhanced init**: `codexa init --index --vscode` for one-command setup
-- **11 AI tools**: Added `get_quality_score`, `find_duplicates`, `grep_files` to tools and MCP
+- **Watch-mode indexing**: `codexa index --watch` — live re-indexing with NativeFileWatcher + incremental indexing
+- **`codexa languages` command**: Rich table of all 11 supported tree-sitter languages with extensions, grammar status, and `--check` verification
+- **Full grep compatibility**: `-A/-B/-C` context lines, `-w` word match, `-v` invert, `-c` count, `--hidden` — in both ripgrep and Python backends
+- **Benchmark profiling**: `codexa benchmark --profile` with cProfile integration — top 20 hotspots by cumulative time
+- **MCP-over-SSE**: `codexa serve --mcp` — MCP tools over HTTP with Server-Sent Events via Starlette/uvicorn
+- **13 MCP tools**: Added `get_file_context` (surrounding code retrieval) and `list_languages` (grammar listing)
+- **Packaging**: Production Dockerfile, Homebrew formula, PyPI-ready with `python -m build`
+- **39 CLI commands** (up from 38)
 
-## High Priority
+### Previously Completed (v0.29.0)
 
-### RAG Pipeline for LLM Commands
+- O(1) vector removal, true incremental indexing, BM25 persistence
+- Native file watcher (Rust-backed `watchfiles`), raw filesystem grep, performance benchmarking
+- Enhanced init (`--index`, `--vscode`), 11 AI tools (quality, duplicates, grep)
+
+---
+
+## Upcoming Improvements
+
+### Phase 31 — RAG Pipeline for LLM Commands
 
 Replace the current "dump context → prompt" approach with a proper Retrieval-Augmented Generation pipeline:
 
-- Semantic retrieval with re-ranking
-- Token-aware context assembly
-- Source citation in responses
-- Configurable retrieval strategies
+- Semantic retrieval with re-ranking (cross-encoder)
+- Token-aware context assembly with budget allocation
+- Source citation in responses (file + line references)
+- Configurable retrieval strategies (dense, sparse, hybrid)
+- Chunk-level relevance scoring before LLM submission
 
-### Async Web & WebSocket Streaming
+### Phase 32 — Cross-Language Intelligence
 
-Migrate the web server from synchronous `http.server` to an async framework:
+Unified code intelligence across language boundaries:
 
-- Real-time search result streaming via WebSocket
-- Non-blocking request handling
-- Server-sent events for long-running operations
-- Connection pooling for multi-client scenarios
+- Cross-language symbol resolution (e.g., Python calling Rust via FFI)
+- Polyglot dependency graphs linking imports across languages
+- Language-aware search boosting (prefer results in the query's context language)
+- Universal call graph spanning multiple languages in a workspace
 
-### Precise Token Counting
+### Phase 33 — Team & Cloud Mode
 
-Replace rough `len(text) // 4` estimation with model-specific tokenizers:
+Optional team collaboration features (privacy-first, opt-in):
 
-- `tiktoken` for OpenAI models
-- Model-specific tokenizers for Ollama models
-- Accurate context window budgeting
-- Token usage reporting
+- Shared search indices with team-scoped access control
+- Remote index hosting for large monorepos (gRPC or HTTP)
+- Index sharding and distributed search across machines
+- Audit logging for compliance-sensitive environments
 
-## Medium Priority
+### Phase 34 — CI/CD Deep Integration
 
-### Field-Scoped Search
+First-class CI pipeline integration beyond quality gates:
 
-Allow narrowing searches by metadata fields:
+- PR diff-aware indexing — only re-index changed files in CI
+- Automated PR review comments via GitHub Actions / GitLab CI
+- Quality trend dashboards exported as CI artifacts
+- Breaking-change detection based on call graph + reference analysis
+- Configurable CI profiles (fast/thorough/security-only)
 
-```bash
-codexa search "auth" --lang python --symbol-type class --file "src/**"
-```
+### Phase 35 — Advanced Embedding & Search
 
-- Language, symbol type, file path filters
-- Pre-filter before vector search for efficiency
-- Composable filter expressions
+Next-generation search infrastructure:
 
-### Configurable RRF Weights
+- Fine-tuned code embedding models (CodeBERT, StarEncoder)
+- GPU-accelerated FAISS with IVF-PQ indices for million-file repos
+- Field-scoped search filters (`--lang`, `--symbol-type`, `--file`)
+- Configurable RRF weights for hybrid search tuning
+- Re-ranking with cross-encoders for precision-critical queries
 
-Make the Reciprocal Rank Fusion weights tunable:
+### Phase 36 — Async Web & Real-Time Streaming
 
-```json
-{
-  "search": {
-    "rrf_k": 60,
-    "vector_weight": 0.7,
-    "keyword_weight": 0.3
-  }
-}
-```
+Migrate the web server to a modern async framework:
 
-### Plugin Sandboxing
+- WebSocket streaming for live search results
+- Non-blocking request handling with connection pooling
+- Server-sent events for long-running operations (indexing progress)
+- Real-time collaboration widgets in the web UI
 
-Isolate plugins to prevent interference:
+### Phase 37 — Plugin Marketplace & Sandboxing
 
-- Resource limits (memory, CPU time)
-- Restricted filesystem access
-- Capability-based permissions
-- Graceful error containment
+Mature the plugin ecosystem:
 
-### LLM Call Retry Logic
+- Plugin sandboxing with resource limits and restricted filesystem access
+- Community plugin registry with versioning and discovery
+- Plugin dependency resolution and conflict detection
+- Visual plugin configuration in the web UI
 
-Add resilience for LLM provider calls:
+### Phase 38 — Precise Token Management
 
-- Exponential backoff with jitter
-- Provider failover (OpenAI → Ollama)
-- Request timeout configuration
-- Rate limit awareness
+Replace rough token estimation with model-specific counting:
 
-## Low Priority
+- `tiktoken` for OpenAI models, model-specific tokenizers for Ollama
+- Accurate context window budgeting with overflow protection
+- Token usage reporting and cost estimation per query
+- Smart context truncation preserving semantic boundaries
+
+### Phase 39 — LSP 2.0 & Editor Deep Integration
+
+Enhanced editor integration beyond current LSP:
+
+- Inline code explanations as CodeLens / inlay hints
+- Semantic go-to-definition across indexed repos
+- Live quality annotations in the editor gutter
+- Multi-root workspace support with cross-repo navigation
+
+## Low Priority (Future)
 
 ### Fine-Tuned Embedding Models
-
-Train custom embedding models on codebases:
 
 - Domain-specific vocabulary handling
 - Language-aware fine-tuning
@@ -100,11 +117,9 @@ Train custom embedding models on codebases:
 
 ### Distributed Indexing
 
-Support indexing across multiple machines:
-
-- Sharded FAISS indices
+- Sharded FAISS indices across machines
 - Distributed embedding computation
-- Merged search results
+- Merged search results with federation
 
 ## Contributing
 

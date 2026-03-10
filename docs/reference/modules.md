@@ -56,7 +56,7 @@ Quality analysis, metrics, hotspots, impact analysis, and CI gates.
 
 ## cli
 
-36 Click commands organized by capability. All commands support `--json` for machine-readable output.
+39 Click commands organized by capability. All commands support `--json` for machine-readable output.
 
 See [CLI Reference](cli) for the complete command documentation.
 

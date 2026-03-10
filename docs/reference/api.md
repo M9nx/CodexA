@@ -171,4 +171,4 @@ See the [Bridge Reference](bridge) for the full protocol specification.
 codexa mcp --path /your/project
 ```
 
-All 8 tools are exposed via MCP with typed schemas. See [MCP Integration](../features/mcp-integration) for setup instructions.
+All 13 tools are exposed via MCP with typed schemas. See [MCP Integration](../features/mcp-integration) for setup instructions.

@@ -23,7 +23,7 @@ All notable changes to CodexA are documented in this file.
 - **PyPI ready**: Version 0.30.0 with `python -m build` compatibility
 
 ### Changed
-- CLI registers **40 commands** (up from 38)
+- CLI registers **39 commands** (up from 38)
 - Version bumped to 0.30.0
 - ROADMAP updated with Phase 30 and renumbered future phases
 

@@ -73,7 +73,7 @@ Add to `claude_desktop_config.json`:
 
 ### Available MCP Tools
 
-All 8 built-in tools are exposed via MCP:
+All 13 built-in tools are exposed via MCP:
 
 | Tool | Description |
 |------|-------------|
@@ -85,6 +85,11 @@ All 8 built-in tools are exposed via MCP:
 | `get_dependencies` | File import/dependency map |
 | `get_call_graph` | Caller/callee relationships |
 | `get_context` | Rich context window for AI |
+| `get_file_context` | Full-section surrounding code retrieval |
+| `get_quality_score` | Code quality analysis |
+| `find_duplicates` | Near-duplicate code detection |
+| `grep_files` | Raw filesystem regex search |
+| `list_languages` | Supported tree-sitter languages |
 
 ## HTTP Bridge
 

@@ -19,6 +19,8 @@ tools via CLI, HTTP, or MCP.
 | `get_quality_score` | Code quality analysis — complexity, dead code, duplicates, safety |
 | `find_duplicates` | Detect near-duplicate code blocks across the codebase |
 | `grep_files` | Raw filesystem regex search (ripgrep backend, no index needed) |
+| `get_file_context` | Full-section surrounding code retrieval (line or symbol based) |
+| `list_languages` | List supported tree-sitter languages and grammar status |
 
 ## Invocation Methods
 
@@ -54,7 +56,7 @@ curl http://127.0.0.1:24842/tools/stream
 codexa mcp --path /your/project
 ```
 
-All 11 tools are exposed as MCP tools with proper schemas.
+All 13 tools are exposed as MCP tools with proper schemas.
 
 ## Protocol Dataclasses
 

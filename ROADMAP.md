@@ -473,6 +473,25 @@ Major rewrite of the VS Code extension from basic 4-command wrapper to a rich mu
 
 ---
 
+## Phase 30: Competitive Feature Parity & Distribution (v0.30.0) ✅
+
+| Feature | Status |
+|---------|--------|
+| `codexa index --watch` — live watch-mode indexing | ✅ |
+| `codexa languages` — tree-sitter language listing with `--check` | ✅ |
+| `codexa grep` full compatibility — `-A/-B/-C/-w/-v/-c/--hidden` | ✅ |
+| `codexa benchmark --profile` — cProfile integration | ✅ |
+| `codexa serve --mcp` — MCP-over-SSE via Starlette/uvicorn | ✅ |
+| 13 MCP tools — added `get_file_context`, `list_languages` | ✅ |
+| Dockerfile — production-ready with ripgrep + pre-loaded model | ✅ |
+| Homebrew formula — `Formula/codexa.rb` | ✅ |
+| PyPI ready — `python -m build` compatibility | ✅ |
+| 39 CLI commands | ✅ |
+
+**2595 tests, all passing**
+
+---
+
 ## Upcoming Phases
 
 ### Phase 31: Remote / Cloud Mode
@@ -628,12 +647,12 @@ Three targeted improvements: debugging UX, observability, and documentation.
 ## Architecture
 
 ```
-codexa CLI (Click) — 36 commands
+codexa CLI (Click) — 39 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
   ├── workspace (init · add · remove · list · index · search)
-  ├── docs / doctor
+  ├── docs / doctor / languages
   ├── plugin (new · list · info)
   ├── web / viz
   ├── quality / pr-summary / ci-gen
@@ -641,6 +660,7 @@ codexa CLI (Click) — 36 commands
   ├── metrics / gate
   ├── hotspots / impact / trace
   ├── tool (list · run · schema)
+  ├── grep / benchmark / mcp / tui / models
   ├── evolve
   │
   ├── Indexing Pipeline
@@ -713,5 +733,5 @@ codexa CLI (Click) — 36 commands
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
 | Vector Search | FAISS (IndexFlatIP) |
 | Code Parsing | tree-sitter 0.25+ (11 language grammars) |
-| Testing | pytest + pytest-cov (2556 tests) |
+| Testing | pytest + pytest-cov (2595 tests) |
 | Python | 3.12+ |

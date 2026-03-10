@@ -1,6 +1,6 @@
 # CLI Reference
 
-Auto-generated from the registered Click command tree. All commands support `--json` for machine-readable output.
+Auto-generated from the registered Click command tree. CodexA provides **39 commands**. All commands support `--json` for machine-readable output.
 
 ## Core Commands
 
@@ -22,11 +22,13 @@ Index a codebase for semantic search. Scans files, extracts chunks, generates em
 ```bash
 codexa index .
 codexa index . --force    # Full re-index
+codexa index . --watch    # Index then watch for changes (live re-indexing)
 ```
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--force` | boolean | false | Force full re-index, ignoring cache |
+| `--watch` | boolean | false | After indexing, watch for file changes and re-index incrementally |
 
 ### `codexa doctor`
 
@@ -35,6 +37,16 @@ Check environment health, dependencies, and project status.
 ```bash
 codexa doctor
 codexa doctor --json
+```
+
+### `codexa languages`
+
+List all supported tree-sitter languages with file extensions and grammar status.
+
+```bash
+codexa languages
+codexa languages --check   # Verify grammar loading for each language
+codexa languages --json
 ```
 
 ## Search & Discovery
@@ -355,7 +367,7 @@ codexa web --port 9000 --host 0.0.0.0
 
 ### `codexa mcp`
 
-Start the MCP server for Claude/Cursor. Exposes 11 tools.
+Start the MCP server for Claude/Cursor. Exposes 13 tools.
 
 ```bash
 codexa mcp --path /your/project

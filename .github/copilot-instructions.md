@@ -76,7 +76,7 @@ Before answering questions about this codebase, use CodexA to gather context:
 
 - `semantic_code_intelligence/` — Main Python package
   - `cli/` — 32 CLI commands (click-based)
-  - `tools/` — AI Agent Tooling Protocol (8 built-in tools)
+  - `tools/` — AI Agent Tooling Protocol (13 built-in tools)
   - `bridge/` — HTTP bridge server (port 24842)
   - `llm/` — LLM providers (OpenAI, Ollama, Mock)
   - `ci/` — Quality analysis, metrics, hotspots, impact

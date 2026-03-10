@@ -10,7 +10,7 @@ AI tools.
 codexa mcp --path /your/project
 ```
 
-This starts a JSON-RPC server over stdio that exposes all 11 CodexA tools.
+This starts a JSON-RPC server over stdio that exposes all 13 CodexA tools.
 
 ## Claude Desktop Setup
 
@@ -61,6 +61,8 @@ In Cursor settings, add CodexA as an MCP server:
 | `get_quality_score` | `file_path` | Code quality analysis — complexity, dead code, safety |
 | `find_duplicates` | `threshold` | Detect near-duplicate code blocks |
 | `grep_files` | `pattern`, `file_glob`, `max_results` | Raw filesystem regex search |
+| `get_file_context` | `file_path`, `line` or `symbol_name` | Full-section surrounding code retrieval |
+| `list_languages` | *(none)* | List supported tree-sitter languages and grammar status |
 
 ## Protocol Details
 

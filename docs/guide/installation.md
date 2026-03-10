@@ -14,6 +14,21 @@ cd CodexA
 pip install -e "."
 ```
 
+## Install via Docker
+
+```bash
+docker build -t codexa .
+docker run --rm -v /path/to/project:/workspace codexa search "auth"
+```
+
+The Docker image includes ripgrep, git, and a pre-loaded embedding model.
+
+## Install via Homebrew (macOS)
+
+```bash
+brew install --formula Formula/codexa.rb
+```
+
 ## Optional Extras
 
 Install with optional dependencies for additional features:
@@ -40,7 +55,7 @@ pip install -e ".[dev,tui]"
 
 ```bash
 codexa --version
-# codexa-ai 0.29.0
+# codexa-ai 0.30.0
 
 codexa doctor
 # Checks environment health
