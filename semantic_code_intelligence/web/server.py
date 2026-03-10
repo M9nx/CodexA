@@ -226,7 +226,13 @@ class _CombinedHandler(BaseHTTPRequestHandler):
                 else:
                     provider = None  # type: ignore[assignment]
                 if provider is not None:
-                    engine = ReasoningEngine(provider, self.project_root)
+                    engine = ReasoningEngine(
+                        provider,
+                        self.project_root,
+                        rag_budget_tokens=llm_cfg.rag_budget_tokens,
+                        rag_strategy=llm_cfg.rag_strategy,
+                        use_cross_encoder=llm_cfg.rag_use_cross_encoder,
+                    )
                     result = engine.ask(question, top_k=top_k)
                     elapsed = (time.monotonic() - start) * 1000
                     self._json(200, {

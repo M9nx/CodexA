@@ -188,7 +188,14 @@ def chat_cmd(
     messages = conv.get_messages_for_llm(max_turns=max_turns)
 
     # Also inject search context into the user's message
-    engine = ReasoningEngine(provider, root)
+    llm_cfg = config.llm
+    engine = ReasoningEngine(
+        provider,
+        root,
+        rag_budget_tokens=llm_cfg.rag_budget_tokens,
+        rag_strategy=llm_cfg.rag_strategy,
+        use_cross_encoder=llm_cfg.rag_use_cross_encoder,
+    )
     try:
         snippets = engine._search_context(message, top_k=3)
         if snippets:

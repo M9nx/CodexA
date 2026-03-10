@@ -42,7 +42,7 @@ export default defineConfig({
       },
       { text: 'API Reference', link: '/reference/cli' },
       {
-        text: 'v0.4.4',
+        text: 'v0.4.5',
         items: [
           {
             text: 'Release Info',
@@ -55,6 +55,7 @@ export default defineConfig({
           {
             text: 'Previous Versions',
             items: [
+              { text: 'v0.4.4', link: 'https://pypi.org/project/codexa/0.4.4/' },
               { text: 'v0.4.3', link: 'https://pypi.org/project/codexa/0.4.3/' },
               { text: 'v0.4.2', link: 'https://pypi.org/project/codexa/0.4.2/' },
               { text: 'v0.4.1', link: 'https://pypi.org/project/codexa/0.4.1/' },
@@ -147,7 +148,7 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the <a href="https://github.com/M9nx/CodexA/blob/main/LICENSE">MIT License</a>.',
-      copyright: 'Copyright © 2025 <a href="https://github.com/M9nx">M9nx</a> · v0.4.4',
+      copyright: 'Copyright © 2025 <a href="https://github.com/M9nx">M9nx</a> · v0.4.5',
     },
 
     search: {

@@ -27,7 +27,10 @@ CodexA stores its configuration in `.codexa/config.json`, created by `codexa ini
     "model": "gpt-4",
     "api_key": "sk-...",
     "temperature": 0.2,
-    "max_tokens": 2048
+    "max_tokens": 2048,
+    "rag_budget_tokens": 3000,
+    "rag_strategy": "hybrid",
+    "rag_use_cross_encoder": false
   },
   "quality": {
     "complexity_threshold": 10,
@@ -108,6 +111,13 @@ Configure the LLM provider for AI-powered commands.
 | `api_key` | string | — | API key (OpenAI only) |
 | `temperature` | float | 0.2 | Sampling temperature |
 | `max_tokens` | int | 2048 | Maximum response tokens |
+| `rag_budget_tokens` | int | 3000 | Token budget for RAG context assembly |
+| `rag_strategy` | string | `hybrid` | Retrieval strategy: `semantic`, `keyword`, `hybrid`, or `multi` |
+| `rag_use_cross_encoder` | bool | false | Use cross-encoder model for re-ranking (slower, more precise) |
+
+::: tip RAG Pipeline
+The RAG pipeline controls how code context is retrieved and assembled before sending to the LLM. The `hybrid` strategy (default) combines semantic and keyword search with Reciprocal Rank Fusion for best results. Enable `rag_use_cross_encoder` for precision-critical queries — it uses `ms-marco-MiniLM-L-6-v2` for re-ranking but adds latency.
+:::
 
 ### `quality`
 

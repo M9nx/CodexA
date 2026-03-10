@@ -136,7 +136,14 @@ def ask_cmd(
     from semantic_code_intelligence.llm.reasoning import ReasoningEngine
 
     try:
-        engine = ReasoningEngine(provider, root)
+        llm_cfg = config.llm
+        engine = ReasoningEngine(
+            provider,
+            root,
+            rag_budget_tokens=llm_cfg.rag_budget_tokens,
+            rag_strategy=llm_cfg.rag_strategy,
+            use_cross_encoder=llm_cfg.rag_use_cross_encoder,
+        )
         result = engine.ask(question, top_k=top_k)
     except Exception as exc:
         logger.debug("Ask failed", exc_info=True)

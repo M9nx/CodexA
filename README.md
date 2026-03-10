@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.4.4-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.4.5-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2596-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -233,7 +233,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codexa --version    # → codexa, version 0.4.4
+codexa --version    # → codexa, version 0.4.5
 ```
 
 ### Step 2 — Initialize your target project

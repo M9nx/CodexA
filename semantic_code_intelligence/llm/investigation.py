@@ -22,6 +22,7 @@ from typing import Any
 from semantic_code_intelligence.context.engine import ContextBuilder
 from semantic_code_intelligence.context.memory import ReasoningStep, SessionMemory
 from semantic_code_intelligence.llm.provider import LLMMessage, LLMProvider, MessageRole
+from semantic_code_intelligence.llm.rag import RAGPipeline, RetrievalStrategy
 from semantic_code_intelligence.services.search_service import search_codebase
 from semantic_code_intelligence.utils.logging import get_logger
 
@@ -56,20 +57,40 @@ class InvestigationResult:
 # Action helpers
 # ---------------------------------------------------------------------------
 
-def _action_search(query: str, project_root: Path, top_k: int = 5) -> str:
-    """Run semantic search and return a text summary."""
+def _action_search(query: str, project_root: Path, top_k: int = 5, *, rag: RAGPipeline | None = None) -> str:
+    """Run search and return a text summary. Uses RAG pipeline when available."""
+    if rag is not None:
+        try:
+            ctx = rag.retrieve_and_assemble(
+                query,
+                strategy=RetrievalStrategy.HYBRID,
+                top_k=top_k,
+                include_repo_summary=False,
+            )
+            if ctx.citations:
+                parts: list[str] = []
+                for chunk, cite in zip(ctx.chunks, ctx.citations):
+                    content = chunk.get("content", chunk.get("chunk", ""))[:500]
+                    parts.append(
+                        f"{cite.label()} [{cite.file_path}:{cite.start_line}-{cite.end_line}] "
+                        f"(score {cite.score:.2f})\n{content}"
+                    )
+                return "\n---\n".join(parts)
+        except Exception:
+            pass  # Fall back to direct search
+
     try:
         results = search_codebase(query, project_root, top_k=top_k, threshold=0.2)
         if not results:
             return "No results found."
-        parts: list[str] = []
+        parts_fallback: list[str] = []
         for r in results:
             d = r.to_dict()
-            parts.append(
+            parts_fallback.append(
                 f"[{d.get('file_path', '?')}] (score {d.get('score', 0):.2f})\n"
                 f"{d.get('content', d.get('chunk', ''))[:500]}"
             )
-        return "\n---\n".join(parts)
+        return "\n---\n".join(parts_fallback)
     except Exception:
         return "Semantic search unavailable."
 
@@ -138,6 +159,7 @@ class InvestigationChain:
         self._memory = memory or SessionMemory()
         self._max_steps = max_steps
         self._indexed = False
+        self._rag = RAGPipeline(self._root, budget_tokens=2000)
 
     def _ensure_indexed(self) -> None:
         if self._indexed:
@@ -156,7 +178,7 @@ class InvestigationChain:
     def _run_action(self, action: str, action_input: str) -> str:
         """Execute an action and return its text output."""
         if action == "search":
-            return _action_search(action_input, self._root)
+            return _action_search(action_input, self._root, rag=self._rag)
         elif action == "analyze":
             self._ensure_indexed()
             return _action_analyze(action_input, self._builder)

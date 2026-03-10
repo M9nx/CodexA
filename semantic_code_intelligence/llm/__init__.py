@@ -35,6 +35,12 @@ from semantic_code_intelligence.llm.conversation import ConversationSession, Ses
 from semantic_code_intelligence.llm.investigation import InvestigationChain, InvestigationResult
 from semantic_code_intelligence.llm.streaming import stream_chat, StreamEvent
 from semantic_code_intelligence.llm.cross_refactor import analyze_cross_repo, CrossRefactorResult
+from semantic_code_intelligence.llm.rag import (
+    RAGContext,
+    RAGPipeline,
+    RetrievalStrategy,
+    SourceCitation,
+)
 
 __all__ = [
     "LLMProvider",
@@ -59,4 +65,8 @@ __all__ = [
     "StreamEvent",
     "analyze_cross_repo",
     "CrossRefactorResult",
+    "RAGContext",
+    "RAGPipeline",
+    "RetrievalStrategy",
+    "SourceCitation",
 ]

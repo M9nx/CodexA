@@ -1,4 +1,4 @@
-# CodexA v0.4.4 — Release Notes
+# CodexA v0.4.5 — Release Notes
 
 > **Released:** 2025 · **License:** MIT · **Docs:** [codex-a.dev](https://codex-a.dev)
 
@@ -6,28 +6,41 @@
 
 ---
 
-## What's New in v0.4.4
+## What's New in v0.4.5
 
-This release introduces **model flexibility** — choose the right embedding model for your hardware, benchmark models against your codebase, and let CodexA auto-detect the best configuration.
+This release implements **Phase 31 — RAG Pipeline for LLM Commands**, replacing the old "dump context into prompt" approach with a proper Retrieval-Augmented Generation pipeline.
 
-### Model Profiles
-- **Three profiles**: `fast` (mxbai-embed-xsmall, <1 GB RAM), `balanced` (MiniLM, ~2 GB), `precise` (jina-embeddings-v2-base-code, ~4 GB)
-- **`codexa init --profile fast|balanced|precise`** — pick your tier at init time
-- **Auto-detect**: when no profile is specified, CodexA detects available RAM and recommends the best model
+### RAG Pipeline
+- **4-stage pipeline**: Retrieve → Deduplicate → Re-rank → Assemble — each stage optimized for precision and token efficiency
+- **Retrieval strategies**: `semantic` (vector), `keyword` (BM25), `hybrid` (RRF merge), `multi` (parallel with diversity)
+- **Cross-encoder re-ranking**: Optional `ms-marco-MiniLM-L-6-v2` model for high-precision re-ranking (set `rag_use_cross_encoder: true`)
+- **Token-aware assembly**: Context is assembled within a configurable token budget (default 3000), preventing prompt overflow
+- **Source citations**: Responses include numbered `[N]` markers citing exact file paths and line ranges
 
-### New Commands
-- **`codexa models profiles`** — view available model profiles with RAM requirements and a ⭐ recommendation
-- **`codexa models benchmark`** — benchmark all built-in models against your actual codebase. Reports load time, encode time, and chunks/second
+### Configuration
+Three new fields in `llm` config (`.codexa/config.json`):
+```json
+{
+  "llm": {
+    "rag_budget_tokens": 3000,
+    "rag_strategy": "hybrid",
+    "rag_use_cross_encoder": false
+  }
+}
+```
 
-### UX Improvements
-- **Download progress**: friendly banner with model name and size shown when downloading a model for the first time
-- **RAM-aware defaults**: `recommend_profile_for_ram()` picks the best model for your machine automatically
+### Integration
+- `codexa ask` — RAG-powered context retrieval with citations
+- `codexa chat` — RAG context injection into conversation
+- `codexa suggest` — RAG-enhanced improvement suggestions
+- `codexa investigate` — RAG-powered search actions with citation markers
+- Web UI and REST API — RAG config passed through
 
 ---
 
 ## Previous Releases
 
-### v0.4.3 — Packaging & Indexing UX Fixes
+### v0.4.4 — Model Flexibility & Smart Defaults
 - Tree-sitter grammar packages bundled in core dependencies
 - `index.exclude_files` config, `.codexaignore` support
 - MemoryError handling for low-RAM machines

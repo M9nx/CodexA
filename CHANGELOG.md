@@ -2,6 +2,23 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.4.5] — RAG Pipeline for LLM Commands (Phase 31)
+
+### New Features
+- **RAG Pipeline**: Full Retrieval-Augmented Generation pipeline replacing the old "dump context → prompt" approach
+- **4-stage retrieval**: Retrieve → Deduplicate → Re-rank → Assemble with token budget
+- **Retrieval strategies**: Configurable `semantic`, `keyword`, `hybrid`, and `multi` strategies
+- **Cross-encoder re-ranking**: Optional `ms-marco-MiniLM-L-6-v2` cross-encoder for precision-critical queries
+- **Token-aware context assembly**: Budget-based context construction (default 3000 tokens) preventing prompt overflow
+- **Source citations**: Numbered `[N]` markers in LLM responses with file path and line references
+- **RAG config**: Three new settings in `llm` config — `rag_budget_tokens`, `rag_strategy`, `rag_use_cross_encoder`
+
+### Changed
+- `ReasoningEngine.ask()` and `suggest()` now use RAG pipeline for context retrieval
+- `InvestigationChain` search actions upgraded to RAG-powered retrieval with citations
+- All CLI commands (`ask`, `chat`, `suggest`) and web endpoints pass RAG config
+- Version bumped to 0.4.5
+
 ## [0.4.4] — Model Flexibility & Smart Defaults
 
 ### New Features

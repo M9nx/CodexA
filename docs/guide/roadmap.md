@@ -2,7 +2,17 @@
 
 Planned improvements for CodexA, organized by priority.
 
-## Recently Completed (v0.4.4)
+## Recently Completed (v0.4.5)
+
+- **RAG Pipeline (Phase 31)**: Full Retrieval-Augmented Generation pipeline for LLM commands
+  - 4-stage pipeline: Retrieve → Deduplicate → Re-rank → Assemble
+  - Configurable strategies: `semantic`, `keyword`, `hybrid`, `multi`
+  - Optional cross-encoder re-ranking (`ms-marco-MiniLM-L-6-v2`)
+  - Token-aware context assembly with budget allocation (default 3000 tokens)
+  - Source citations with `[N]` markers and file:line references
+  - Three new config fields: `rag_budget_tokens`, `rag_strategy`, `rag_use_cross_encoder`
+
+### v0.4.4
 
 - **Model Profiles**: Three built-in profiles — `fast`, `balanced`, `precise` — each tuned for different hardware
 - **`codexa init --profile`**: Choose your embedding model tier at init, or let CodexA auto-detect from available RAM
@@ -45,16 +55,6 @@ Planned improvements for CodexA, organized by priority.
 ---
 
 ## Upcoming Improvements
-
-### Phase 31 — RAG Pipeline for LLM Commands
-
-Replace the current "dump context → prompt" approach with a proper Retrieval-Augmented Generation pipeline:
-
-- Semantic retrieval with re-ranking (cross-encoder)
-- Token-aware context assembly with budget allocation
-- Source citation in responses (file + line references)
-- Configurable retrieval strategies (dense, sparse, hybrid)
-- Chunk-level relevance scoring before LLM submission
 
 ### Phase 32 — Cross-Language Intelligence
 

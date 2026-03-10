@@ -157,6 +157,18 @@ class LLMConfig(BaseModel):
         default=0,
         description="Max tokens per minute (0 = unlimited).",
     )
+    rag_budget_tokens: int = Field(
+        default=3000,
+        description="Token budget for RAG context assembly.",
+    )
+    rag_strategy: str = Field(
+        default="hybrid",
+        description="RAG retrieval strategy: 'semantic', 'keyword', 'hybrid', or 'multi'.",
+    )
+    rag_use_cross_encoder: bool = Field(
+        default=False,
+        description="Use cross-encoder model for RAG re-ranking (slower but more accurate).",
+    )
 
 
 class QualityConfig(BaseModel):

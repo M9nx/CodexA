@@ -29,6 +29,11 @@ from semantic_code_intelligence.llm.provider import (
     LLMResponse,
     MessageRole,
 )
+from semantic_code_intelligence.llm.rag import (
+    RAGContext,
+    RAGPipeline,
+    RetrievalStrategy,
+)
 from semantic_code_intelligence.services.search_service import search_codebase
 from semantic_code_intelligence.utils.logging import get_logger
 
@@ -138,12 +143,24 @@ class ReasoningEngine:
         *,
         builder: ContextBuilder | None = None,
         max_context_chars: int | None = None,
+        rag_budget_tokens: int | None = None,
+        rag_strategy: str = "hybrid",
+        use_cross_encoder: bool = False,
     ) -> None:
         self._provider = provider
         self._root = project_root.resolve()
         self._builder = builder or ContextBuilder()
         self._indexed = False
         self._max_ctx = max_context_chars or self.DEFAULT_MAX_CONTEXT_CHARS
+        self._rag = RAGPipeline(
+            self._root,
+            budget_tokens=rag_budget_tokens or (self._max_ctx // 4),
+            use_cross_encoder=use_cross_encoder,
+        )
+        try:
+            self._rag_strategy = RetrievalStrategy(rag_strategy)
+        except ValueError:
+            self._rag_strategy = RetrievalStrategy.HYBRID
 
     def _ensure_indexed(self) -> None:
         """Lazy-index the project for symbol/context lookups."""
@@ -244,30 +261,20 @@ class ReasoningEngine:
     def ask(self, question: str, *, top_k: int = 5) -> AskResult:
         """Answer a natural-language question about the codebase.
 
-        Gathers semantic search results and repo context, then asks the LLM.
+        Uses the RAG pipeline: retrieve → dedup → re-rank → assemble,
+        then sends the assembled context to the LLM with source citations.
         """
-        raw_snippets = self._search_context(question, top_k=top_k)
-        snippets = self._prune_context(raw_snippets, question)
-        self._ensure_indexed()
-        repo_summary = summarize_repository(self._builder).render()
-
-        # Build prompt
-        context_text = ""
-        for snip in snippets:
-            context_text += (
-                f"\n--- {snip.get('file_path', '?')} "
-                f"(score: {snip.get('score', 0):.2f}) ---\n"
-                f"{snip.get('content', snip.get('chunk', ''))}\n"
-            )
-
-        system = (
-            "You are CodexA, an AI coding assistant. Answer questions about the "
-            "user's codebase using the provided context. Be concise, accurate, "
-            "and cite file paths when relevant."
+        rag_ctx = self._rag.retrieve_and_assemble(
+            question,
+            strategy=self._rag_strategy,
+            top_k=top_k,
+            include_repo_summary=True,
         )
+
+        system = self._rag.build_system_prompt("answer", cite_sources=True)
         user_msg = (
-            f"Repository summary:\n{repo_summary}\n\n"
-            f"Relevant code snippets:{context_text}\n\n"
+            f"Context:\n{rag_ctx.text}"
+            f"{rag_ctx.citation_footer()}\n\n"
             f"Question: {question}"
         )
 
@@ -280,13 +287,12 @@ class ReasoningEngine:
         return AskResult(
             question=question,
             answer=resp.content,
-            context_snippets=snippets,
+            context_snippets=rag_ctx.chunks,
             llm_response=resp,
             explainability={
-                "snippets_before_pruning": len(raw_snippets),
-                "snippets_after_pruning": len(snippets),
-                "context_chars": sum(len(s.get("content", "")) for s in snippets),
-                "method": "semantic_search+pruning",
+                **rag_ctx.stats.to_dict(),
+                "citations": [c.to_dict() for c in rag_ctx.citations],
+                "method": "rag_pipeline",
             },
         )
 
@@ -388,31 +394,31 @@ class ReasoningEngine:
     def suggest(self, target: str, *, top_k: int = 5) -> SuggestResult:
         """Generate intelligent suggestions for a symbol, file, or topic.
 
-        Combines call-graph, dependency, and semantic data with LLM reasoning
-        to produce actionable suggestions with "why" reasoning.
+        Uses RAG pipeline for context, plus symbol-specific data when available.
         """
         self._ensure_indexed()
-        snippets = self._search_context(target, top_k=top_k)
         sym_context = self._symbol_context(target)
+
+        rag_ctx = self._rag.retrieve_and_assemble(
+            target,
+            strategy=self._rag_strategy,
+            top_k=top_k,
+            include_repo_summary=False,
+        )
 
         system = (
             "You are CodexA, an intelligent code suggestion engine. Given context "
             "about a codebase element, provide suggestions for improvements, fixes, "
             "or optimizations. Return a JSON object with 'suggestions' — a list of "
             "objects each having 'title', 'description', 'reason', and 'priority' "
-            "(high/medium/low)."
+            "(high/medium/low). When referencing code, cite sources using [N] markers."
         )
-        context_text = ""
-        for snip in snippets:
-            context_text += (
-                f"\n--- {snip.get('file_path', '?')} ---\n"
-                f"{snip.get('content', snip.get('chunk', ''))}\n"
-            )
 
         user_msg = (
             f"Target: {target}\n\n"
             f"Symbol info:\n{sym_context}\n\n"
-            f"Related code:{context_text}"
+            f"Related code:{rag_ctx.text}"
+            f"{rag_ctx.citation_footer()}"
         )
 
         messages = [
@@ -435,4 +441,9 @@ class ReasoningEngine:
             target=target,
             suggestions=suggestions,
             llm_response=resp,
+            explainability={
+                **rag_ctx.stats.to_dict(),
+                "citations": [c.to_dict() for c in rag_ctx.citations],
+                "method": "rag_pipeline",
+            },
         )

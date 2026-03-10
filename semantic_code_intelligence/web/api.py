@@ -198,7 +198,13 @@ class APIHandler(BaseHTTPRequestHandler):
                     temperature=llm_cfg.temperature, max_tokens=llm_cfg.max_tokens,
                 )
             if provider is not None:
-                engine = ReasoningEngine(provider, self.provider._root)
+                engine = ReasoningEngine(
+                    provider,
+                    self.provider._root,
+                    rag_budget_tokens=llm_cfg.rag_budget_tokens,
+                    rag_strategy=llm_cfg.rag_strategy,
+                    use_cross_encoder=llm_cfg.rag_use_cross_encoder,
+                )
                 result = engine.ask(question, top_k=top_k)
                 elapsed = (time.monotonic() - start) * 1000
                 self._json(200, {
