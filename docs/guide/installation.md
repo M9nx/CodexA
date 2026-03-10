@@ -12,6 +12,22 @@
 pip install codexa
 ```
 
+This gives you the full CLI (39 commands), tree-sitter parsing (11 languages), quality analysis, grep, explain, and all non-ML features.
+
+### ML Extras (Semantic Search & Vector Indexing)
+
+For embedding-based semantic search, install with the `[ml]` extra:
+
+```bash
+pip install "codexa[ml]"
+```
+
+This adds `sentence-transformers`, `torch`, and `faiss-cpu`. Requires ~2 GB RAM for model loading.
+
+::: tip
+If you only need structural commands (`explain`, `grep`, `quality`, `languages`), the lightweight `pip install codexa` is sufficient. Install `[ml]` when you want `codexa search` with vector similarity.
+:::
+
 ## Install from Source
 
 ```bash
@@ -41,6 +57,11 @@ Install with optional dependencies for additional features:
 
 ::: code-group
 
+```bash [ML (Semantic Search)]
+pip install "codexa[ml]"
+# Includes: sentence-transformers, torch, faiss-cpu
+```
+
 ```bash [Development]
 pip install -e ".[dev]"
 # Includes: pytest, pytest-cov
@@ -52,7 +73,7 @@ pip install -e ".[tui]"
 ```
 
 ```bash [Everything]
-pip install -e ".[dev,tui]"
+pip install -e ".[dev,tui,ml]"
 ```
 
 :::
@@ -61,7 +82,7 @@ pip install -e ".[dev,tui]"
 
 ```bash
 codexa --version
-# codexa 0.4.0
+# codexa 0.4.3
 
 codexa doctor
 # Checks environment health

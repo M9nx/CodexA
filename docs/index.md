@@ -51,13 +51,15 @@ features:
 ## Quick Start
 
 ```bash
-# Install
-pip install -e "."
+# Install (lightweight CLI)
+pip install codexa
+
+# Or with ML extras for semantic search & vector indexing
+pip install "codexa[ml]"
 
 # Initialize & index your project
 cd /path/to/your-project
-codexa init
-codexa index .
+codexa init --index
 codexa doctor
 
 # Search your code
@@ -73,13 +75,13 @@ codexa hotspots
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.4.0 |
+| **Version** | 0.4.3 |
 | **CLI Commands** | 39 |
 | **AI Agent Tools** | 13 (+ plugin-registered) |
 | **Plugin Hooks** | 22 |
 | **Packages** | 26 |
 | **Parsed Languages** | 12 |
-| **Tests** | 2595+ |
+| **Tests** | 2596+ |
 
 ## Next Steps
 

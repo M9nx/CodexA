@@ -2,22 +2,36 @@
 
 Planned improvements for CodexA, organized by priority.
 
-## Recently Completed (v0.30.0)
+## Recently Completed (v0.4.3)
 
-- **Watch-mode indexing**: `codexa index --watch` — live re-indexing with NativeFileWatcher + incremental indexing
-- **`codexa languages` command**: Rich table of all 11 supported tree-sitter languages with extensions, grammar status, and `--check` verification
-- **Full grep compatibility**: `-A/-B/-C` context lines, `-w` word match, `-v` invert, `-c` count, `--hidden` — in both ripgrep and Python backends
-- **Benchmark profiling**: `codexa benchmark --profile` with cProfile integration — top 20 hotspots by cumulative time
-- **MCP-over-SSE**: `codexa serve --mcp` — MCP tools over HTTP with Server-Sent Events via Starlette/uvicorn
-- **13 MCP tools**: Added `get_file_context` (surrounding code retrieval) and `list_languages` (grammar listing)
-- **Packaging**: Production Dockerfile, Homebrew formula, PyPI-ready with `python -m build`
-- **39 CLI commands** (up from 38)
+- **Bundled tree-sitter grammars**: All grammar packages included in core dependencies — parsing works out of the box
+- **`exclude_files` config**: Glob-based file exclusions via `index.exclude_files` in `.codexa/config.json`
+- **Reduced HuggingFace noise**: Prefers locally cached models, skips redundant network checks
+- **MemoryError handling**: Actionable error messages when embedding model loading fails on low-RAM machines
+- **Improved CLI guidance**: `codexa init` and `codexa index` show ML extra and RAM hints
+- **Install tiers**: `pip install codexa` (lightweight) vs `pip install "codexa[ml]"` (full ML stack)
 
-### Previously Completed (v0.29.0)
+### v0.4.2
 
-- O(1) vector removal, true incremental indexing, BM25 persistence
-- Native file watcher (Rust-backed `watchfiles`), raw filesystem grep, performance benchmarking
-- Enhanced init (`--index`, `--vscode`), 11 AI tools (quality, duplicates, grep)
+- Pinned `numpy < 2` to avoid ABI breakage with FAISS on some platforms
+
+### v0.4.1
+
+- ML libraries (`sentence-transformers`, `torch`, `faiss-cpu`) moved to `[ml]` extra
+- Lightweight `pip install codexa` installs CLI + tree-sitter without ML overhead
+
+### v0.4.0 — First Stable Public Release
+
+- Package renamed `codexa-ai` → `codexa`
+- 39 CLI commands, 13 AI agent tools, 22 plugin hooks
+- Semantic search, multi-mode search, quality analysis, MCP server
+- Docker image, Homebrew formula, VS Code extension
+
+### Previously Completed (v0.30.0 / v0.29.0)
+
+- Watch-mode indexing, `codexa languages` command, full grep compatibility
+- MCP-over-SSE, 13 MCP tools, production Dockerfile, Homebrew formula
+- O(1) vector removal, incremental indexing, BM25 persistence, native file watcher
 
 ---
 

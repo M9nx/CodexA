@@ -53,7 +53,7 @@ CodexA/
 │   ├── utils/                      # Logging & shared utilities
 │   ├── web/                        # Web UI, REST API, visualization
 │   ├── workspace/                  # Multi-repo workspace management
-│   └── tests/                      # All test files (2595 tests)
+│   └── tests/                      # All test files (2596+ tests)
 ├── vscode-extension/               # VS Code sidebar extension
 ├── pyproject.toml
 ├── requirements.txt

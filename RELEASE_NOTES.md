@@ -1,30 +1,63 @@
-# CodexA v0.4.0 — First Stable Public Release
+# CodexA v0.4.3 — Release Notes
+
+> **Released:** 2025 · **License:** MIT · **Docs:** [codex-a.dev](https://codex-a.dev)
 
 **CodexA** is a developer intelligence engine for semantic code search, AI-assisted code understanding, and agent tooling.
 
-## What's New
+---
 
-v0.4.0 is the first stable release of CodexA, focused on packaging, stability, and usability.
+## What's New in v0.4.3
+
+This release focuses on **packaging reliability**, **indexing UX**, and fixes reported by the community ([#2](https://github.com/M9nx/CodexA/issues/2)).
+
+### Packaging & Installation
+- Tree-sitter grammar packages now **bundled in core dependencies** — language parsing works out of the box after `pip install codexa`
+- Two install tiers documented: `pip install codexa` (lightweight CLI) and `pip install "codexa[ml]"` (semantic indexing + vector search)
+- Reduced repeated HuggingFace model cache/network checks — prefers local model files when already cached
+
+### Indexing & Search
+- New `index.exclude_files` config option — glob-based file exclusions in `.codexa/config.json`
+- `.codexaignore` support documented with examples for secrets and generated files
+- Reduced embedding model re-download noise with smarter cache detection
+
+### Reliability
+- Actionable `MemoryError` handling for machines with < 2 GB RAM during embedding model loading
+- Improved `codexa init` and `codexa index` CLI output with hints for ML extras and RAM requirements
+
+---
+
+## Previous Releases
+
+### v0.4.2 — NumPy Compatibility
+- Pinned `numpy < 2` to avoid ABI breakage with FAISS on some platforms
+
+### v0.4.1 — Lightweight Install Split
+- Moved heavy ML libraries (`sentence-transformers`, `torch`, `faiss-cpu`) to `[ml]` extra
+- Core `pip install codexa` installs the CLI + tree-sitter parsing without ML overhead
+
+### v0.4.0 — First Stable Public Release
+- Package renamed `codexa-ai` → `codexa`
+- 39 CLI commands, 13 AI agent tools, 22 plugin hooks
+- Semantic search (FAISS + sentence-transformers), multi-mode search, quality analysis
+- Docker image, Homebrew formula, MCP server, VS Code extension
+
+---
 
 ## Installation
 
 ```bash
+# Lightweight CLI (parsing, grep, quality, explain)
 pip install codexa
-```
 
-Or from source:
-
-```bash
-git clone https://github.com/M9nx/CodexA.git
-cd CodexA
-pip install -e "."
+# Full ML stack (semantic search, vector indexing, embeddings)
+pip install "codexa[ml]"
 ```
 
 Verify:
 
 ```bash
 codexa --version
-# codexa, version 0.4.0
+# codexa, version 0.4.3
 ```
 
 ## Quick Start
@@ -38,70 +71,17 @@ codexa quality src/       # Code quality analysis
 codexa doctor             # Environment health check
 ```
 
-## Key Features
-
-### Semantic Code Search
-Natural-language search powered by sentence-transformers + FAISS vector index. Find code by meaning, not just keywords.
-
-```bash
-codexa search "jwt authentication middleware"
-codexa search "database connection pooling" --json
-```
-
-### Multi-Mode Search
-Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep with full ripgrep compatibility.
-
-```bash
-codexa search "error handling" --mode hybrid
-codexa grep "TODO|FIXME" -n
-```
-
-### Tree-Sitter Language Parsing
-AST-based parsing for 11 languages: Python, JavaScript, TypeScript, TSX, Java, Go, Rust, C++, C#, Ruby, PHP.
-
-```bash
-codexa languages --check
-```
-
-### AI Agent Integration
-13 built-in tools exposed via CLI, HTTP bridge, MCP server, and MCP-over-SSE for AI coding assistants.
-
-```bash
-codexa tool list --json
-codexa serve --port 24842       # HTTP bridge
-codexa mcp --path /your/project # MCP server for Claude/Cursor
-```
-
-### Code Quality & Metrics
-Complexity analysis (Radon), security scanning (Bandit), hotspot detection, impact analysis, and CI quality gates.
-
-```bash
-codexa quality src/
-codexa hotspots
-codexa gate
-```
-
-### Plugin Architecture
-22 hook points for extending every layer — indexing, search, analysis, AI, and output.
-
-```bash
-codexa plugin list
-codexa plugin scaffold my-plugin
-```
-
-### 39 CLI Commands
-Unix-style developer tool with `--json`, `--pipe`, and `--verbose` flags on every command.
-
 ## Stats
 
 | Metric | Value |
 |--------|-------|
-| CLI Commands | 39 |
-| AI Agent Tools | 13 |
-| Plugin Hooks | 22 |
-| Parsed Languages | 11 |
-| Tests | 2595 |
-| Python | >= 3.11 |
+| **Version** | 0.4.3 |
+| **CLI Commands** | 39 |
+| **AI Agent Tools** | 13 |
+| **Plugin Hooks** | 22 |
+| **Parsed Languages** | 11 |
+| **Tests** | 2596 |
+| **Python** | >= 3.11 |
 
 ## Documentation
 

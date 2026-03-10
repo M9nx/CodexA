@@ -13,6 +13,21 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/introduction' },
       { text: 'Features', link: '/features/semantic-search' },
       { text: 'Reference', link: '/reference/cli' },
+      {
+        text: 'v0.4.3',
+        items: [
+          { text: 'Changelog', link: 'https://github.com/M9nx/CodexA/blob/main/CHANGELOG.md' },
+          { text: 'Release Notes', link: 'https://github.com/M9nx/CodexA/blob/main/RELEASE_NOTES.md' },
+          {
+            text: 'Previous Versions',
+            items: [
+              { text: 'v0.4.2', link: 'https://pypi.org/project/codexa/0.4.2/' },
+              { text: 'v0.4.1', link: 'https://pypi.org/project/codexa/0.4.1/' },
+              { text: 'v0.4.0', link: 'https://pypi.org/project/codexa/0.4.0/' },
+            ],
+          },
+        ],
+      },
       { text: 'GitHub', link: 'https://github.com/M9nx/CodexA' },
     ],
 
@@ -70,7 +85,7 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2025 M9nx',
+      copyright: 'Copyright © 2025 M9nx · v0.4.3',
     },
 
     search: {

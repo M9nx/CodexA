@@ -19,6 +19,7 @@ CodexA stores its configuration in `.codexa/config.json`, created by `codexa ini
   "index": {
     "extensions": [".py", ".js", ".ts", ".java", ".go", ".rs", ".c", ".cpp"],
     "exclude_patterns": ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+    "exclude_files": [],
     "incremental": true
   },
   "llm": {
@@ -67,8 +68,20 @@ Controls which files are indexed.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `extensions` | list | See above | File extensions to index |
-| `exclude_patterns` | list | See above | Glob patterns to exclude |
+| `exclude_patterns` | list | See above | Glob patterns to exclude directories |
+| `exclude_files` | list | `[]` | Glob patterns to exclude specific files (e.g., `["*.min.js", "*.generated.*"]`) |
 | `incremental` | bool | true | Only re-index changed files |
+
+You can also create a `.codexaignore` file in your project root (same syntax as `.gitignore`) to exclude files from indexing:
+
+```text
+# .codexaignore
+*.min.js
+*.bundle.js
+vendor/
+secrets/
+*.generated.*
+```
 
 ### `llm`
 
