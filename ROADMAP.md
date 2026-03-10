@@ -475,14 +475,31 @@ Major rewrite of the VS Code extension from basic 4-command wrapper to a rich mu
 
 ## Upcoming Phases
 
-### Phase 29: Remote / Cloud Mode
+### Phase 31: Remote / Cloud Mode
 Package CodexA as a Docker container with a REST API so teams can share one index server. Add auth, rate limiting, team dashboards.
 
-### Phase 30: CI/CD Deep Integration
+### Phase 32: CI/CD Deep Integration
 GitHub Actions / GitLab CI plugin that runs `codexa quality` on PRs, blocks merges on regressions, and posts inline review comments.
 
-### Phase 31: RAG Pipeline
+### Phase 33: RAG Pipeline
 Connect the vector store to LLMs for retrieval-augmented code generation — "write a function like X but for Y" with real codebase context.
+
+---
+
+### Phase 30: Competitive Feature Parity & Distribution ✅
+
+| Feature | Status |
+|---|---|
+| **Watch-mode indexing**: `codexa index --watch` with NativeFileWatcher + incremental re-embedding | ✅ |
+| **Full grep compatibility**: `-A`/`-B`/`-C` context lines, `-w` word, `-v` invert, `-c` count, `--hidden` | ✅ |
+| **`codexa languages` command**: Rich table listing all 11 supported languages with grammar status | ✅ |
+| **Profiling**: `codexa benchmark --profile` with cProfile hotspot analysis | ✅ |
+| **MCP new tools**: `get_file_context` (full-section retrieval), `list_languages` | ✅ |
+| **MCP-over-SSE**: `codexa serve --mcp` exposes MCP tools over HTTP+SSE | ✅ |
+| **Dockerfile**: production-ready multi-stage image with ripgrep and pre-loaded model | ✅ |
+| **Homebrew formula**: `Formula/codexa.rb` for macOS installation | ✅ |
+| **PyPI ready**: version 0.30.0, `python -m build` compatible | ✅ |
+| 40 CLI commands | ✅ |
 
 ---
 ### Evolution Cycle 1 ✔️

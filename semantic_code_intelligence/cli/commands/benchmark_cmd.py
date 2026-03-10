@@ -78,12 +78,19 @@ def _count_files(root: Path) -> int:
     type=int,
     help="Number of search rounds for latency averaging.",
 )
+@click.option(
+    "--profile",
+    is_flag=True,
+    default=False,
+    help="Run cProfile on full indexing and dump top 20 hotspots.",
+)
 @click.pass_context
 def benchmark_cmd(
     ctx: click.Context,
     path: str,
     json_mode: bool,
     rounds: int,
+    profile: bool,
 ) -> None:
     """Benchmark indexing speed, search latency, and memory usage.
 
@@ -123,8 +130,29 @@ def benchmark_cmd(
     mem_before = _get_memory_mb()
     t0 = time.perf_counter()
     from semantic_code_intelligence.services.indexing_service import run_indexing
-    idx_result = run_indexing(root, force=True)
-    full_index_time = time.perf_counter() - t0
+
+    if profile:
+        import cProfile
+        import pstats
+        import io
+
+        profiler = cProfile.Profile()
+        profiler.enable()
+        idx_result = run_indexing(root, force=True)
+        profiler.disable()
+        full_index_time = time.perf_counter() - t0
+
+        # Print profiling results
+        stream = io.StringIO()
+        stats = pstats.Stats(profiler, stream=stream)
+        stats.sort_stats("cumulative")
+        stats.print_stats(20)
+        print_info("cProfile top 20 hotspots (by cumulative time):")
+        click.echo(stream.getvalue())
+    else:
+        idx_result = run_indexing(root, force=True)
+        full_index_time = time.perf_counter() - t0
+
     mem_after = _get_memory_mb()
 
     results["full_index"] = {

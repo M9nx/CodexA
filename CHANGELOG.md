@@ -2,6 +2,31 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.30.0] — Competitive Feature Parity & Distribution
+
+### New Commands
+- **`codexa index --watch`**: Live watch-mode indexing — performs initial index then watches for file changes and re-indexes incrementally using NativeFileWatcher + `run_incremental_indexing()`
+- **`codexa languages`**: Rich table listing all 11 supported tree-sitter languages with extensions, grammar status, and `--check` flag to verify grammar loading
+
+### Enhanced Commands
+- **`codexa grep`**: Full standard grep compatibility — `-A`/`-B`/`-C` (context lines), `-w` (word match), `-v` (invert match), `-c` (count only), `--hidden` (include hidden files); context lines rendered in both ripgrep and Python backends
+- **`codexa benchmark --profile`**: cProfile integration — dumps top 20 hotspots by cumulative time during full indexing for performance troubleshooting
+- **`codexa serve --mcp`**: MCP-over-SSE transport — exposes all MCP tools over HTTP with Server-Sent Events for AI agent integration via Starlette/uvicorn
+
+### MCP Server
+- **13 MCP tools** (up from 11): added `get_file_context` (full-section surrounding code retrieval) and `list_languages` (tree-sitter grammar listing)
+- `get_file_context` supports both line-number and symbol-name based context lookup with ±30 line window
+
+### Packaging & Distribution
+- **Dockerfile**: Production-ready image with ripgrep, git, and pre-loaded default embedding model
+- **Homebrew formula**: `Formula/codexa.rb` for macOS installation via `brew install`
+- **PyPI ready**: Version 0.30.0 with `python -m build` compatibility
+
+### Changed
+- CLI registers **40 commands** (up from 38)
+- Version bumped to 0.30.0
+- ROADMAP updated with Phase 30 and renumbered future phases
+
 ## [0.29.0] — Performance & Developer Experience Overhaul
 
 ### Performance

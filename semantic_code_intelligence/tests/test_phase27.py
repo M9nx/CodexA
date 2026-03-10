@@ -20,7 +20,7 @@ from semantic_code_intelligence.cli.main import cli
 
 class TestVersion028:
     def test_version_is_028(self):
-        assert __version__ == "0.29.0"
+        assert __version__ == "0.30.0"
 
 
 # =========================================================================
@@ -276,7 +276,7 @@ class TestLSPCLI:
 
     def test_command_count_is_36(self):
         """Verify we now have 36 top-level commands (35 + lsp)."""
-        assert len(cli.commands) == 38
+        assert len(cli.commands) == 39
 
 
 # =========================================================================

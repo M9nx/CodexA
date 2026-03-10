@@ -774,7 +774,7 @@ class TestModuleImports:
 
     def test_version(self):
         from semantic_code_intelligence import __version__
-        assert __version__ == "0.29.0"
+        assert __version__ == "0.30.0"
 
     def test_indexing_result_has_symbols_field(self):
         from semantic_code_intelligence.services.indexing_service import IndexingResult

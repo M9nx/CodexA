@@ -117,7 +117,7 @@ class TestCLIBasics:
         assert "codexa" in result.output.lower()
 
     def test_command_count(self):
-        assert len(cli.commands) == 38
+        assert len(cli.commands) == 39
 
     def test_all_35_commands_registered(self):
         expected = {
@@ -127,7 +127,7 @@ class TestCLIBasics:
             "viz", "quality", "pr-summary", "ci-gen", "chat",
             "investigate", "cross-refactor", "metrics", "gate",
             "hotspots", "impact", "trace", "tool", "evolve", "tui",
-            "mcp", "lsp", "models", "benchmark", "grep",
+            "mcp", "lsp", "models", "benchmark", "grep", "languages",
         }
         assert set(cli.commands.keys()) == expected
 

@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.29.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.30.0-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2595-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -24,11 +24,11 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 
 | Area | What you get |
 |------|-------------|
-| **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `.codexaignore` support |
-| **Multi-Mode Search** | Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep (ripgrep backend) |
+| **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `--watch` live re-indexing, `.codexaignore` support |
+| **Multi-Mode Search** | Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep (ripgrep backend) with full `-A/-B/-C/-w/-v/-c` flags |
 | **Code Context** | Rich context windows — imports, dependencies, AST-based call graphs, surrounding code |
 | **Repository Analysis** | Language breakdown, module summaries, component detection |
-| **AI Agent Protocol** | 11 built-in tools exposed via HTTP bridge, MCP server (11 tools), or CLI for any AI agent to invoke |
+| **AI Agent Protocol** | 11 built-in tools exposed via HTTP bridge, MCP server (13 tools), MCP-over-SSE (`--mcp`), or CLI for any AI agent to invoke |
 | **Quality & Metrics** | Complexity analysis, maintainability scoring, quality gates for CI |
 | **Multi-Repo Workspaces** | Link multiple repos under one workspace for cross-repo search & refactoring |
 | **Interactive TUI** | Terminal REPL with mode switching for interactive exploration |

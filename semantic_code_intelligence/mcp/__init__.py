@@ -150,6 +150,24 @@ if _HAS_MCP:
                 "required": ["pattern"],
             },
         ),
+        Tool(
+            name="get_file_context",
+            description="Retrieve full surrounding function/class context for a symbol or line in a file.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "file_path": {"type": "string", "description": "Relative file path."},
+                    "line": {"type": "integer", "description": "Line number to get context for."},
+                    "symbol_name": {"type": "string", "description": "Symbol name to locate."},
+                },
+                "required": ["file_path"],
+            },
+        ),
+        Tool(
+            name="list_languages",
+            description="List all programming languages supported by the tree-sitter parser.",
+            inputSchema={"type": "object", "properties": {}},
+        ),
     ]
 else:
     MCP_TOOLS: list = []  # type: ignore[no-redef]
@@ -270,6 +288,56 @@ def _dispatch_tool(name: str, args: dict[str, Any], project_root: Path) -> Any:
             file_glob=args.get("file_glob"),
         )
         return result.to_dict()
+
+    if name == "get_file_context":
+        file_path = args.get("file_path", "")
+        target_line = args.get("line")
+        symbol_name = args.get("symbol_name")
+        full_path = project_root / file_path
+        if not full_path.is_file():
+            return {"error": f"File not found: {file_path}"}
+        try:
+            content = full_path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            return {"error": str(exc)}
+
+        lines = content.splitlines()
+
+        # If symbol_name given, find its line
+        if symbol_name and not target_line:
+            for i, ln in enumerate(lines, 1):
+                if symbol_name in ln:
+                    target_line = i
+                    break
+            if not target_line:
+                return {"error": f"Symbol '{symbol_name}' not found in {file_path}"}
+
+        if not target_line:
+            return {"error": "Provide either 'line' or 'symbol_name'."}
+
+        # Return a generous context window (±30 lines)
+        start = max(0, target_line - 31)
+        end = min(len(lines), target_line + 30)
+        context_lines = lines[start:end]
+        return {
+            "file_path": file_path,
+            "start_line": start + 1,
+            "end_line": end,
+            "content": "\n".join(context_lines),
+        }
+
+    if name == "list_languages":
+        from semantic_code_intelligence.parsing.parser import (
+            _LANGUAGE_MODULES,
+            EXTENSION_TO_LANGUAGE,
+        )
+        ext_map: dict[str, list[str]] = {}
+        for ext, lang in EXTENSION_TO_LANGUAGE.items():
+            ext_map.setdefault(lang, []).append(ext)
+        return [
+            {"language": lang, "module": mod, "extensions": sorted(ext_map.get(lang, []))}
+            for lang, mod in sorted(_LANGUAGE_MODULES.items())
+        ]
 
     return {"error": f"Unknown tool: {name}"}
 
