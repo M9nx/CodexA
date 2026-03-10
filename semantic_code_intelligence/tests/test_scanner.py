@@ -116,6 +116,16 @@ class TestScanRepository:
         assert len(result) == 1
         assert result[0].extension == ".py"
 
+    def test_exclude_files_patterns(self, tmp_path: Path):
+        (tmp_path / "main.py").write_text("x = 1", encoding="utf-8")
+        secrets_dir = tmp_path / "secrets"
+        secrets_dir.mkdir()
+        (secrets_dir / "token.py").write_text("SECRET = 'x'", encoding="utf-8")
+        config = IndexConfig(ignore_dirs=set(), exclude_files={"secrets/*"})
+        result = scan_repository(tmp_path, config)
+        paths = [scanned.relative_path for scanned in result]
+        assert paths == ["main.py"]
+
     def test_results_sorted(self, tmp_path: Path):
         (tmp_path / "z.py").write_text("z", encoding="utf-8")
         (tmp_path / "a.py").write_text("a", encoding="utf-8")

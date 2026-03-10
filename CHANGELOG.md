@@ -2,6 +2,24 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.4.3] — Packaging and Indexing UX Fixes
+
+### Packaging & Installation
+- Added bundled tree-sitter grammar packages to the core dependency set so language parsing works after a normal install without pulling extra packages from `requirements.txt`
+- Clarified install modes in the README: `pip install codexa` for lightweight commands, `pip install "codexa[ml]"` for semantic indexing and vector search
+
+### Indexing & Search
+- Added `index.exclude_files` config support for glob-based file exclusions in `.codexa/config.json`
+- Continued support for `.codexaignore`, now documented with examples for secrets and generated files
+- Reduced repeated HuggingFace cache/network checks by preferring local model files when already cached
+
+### Reliability
+- Added actionable low-memory failures for embedding model loading on machines with less than about 2 GB of available RAM
+- Improved `codexa init` and `codexa index` guidance with ML extra and RAM hints
+
+### Changed
+- Version bumped to 0.4.3
+
 ## [0.4.0] — First Stable Public Release
 
 ### Release Highlights

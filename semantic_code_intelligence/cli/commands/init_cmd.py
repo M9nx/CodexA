@@ -131,9 +131,11 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
     else:
         print_info("")
         print_info("Next steps:")
+        print_info("  pip install 'codexa[ml]'  — Enable semantic indexing and vector search")
         print_info("  codexa index    — Build the search index")
         print_info("  codexa search   — Search your code")
         print_info("  codexa grep     — Raw file search (no index needed)")
+        print_info("  .codexaignore   — Exclude secrets or generated files from indexing")
 
 
 def _run_index(root: Path) -> None:
@@ -147,6 +149,9 @@ def _run_index(root: Path) -> None:
             f"Indexed {result.chunks_stored} chunks from "
             f"{result.files_scanned} files"
         )
+    except MemoryError as e:
+        print_warning(f"Indexing failed: {e}")
+        print_info("Tip: install 'codexa[ml]' for semantic indexing and use a machine with at least 2 GB available RAM, or prefer the ONNX backend.")
     except Exception as e:
         print_warning(f"Indexing failed: {e}")
         print_info("Run 'codexa index' manually to build the index.")

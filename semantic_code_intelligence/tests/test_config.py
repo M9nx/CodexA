@@ -38,6 +38,7 @@ class TestDefaultConfigs:
         cfg = IndexConfig()
         assert cfg.ignore_dirs == DEFAULT_IGNORE_DIRS
         assert cfg.extensions == DEFAULT_EXTENSIONS
+        assert cfg.exclude_files == set()
         assert cfg.use_incremental is True
 
     def test_app_config_defaults(self):

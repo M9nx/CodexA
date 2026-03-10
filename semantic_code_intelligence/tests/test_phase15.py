@@ -713,7 +713,7 @@ class TestVersionBump:
     def test_version_is_015(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.4.2"
+        assert __version__ == "0.4.3"
 
 
 class TestCIModuleStructure:
@@ -812,3 +812,4 @@ class TestBackwardCompatibility:
         validator = SafetyValidator()
         report = validator.validate("x = 1\n")
         assert report.safe is True
+

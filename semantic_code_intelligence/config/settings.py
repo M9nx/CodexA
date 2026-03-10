@@ -100,6 +100,10 @@ class IndexConfig(BaseModel):
 
     ignore_dirs: set[str] = Field(default_factory=lambda: DEFAULT_IGNORE_DIRS.copy())
     extensions: set[str] = Field(default_factory=lambda: DEFAULT_EXTENSIONS.copy())
+    exclude_files: set[str] = Field(
+        default_factory=set,
+        description="Glob patterns for files to exclude from indexing.",
+    )
     use_incremental: bool = Field(
         default=True,
         description="Enable incremental indexing using file hashes.",

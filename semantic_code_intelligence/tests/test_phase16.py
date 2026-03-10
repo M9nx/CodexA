@@ -676,7 +676,7 @@ class TestVersionBump:
     def test_version_is_016(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.4.2"
+        assert __version__ == "0.4.3"
 
 
 class TestPhase16ModuleStructure:
@@ -790,3 +790,4 @@ class TestBackwardCompatibility:
         chain = mem.get_chain("test")
         assert len(chain) == 1
         assert chain[0].action == "search"
+

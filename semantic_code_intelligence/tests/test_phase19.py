@@ -831,14 +831,14 @@ class TestVersionPhase19:
     def test_version_string(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.4.2"
+        assert __version__ == "0.4.3"
 
     def test_pyproject_version(self):
         import tomllib
         pyproject = Path(__file__).resolve().parent.parent.parent / "pyproject.toml"
         if pyproject.exists():
             data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
-            assert data["project"]["version"] == "0.4.2"
+            assert data["project"]["version"] == "0.4.3"
 
 
 # =========================================================================
@@ -984,3 +984,4 @@ class TestModuleStructure:
     def test_docs_function_importable(self):
         from semantic_code_intelligence.docs import generate_ai_tool_protocol_reference
         assert callable(generate_ai_tool_protocol_reference)
+

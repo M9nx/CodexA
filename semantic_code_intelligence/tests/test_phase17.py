@@ -777,7 +777,7 @@ class TestVersionBump17:
     def test_version_is_017(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.4.2"
+        assert __version__ == "0.4.3"
 
 
 class TestPhase17ModuleStructure:
@@ -813,3 +813,4 @@ class TestPhase17ModuleStructure:
         import semantic_code_intelligence.ci as ci_mod
 
         assert "metrics" in ci_mod.__doc__.lower()
+

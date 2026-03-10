@@ -122,6 +122,11 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool) -> None:
 
     try:
         result = run_indexing(project_root=root, force=force)
+    except MemoryError as e:
+        print_error(f"Indexing failed: {e}")
+        print_info("Tip: semantic indexing needs the ML extras and enough RAM. Install with 'pip install codexa[ml]' and prefer ONNX or a machine with at least 2 GB available RAM.")
+        ctx.exit(1)
+        return
     except Exception as e:
         print_error(f"Indexing failed: {e}")
         logger.debug("Indexing error details:", exc_info=True)

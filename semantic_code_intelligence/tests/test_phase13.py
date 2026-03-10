@@ -492,7 +492,7 @@ class TestPipelineMode:
     def test_version_option(self):
         runner = CliRunner()
         result = runner.invoke(cli, ["--version"])
-        assert "0.4.2" in result.output
+        assert "0.4.3" in result.output
 
 
 # =========================================================================
@@ -652,7 +652,7 @@ class TestProjectMetadata:
 
     def test_version_is_0_13(self):
         from semantic_code_intelligence import __version__
-        assert __version__ == "0.4.2"
+        assert __version__ == "0.4.3"
 
     def test_app_name(self):
         from semantic_code_intelligence import __app_name__
@@ -661,3 +661,4 @@ class TestProjectMetadata:
     def test_pyproject_exists(self):
         root = Path(__file__).resolve().parent.parent.parent
         assert (root / "pyproject.toml").is_file()
+

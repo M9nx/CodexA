@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.4.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.4.3-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2595-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -44,6 +44,12 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 
 ```bash
 pip install codexa
+```
+
+For semantic indexing and vector search, install the ML extras:
+
+```bash
+pip install "codexa[ml]"
 ```
 
 Or install from source:
@@ -84,6 +90,23 @@ codexa index .
 
 This parses all source files (Python, JS/TS, Java, Go, Rust, C#, Ruby, C++),
 extracts symbols, generates embeddings, and stores them in a local FAISS index.
+Semantic indexing requires `codexa[ml]`.
+
+If you need to keep secrets, generated files, or local config files out of the
+index, add patterns to `.codexaignore` at the project root or configure
+`index.exclude_files` in `.codexa/config.json`.
+
+Typical `.codexaignore` example:
+
+```text
+.env*
+secrets/*.json
+config/local-*.yml
+vendor/*
+```
+
+The default embedding model is small, but the PyTorch backend still needs about
+2 GB of available RAM. On lower-memory machines, prefer the ONNX backend.
 
 ### 4. Semantic Search
 
@@ -201,7 +224,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codexa --version    # → codexa, version 0.4.0
+codexa --version    # → codexa, version 0.4.3
 ```
 
 ### Step 2 — Initialize your target project

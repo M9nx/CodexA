@@ -108,6 +108,7 @@ def scan_repository(
 
     root = root.resolve()
     ignore_patterns = _load_ignore_patterns(root)
+    config_exclude_patterns = [pattern.replace("\\", "/") for pattern in index_config.exclude_files]
     results: list[ScannedFile] = []
 
     for file_path in sorted(root.rglob("*")):
@@ -126,6 +127,8 @@ def scan_repository(
         except ValueError:
             continue
         if ignore_patterns and _matches_ignore_patterns(rel, ignore_patterns):
+            continue
+        if config_exclude_patterns and _matches_ignore_patterns(rel, config_exclude_patterns):
             continue
 
         try:

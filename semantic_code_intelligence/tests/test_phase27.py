@@ -20,7 +20,7 @@ from semantic_code_intelligence.cli.main import cli
 
 class TestVersion028:
     def test_version_is_028(self):
-        assert __version__ == "0.4.2"
+        assert __version__ == "0.4.3"
 
 
 # =========================================================================
@@ -529,3 +529,4 @@ class TestIndexingResultRepr:
         s = repr(r)
         assert "scanned=10" in s
         assert "indexed=5" in s
+
