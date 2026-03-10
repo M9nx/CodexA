@@ -56,7 +56,85 @@ Planned improvements for CodexA, organized by priority.
 
 ## Upcoming Improvements
 
-### Phase 32 — Cross-Language Intelligence
+> Phases redesigned after self-analysis with CodexA tools and competitive
+> comparison with [ck](https://github.com/BeaconBay/ck) (Rust-based semantic
+> search, v0.7.4). Priorities: close visible UX/performance gaps first, then
+> double down on CodexA's unique AI-powered strengths.
+
+### Phase 32 — Search UX & Output Modes
+
+Close the biggest visible gaps in search ergonomics:
+
+- `--scores` flag to display similarity scores with color highlighting
+- `--full-section` flag to return complete function/class bodies, not just chunk snippets
+- `--threshold` flag to filter results below a minimum similarity score
+- JSONL streaming output mode (`--jsonl`) for piping into downstream tools
+- `codexa search --inspect <file>` to visualize chunks, token counts, and embeddings for a file
+- `.codexaignore` auto-generation from detected binary/vendored/generated files
+- Smart binary detection to skip non-text files during indexing
+
+### Phase 33 — Precise Token Management
+
+Replace rough token estimation with model-specific counting (ck already ships exact tokenization):
+
+- `tiktoken` for OpenAI models, HuggingFace `tokenizers` for local/Ollama models
+- Accurate context window budgeting with overflow protection in RAG pipeline
+- Token usage reporting and cost estimation per query
+- Smart context truncation preserving semantic boundaries (function/class edges)
+- `codexa search --tokens` to show token count per result
+
+### Phase 34 — Performance & Smart Indexing
+
+Content-aware incremental indexing to close the speed gap:
+
+- Content-hash (blake3) per chunk — skip re-embedding unchanged code
+- Parallel embedding with configurable worker count
+- Batch FAISS insertion instead of one-by-one vector adds
+- Memory-mapped FAISS indices for low-RAM machines
+- `codexa index --diff` to index only git-changed files
+- Indexing progress bar with ETA and throughput stats
+
+### Phase 35 — Advanced Embedding & Model Selection
+
+Multiple embedding models and smarter search infrastructure:
+
+- Support BGE, mxbai-embed, nomic-embed, jina-code-v2 alongside current MiniLM
+- Model switching at query time without full re-index (dual-index mode)
+- GPU-accelerated FAISS with IVF-PQ indices for million-file repos
+- Field-scoped search filters (`--lang`, `--symbol-type`, `--file`)
+- Configurable RRF weights for hybrid search tuning
+- `codexa models compare` to benchmark models on the user's actual codebase
+
+### Phase 36 — CI/CD Deep Integration
+
+First-class CI pipeline integration — a unique CodexA strength:
+
+- PR diff-aware indexing — only re-index changed files in CI
+- Automated PR review comments via GitHub Actions / GitLab CI
+- Quality trend dashboards exported as CI artifacts (HTML + JSON)
+- Breaking-change detection based on call graph + reference analysis
+- Configurable CI profiles (`fast` / `thorough` / `security-only`)
+
+### Phase 37 — VS Code Extension & Editor Integration
+
+Marketplace-ready VS Code extension with deep editor features:
+
+- Inline code explanations as CodeLens / inlay hints
+- Semantic go-to-definition across indexed repos
+- Live quality annotations in the editor gutter
+- Multi-root workspace support with cross-repo navigation
+- Extension marketplace publishing and auto-update
+
+### Phase 38 — Async Web & Real-Time Streaming
+
+Migrate the web server to a modern async framework:
+
+- WebSocket streaming for live search results
+- Non-blocking request handling with connection pooling
+- Server-sent events for long-running operations (indexing progress)
+- Real-time dashboard with quality trends and search analytics
+
+### Phase 39 — Cross-Language Intelligence
 
 Unified code intelligence across language boundaries:
 
@@ -65,72 +143,14 @@ Unified code intelligence across language boundaries:
 - Language-aware search boosting (prefer results in the query's context language)
 - Universal call graph spanning multiple languages in a workspace
 
-### Phase 33 — Team & Cloud Mode
+## Low Priority (Future)
 
-Optional team collaboration features (privacy-first, opt-in):
-
-- Shared search indices with team-scoped access control
-- Remote index hosting for large monorepos (gRPC or HTTP)
-- Index sharding and distributed search across machines
-- Audit logging for compliance-sensitive environments
-
-### Phase 34 — CI/CD Deep Integration
-
-First-class CI pipeline integration beyond quality gates:
-
-- PR diff-aware indexing — only re-index changed files in CI
-- Automated PR review comments via GitHub Actions / GitLab CI
-- Quality trend dashboards exported as CI artifacts
-- Breaking-change detection based on call graph + reference analysis
-- Configurable CI profiles (fast/thorough/security-only)
-
-### Phase 35 — Advanced Embedding & Search
-
-Next-generation search infrastructure:
-
-- Fine-tuned code embedding models (CodeBERT, StarEncoder)
-- GPU-accelerated FAISS with IVF-PQ indices for million-file repos
-- Field-scoped search filters (`--lang`, `--symbol-type`, `--file`)
-- Configurable RRF weights for hybrid search tuning
-- Re-ranking with cross-encoders for precision-critical queries
-
-### Phase 36 — Async Web & Real-Time Streaming
-
-Migrate the web server to a modern async framework:
-
-- WebSocket streaming for live search results
-- Non-blocking request handling with connection pooling
-- Server-sent events for long-running operations (indexing progress)
-- Real-time collaboration widgets in the web UI
-
-### Phase 37 — Plugin Marketplace & Sandboxing
-
-Mature the plugin ecosystem:
+### Plugin Marketplace & Sandboxing
 
 - Plugin sandboxing with resource limits and restricted filesystem access
 - Community plugin registry with versioning and discovery
 - Plugin dependency resolution and conflict detection
 - Visual plugin configuration in the web UI
-
-### Phase 38 — Precise Token Management
-
-Replace rough token estimation with model-specific counting:
-
-- `tiktoken` for OpenAI models, model-specific tokenizers for Ollama
-- Accurate context window budgeting with overflow protection
-- Token usage reporting and cost estimation per query
-- Smart context truncation preserving semantic boundaries
-
-### Phase 39 — LSP 2.0 & Editor Deep Integration
-
-Enhanced editor integration beyond current LSP:
-
-- Inline code explanations as CodeLens / inlay hints
-- Semantic go-to-definition across indexed repos
-- Live quality annotations in the editor gutter
-- Multi-root workspace support with cross-repo navigation
-
-## Low Priority (Future)
 
 ### Fine-Tuned Embedding Models
 
