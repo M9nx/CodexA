@@ -18,7 +18,7 @@ from semantic_code_intelligence.cli.main import cli
 
 class TestVersion027:
     def test_version_is_027(self):
-        assert __version__ == "0.4.1"
+        assert __version__ == "0.4.2"
 
 
 # =========================================================================
