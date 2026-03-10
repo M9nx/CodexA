@@ -2,6 +2,9 @@
 
 Reciprocal Rank Fusion combines two ranked lists into a single list that
 benefits from both semantic understanding and exact keyword matching.
+
+When the Rust backend is available, uses ``reciprocal_rank_fusion_rs``
+for faster fusion and ``RustBM25Index`` for keyword scoring.
 """
 
 from __future__ import annotations
@@ -12,6 +15,7 @@ from typing import Any
 
 from semantic_code_intelligence.config.settings import AppConfig, load_config
 from semantic_code_intelligence.embeddings.generator import generate_embeddings
+from semantic_code_intelligence.rust_backend import use_rust
 from semantic_code_intelligence.search.keyword_search import (
     BM25Index,
     KeywordResult,
@@ -67,6 +71,9 @@ def reciprocal_rank_fusion(
 ) -> list[tuple[int, float, float, float]]:
     """Fuse two ranked lists via Reciprocal Rank Fusion.
 
+    When the Rust backend is available, delegates to the native
+    ``reciprocal_rank_fusion_rs`` for faster computation.
+
     Args:
         semantic_ranking: [(chunk_index_in_store, cosine_score), ...] ordered best-first.
         keyword_ranking:  [(chunk_index_in_store, bm25_score), ...]  ordered best-first.
@@ -76,6 +83,16 @@ def reciprocal_rank_fusion(
         [(chunk_index, fused_score, semantic_score, keyword_score), ...]
         sorted by fused_score descending.
     """
+    # --- Rust fast path ---
+    if use_rust():
+        try:
+            from semantic_code_intelligence.rust_backend import (
+                reciprocal_rank_fusion_rs,
+            )
+            return reciprocal_rank_fusion_rs(semantic_ranking, keyword_ranking, k)
+        except Exception:
+            logger.debug("Rust RRF failed, falling back to Python.")
+
     scores: dict[int, float] = {}
     sem_scores: dict[int, float] = {}
     kw_scores: dict[int, float] = {}

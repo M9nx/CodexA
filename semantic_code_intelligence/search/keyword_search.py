@@ -3,6 +3,9 @@
 Provides grep-compatible text search and BM25-ranked keyword search
 over indexed code chunks, without requiring external dependencies.
 Supports persistent BM25 index serialization for fast startup.
+
+When the Rust backend is available, uses ``RustBM25Index`` for
+faster tokenisation and scoring.
 """
 
 from __future__ import annotations
@@ -14,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from semantic_code_intelligence.rust_backend import use_rust
 from semantic_code_intelligence.storage.vector_store import ChunkMetadata, VectorStore
 from semantic_code_intelligence.utils.logging import get_logger
 
@@ -185,15 +189,52 @@ class BM25Index:
 # ---------------------------------------------------------------------------
 
 _bm25_cache: dict[str, BM25Index] = {}
+_rust_bm25_cache: dict[str, Any] = {}
 
 
-def _get_bm25(index_dir: Path, store: VectorStore) -> BM25Index:
+def _get_bm25(index_dir: Path, store: VectorStore) -> BM25Index | Any:
     """Get or build a BM25 index for the given vector store.
 
+    When the Rust backend is available, returns a ``RustBM25Index`` instead.
     Checks (in order): in-memory cache, disk cache, then builds fresh.
     Persists newly built indexes to disk for faster future loads.
     """
     cache_key = str(index_dir)
+
+    # --- Rust fast path ---
+    if use_rust():
+        try:
+            from semantic_code_intelligence.rust_backend import (
+                ChunkMeta,
+                RustBM25Index,
+            )
+            cached_rs = _rust_bm25_cache.get(cache_key)
+            if cached_rs is not None:
+                return cached_rs
+
+            # Try loading from disk
+            loaded_rs = RustBM25Index.load(str(index_dir), store.size)
+            if loaded_rs is not None:
+                _rust_bm25_cache[cache_key] = loaded_rs
+                return loaded_rs
+
+            # Build fresh from metadata
+            rs_meta = [
+                ChunkMeta(
+                    m.file_path, m.start_line, m.end_line,
+                    m.chunk_index, m.language, m.content, m.content_hash,
+                )
+                for m in store.metadata
+            ]
+            rs_idx = RustBM25Index(rs_meta)
+            rs_idx.save(str(index_dir))
+            _rust_bm25_cache[cache_key] = rs_idx
+            logger.debug("Built Rust BM25 index over %d chunks.", store.size)
+            return rs_idx
+        except Exception:
+            logger.debug("Rust BM25 failed, falling back to Python.")
+
+    # --- Python fallback ---
     cached = _bm25_cache.get(cache_key)
     if cached is not None and cached.n == store.size:
         return cached

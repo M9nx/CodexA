@@ -53,8 +53,9 @@ class SearchResult:
 
 def _auto_index_if_needed(project_root: Path, index_dir: Path) -> None:
     """Run indexing transparently if no vector store exists yet."""
-    vectors_path = index_dir / "vectors.faiss"
-    if vectors_path.exists():
+    vectors_faiss = index_dir / "vectors.faiss"
+    vectors_bin = index_dir / "vectors.bin"
+    if vectors_faiss.exists() or vectors_bin.exists():
         return
     logger.info("No index found — auto-indexing %s", project_root)
     from semantic_code_intelligence.services.indexing_service import run_indexing

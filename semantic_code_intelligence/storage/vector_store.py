@@ -5,6 +5,9 @@ Supports two index modes:
 - **IVF**: Inverted-file approximate search — faster for large repos (>50 k).
   Enabled automatically when the vector count crosses *IVF_THRESHOLD* or by
   passing ``use_ivf=True`` to the constructor.
+
+When the Rust native backend (``codexa_core``) is available, the store
+transparently delegates to ``RustVectorStore`` for faster search and I/O.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ except ImportError:
 
 import numpy as np
 
+from semantic_code_intelligence.rust_backend import use_rust
 from semantic_code_intelligence.utils.logging import get_logger
 
 logger = get_logger("storage")
@@ -64,6 +68,7 @@ class VectorStore:
             )
         self.dimension = dimension
         self._use_ivf = use_ivf
+        self._rs_store = None  # cached Rust backend (populated lazily)
         if use_ivf:
             quantizer = faiss.IndexFlatIP(dimension)
             self.index = faiss.IndexIVFFlat(quantizer, dimension, IVF_NLIST, faiss.METRIC_INNER_PRODUCT)
@@ -125,12 +130,18 @@ class VectorStore:
         if not self._use_ivf and self.size >= IVF_THRESHOLD:
             self._upgrade_to_ivf()
 
+        # Rebuild cached Rust store for fast search
+        self._sync_rust_store()
+
     def search(
         self,
         query_embedding: np.ndarray,
         top_k: int = 10,
     ) -> list[tuple[ChunkMetadata, float]]:
         """Search for the most similar embeddings.
+
+        When the Rust backend is available, delegates to the native
+        inner-product implementation for better performance.
 
         Args:
             query_embedding: Query vector of shape (dimension,) or (1, dimension).
@@ -141,6 +152,13 @@ class VectorStore:
         """
         if self.size == 0:
             return []
+
+        # --- Rust fast path (uses cached RustVectorStore) ---
+        if use_rust() and self._rs_store is not None:
+            try:
+                return self._rust_search(query_embedding, top_k)
+            except Exception:
+                logger.debug("Rust search failed, falling back to FAISS.")
 
         query = np.ascontiguousarray(
             query_embedding.reshape(1, -1), dtype=np.float32
@@ -155,10 +173,67 @@ class VectorStore:
             results.append((self.metadata[idx], float(score)))
         return results
 
+    def _rust_search(
+        self,
+        query_embedding: np.ndarray,
+        top_k: int,
+    ) -> list[tuple[ChunkMetadata, float]]:
+        """Perform search via cached Rust backend."""
+        q = np.ascontiguousarray(query_embedding.ravel(), dtype=np.float32)
+        rust_results = self._rs_store.search(q, top_k)
+
+        return [
+            (
+                ChunkMetadata(
+                    file_path=cm.file_path,
+                    start_line=cm.start_line,
+                    end_line=cm.end_line,
+                    chunk_index=cm.chunk_index,
+                    language=cm.language,
+                    content=cm.content,
+                    content_hash=cm.content_hash,
+                ),
+                float(score),
+            )
+            for cm, score in rust_results
+        ]
+
+    def _sync_rust_store(self) -> None:
+        """Rebuild the cached Rust store from current FAISS vectors + metadata."""
+        if not use_rust():
+            return
+        try:
+            from semantic_code_intelligence.rust_backend import (
+                ChunkMeta,
+                RustVectorStore,
+            )
+            n = self.size
+            if n == 0:
+                self._rs_store = None
+                return
+            dim = self.dimension
+            rs = RustVectorStore(dim)
+            all_vecs = np.vstack(
+                [self.index.reconstruct(i).reshape(1, -1) for i in range(n)]
+            ).astype(np.float32)
+            rs_meta = [
+                ChunkMeta(
+                    m.file_path, m.start_line, m.end_line,
+                    m.chunk_index, m.language, m.content, m.content_hash,
+                )
+                for m in self.metadata
+            ]
+            rs.add(all_vecs, rs_meta)
+            self._rs_store = rs
+        except Exception:
+            self._rs_store = None
+
     def save(self, directory: Path) -> None:
         """Persist the vector store to disk.
 
         Saves the FAISS index and metadata as separate files.
+        When the Rust backend is available, also writes ``vectors.bin``
+        for future fast native loads.
 
         Args:
             directory: Directory to save into.
@@ -176,6 +251,31 @@ class VectorStore:
             json.dumps(meta_dicts, ensure_ascii=False),
             encoding="utf-8",
         )
+
+        # Also save Rust-format vectors.bin for native backend
+        if use_rust() and self.size > 0:
+            try:
+                from semantic_code_intelligence.rust_backend import (
+                    ChunkMeta,
+                    RustVectorStore,
+                )
+                dim = self.dimension
+                rs = RustVectorStore(dim)
+                all_vecs = np.vstack(
+                    [self.index.reconstruct(i).reshape(1, -1) for i in range(self.size)]
+                ).astype(np.float32)
+                rs_meta = [
+                    ChunkMeta(
+                        m.file_path, m.start_line, m.end_line,
+                        m.chunk_index, m.language, m.content, m.content_hash,
+                    )
+                    for m in self.metadata
+                ]
+                rs.add(all_vecs, rs_meta)
+                rs.save(str(directory))
+            except Exception:
+                logger.debug("Failed to write Rust vectors.bin alongside FAISS index.")
+
         logger.info("Saved %d vectors to %s", self.size, directory)
 
     @classmethod
@@ -211,6 +311,8 @@ class VectorStore:
         for i, m in enumerate(metadata):
             store._file_index[m.file_path].add(i)
         logger.info("Loaded %d vectors from %s", store.size, directory)
+        # Build Rust mirror for fast search
+        store._sync_rust_store()
         return store
 
     def remove_by_file(self, file_path: str) -> int:
@@ -256,6 +358,8 @@ class VectorStore:
             self._file_index[m.file_path].add(i)
 
         logger.debug("Removed %d vectors for %s", removed, file_path)
+        # Invalidate Rust cache (rebuilt lazily on next search or add)
+        self._rs_store = None
         return removed
 
     def get_vectors_for_file(self, file_path: str) -> list[tuple[ChunkMetadata, np.ndarray]]:
@@ -282,6 +386,7 @@ class VectorStore:
         self.index.reset()
         self.metadata.clear()
         self._file_index.clear()
+        self._rs_store = None
 
     # ------------------------------------------------------------------
     # IVF helpers
