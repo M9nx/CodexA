@@ -6,10 +6,10 @@ search UI and REST API on a single port.
 ## Quick Start
 
 ```bash
-codex web
+codexa web
 # Opens at http://127.0.0.1:8080
 
-codex web --port 9000 --host 0.0.0.0
+codexa web --port 9000 --host 0.0.0.0
 ```
 
 No external frameworks — the server uses Python's built-in `http.server`.
@@ -64,10 +64,10 @@ vanilla JavaScript — no build step required.
 Generate Mermaid diagrams from the CLI or API:
 
 ```bash
-codex viz callgraph               # Function call flowchart
-codex viz deps --target main.py   # Dependency graph
-codex viz symbols --target auth.py # Class diagram
-codex viz workspace               # Project map
+codexa viz callgraph               # Function call flowchart
+codexa viz deps --target main.py   # Dependency graph
+codexa viz symbols --target auth.py # Class diagram
+codexa viz workspace               # Project map
 ```
 
 ### Diagram Types
@@ -90,7 +90,7 @@ flowchart LR
 ## Configuration
 
 ```bash
-codex web [options]
+codexa web [options]
 
 Options:
   --host, -h TEXT     Host to bind (default: 127.0.0.1)

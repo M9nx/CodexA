@@ -18,8 +18,8 @@ not just pattern matching on text.
 Vector similarity search — finds conceptually related code:
 
 ```bash
-codex search "authentication middleware"
-codex search "database connection pooling"
+codexa search "authentication middleware"
+codexa search "database connection pooling"
 ```
 
 ### Keyword (BM25)
@@ -27,7 +27,7 @@ codex search "database connection pooling"
 Traditional ranked keyword search:
 
 ```bash
-codex search "jwt_token" --mode keyword
+codexa search "jwt_token" --mode keyword
 ```
 
 ### Hybrid (RRF)
@@ -35,7 +35,7 @@ codex search "jwt_token" --mode keyword
 Fuses semantic and keyword results for the best of both:
 
 ```bash
-codex search "error handling" --mode hybrid
+codexa search "error handling" --mode hybrid
 ```
 
 ### Regex
@@ -43,8 +43,8 @@ codex search "error handling" --mode hybrid
 Grep-compatible regular expression search:
 
 ```bash
-codex search "def\s+authenticate" --mode regex -n
-codex search "TODO|FIXME" --mode regex -l
+codexa search "def\s+authenticate" --mode regex -n
+codexa search "TODO|FIXME" --mode regex -l
 ```
 
 ## Grep Compatibility
@@ -63,21 +63,21 @@ CodexA supports familiar grep flags:
 
 ```bash
 # Human-readable (default)
-codex search "auth"
+codexa search "auth"
 
 # JSON for AI agents
-codex search "auth" --json
+codexa search "auth" --json
 
 # JSONL for streaming/piping
-codex search "auth" --jsonl | jq .file_path
+codexa search "auth" --jsonl | jq .file_path
 
 # Full enclosing function/class context
-codex search "auth" --full-section
+codexa search "auth" --full-section
 ```
 
 ## Configuration
 
-Tune search behavior in `.codex/config.json`:
+Tune search behavior in `.codexa/config.json`:
 
 ```json
 {
@@ -107,10 +107,10 @@ CodexA uses `all-MiniLM-L6-v2` by default — a compact model that:
 Manage models with:
 
 ```bash
-codex models list           # Available models
-codex models info <name>    # Model details
-codex models download <n>   # Pre-download for offline use
-codex models switch <name>  # Switch active model (requires re-index)
+codexa models list           # Available models
+codexa models info <name>    # Model details
+codexa models download <n>   # Pre-download for offline use
+codexa models switch <name>  # Switch active model (requires re-index)
 ```
 
 ## Performance
@@ -123,18 +123,18 @@ codex models switch <name>  # Switch active model (requires re-index)
 
 ## Raw Filesystem Grep
 
-For instant results without an index, use the `codex grep` command:
+For instant results without an index, use the `codexa grep` command:
 
 ```bash
-codex grep "TODO|FIXME"                # Search all files
-codex grep "def authenticate" -g "*.py"  # Filter by file type
-codex grep "password" --case-sensitive   # Case-sensitive
-codex grep "import re" --json            # JSON output
-codex grep "class.*Service" -l           # Files-only (like grep -l)
+codexa grep "TODO|FIXME"                # Search all files
+codexa grep "def authenticate" -g "*.py"  # Filter by file type
+codexa grep "password" --case-sensitive   # Case-sensitive
+codexa grep "import re" --json            # JSON output
+codexa grep "class.*Service" -l           # Files-only (like grep -l)
 ```
 
 Uses **ripgrep** for speed when available, falls back to pure Python.
-Unlike `codex search --mode regex`, this searches the actual filesystem —
+Unlike `codexa search --mode regex`, this searches the actual filesystem —
 no index required.
 
 ## Benchmarking
@@ -142,9 +142,9 @@ no index required.
 Measure real performance on your codebase:
 
 ```bash
-codex benchmark
+codexa benchmark
 ```
 
 Reports indexing speed, search latency (all 4 modes with p50/p99/QPS), BM25
 persistence speedup, and memory usage.
-- **Incremental**: Only changed files are re-indexed (`codex index --force` for full rebuild)
+- **Incremental**: Only changed files are re-indexed (`codexa index --force` for full rebuild)

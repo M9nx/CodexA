@@ -114,9 +114,9 @@ class TestWorkspaceProperties:
     def test_root_and_directories(self, tmp_path):
         ws = Workspace(tmp_path)
         assert ws.root == tmp_path.resolve()
-        assert ws.config_dir == tmp_path.resolve() / ".codex"
-        assert ws.repos_dir == tmp_path.resolve() / ".codex" / "repos"
-        assert ws.manifest_path == tmp_path.resolve() / ".codex" / WORKSPACE_FILE
+        assert ws.config_dir == tmp_path.resolve() / ".codexa"
+        assert ws.repos_dir == tmp_path.resolve() / ".codexa" / "repos"
+        assert ws.manifest_path == tmp_path.resolve() / ".codexa" / WORKSPACE_FILE
 
     def test_repos_empty(self, tmp_path):
         ws = Workspace(tmp_path)
@@ -297,7 +297,7 @@ class TestWorkspaceCLI:
         runner = CliRunner()
         result = runner.invoke(workspace_cmd, ["init", "--path", str(tmp_path)])
         assert result.exit_code == 0
-        assert (tmp_path / ".codex" / WORKSPACE_FILE).exists()
+        assert (tmp_path / ".codexa" / WORKSPACE_FILE).exists()
 
     def test_add_without_init_fails(self, tmp_path):
         from click.testing import CliRunner

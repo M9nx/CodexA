@@ -54,7 +54,7 @@ def _check_package(pkg_name: str, import_name: str | None = None) -> dict[str, A
 
 def _check_project(path: Path) -> dict[str, Any]:
     """Check if a CodexA project is initialized at the given path."""
-    config_dir = path / ".codex"
+    config_dir = path / ".codexa"
     if config_dir.is_dir():
         index_dir = config_dir / "index"
         has_index = index_dir.is_dir() and any(index_dir.iterdir()) if index_dir.is_dir() else False
@@ -68,7 +68,7 @@ def _check_project(path: Path) -> dict[str, Any]:
         "name": "Project",
         "version": None,
         "ok": False,
-        "detail": f"Not initialized at {path} — run 'codex init'",
+        "detail": f"Not initialized at {path} — run 'codexa init'",
     }
 
 
@@ -112,11 +112,11 @@ def doctor_cmd(path: str, json_mode: bool) -> None:
 
     Examples:
 
-        codex doctor
+        codexa doctor
 
-        codex doctor --json
+        codexa doctor --json
 
-        codex doctor -p /path/to/project
+        codexa doctor -p /path/to/project
     """
     checks = run_checks(Path(path))
 

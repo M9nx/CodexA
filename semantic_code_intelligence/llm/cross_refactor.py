@@ -230,7 +230,7 @@ def analyze_cross_repo(
     """Analyse a workspace for cross-repo refactoring opportunities.
 
     Args:
-        workspace_root: Workspace root containing ``.codex/workspace.json``.
+        workspace_root: Workspace root containing ``.codexa/workspace.json``.
         provider: Optional LLM provider for generating suggestions.
         threshold: Jaccard similarity threshold for duplicate detection.
         repos: Restrict to these repo names. None = all registered repos.

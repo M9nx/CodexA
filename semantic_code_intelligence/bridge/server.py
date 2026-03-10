@@ -2,7 +2,7 @@
 
 Uses only the Python standard library (``http.server``) so there are zero
 additional dependencies.  The server is designed to be started via
-``codex serve`` and consumed by IDE extensions, editor plugins, or any
+``codexa serve`` and consumed by IDE extensions, editor plugins, or any
 HTTP client.
 
 Endpoints

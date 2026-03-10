@@ -67,15 +67,15 @@ Navigate to any project you want to analyze and run:
 
 ```bash
 cd /path/to/your-project
-codex init
+codexa init
 ```
 
-This creates a `.codex/` directory with configuration, index storage, and session data.
+This creates a `.codexa/` directory with configuration, index storage, and session data.
 
 ### 3. Index the Codebase
 
 ```bash
-codex index .
+codexa index .
 ```
 
 This parses all source files (Python, JS/TS, Java, Go, Rust, C#, Ruby, C++),
@@ -84,24 +84,24 @@ extracts symbols, generates embeddings, and stores them in a local FAISS index.
 ### 4. Semantic Search
 
 ```bash
-codex search "jwt authentication"
-codex search "database connection pool" --json
-codex search "error handling" -k 5
+codexa search "jwt authentication"
+codexa search "database connection pool" --json
+codexa search "error handling" -k 5
 ```
 
 ### 5. Explore More
 
 ```bash
-codex explain MyClass              # Structural explanation of a symbol
-codex context parse_config         # Rich AI context window
-codex deps src/auth.py             # Import / dependency map
-codex summary                      # Full repo summary
-codex quality src/                 # Code quality analysis
-codex hotspots                     # High-risk code hotspots
-codex trace handle_request         # Execution trace of a symbol
-codex evolve                       # Self-improving development loop
-codex grep "TODO|FIXME"            # Raw filesystem grep (ripgrep or Python)
-codex benchmark                    # Performance benchmarking
+codexa explain MyClass              # Structural explanation of a symbol
+codexa context parse_config         # Rich AI context window
+codexa deps src/auth.py             # Import / dependency map
+codexa summary                      # Full repo summary
+codexa quality src/                 # Code quality analysis
+codexa hotspots                     # High-risk code hotspots
+codexa trace handle_request         # Execution trace of a symbol
+codexa evolve                       # Self-improving development loop
+codexa grep "TODO|FIXME"            # Raw filesystem grep (ripgrep or Python)
+codexa benchmark                    # Performance benchmarking
 ```
 
 ---
@@ -118,16 +118,16 @@ Any AI agent that can run shell commands can use CodexA directly:
 
 ```bash
 # List available tools
-codex tool list --json
+codexa tool list --json
 
 # Run a tool with arguments
-codex tool run semantic_search --arg query="authentication middleware" --json
-codex tool run explain_symbol --arg symbol_name="UserService" --json
-codex tool run get_call_graph --arg symbol_name="process_payment" --json
-codex tool run get_dependencies --arg file_path="src/auth.py" --json
+codexa tool run semantic_search --arg query="authentication middleware" --json
+codexa tool run explain_symbol --arg symbol_name="UserService" --json
+codexa tool run get_call_graph --arg symbol_name="process_payment" --json
+codexa tool run get_dependencies --arg file_path="src/auth.py" --json
 
 # Get tool schema (so the agent knows what arguments to pass)
-codex tool schema semantic_search --json
+codexa tool schema semantic_search --json
 ```
 
 The `--json` flag ensures machine-readable output. The `--pipe` flag suppresses
@@ -138,7 +138,7 @@ colors and spinners for clean piping.
 Start the bridge server to expose all tools over HTTP:
 
 ```bash
-codex serve --port 24842
+codexa serve --port 24842
 ```
 
 The server runs on `http://127.0.0.1:24842` and exposes:
@@ -192,24 +192,24 @@ print(result.execution_time_ms) # timing in milliseconds
 # Clone the repo
 git clone https://github.com/M9nx/CodexA.git
 
-# Install it (makes `codex` available system-wide in your venv)
+# Install it (makes `codexa` available system-wide in your venv)
 cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codex --version    # → codex, version 0.29.0
+codexa --version    # → codexa, version 0.29.0
 ```
 
 ### Step 2 — Initialize your target project
 
 ```bash
 cd /path/to/your-project
-codex init --index  # Creates .codex/ and indexes immediately
+codexa init --index  # Creates .codexa/ and indexes immediately
 # Or separately:
-codex init          # Creates .codex/ directory
-codex index .       # Index the entire codebase
-codex doctor        # Verify everything is healthy
-codex search "main" # Quick sanity check
+codexa init          # Creates .codexa/ directory
+codexa index .       # Index the entire codebase
+codexa doctor        # Verify everything is healthy
+codexa search "main" # Quick sanity check
 ```
 
 ### Step 3 — Add Copilot Custom Instructions (System Prompt)
@@ -230,7 +230,7 @@ Then create `.github/copilot-instructions.md` with this content:
 ## CodexA Integration
 
 This project uses **CodexA** — a local developer intelligence engine.
-You have access to the `codex` CLI for semantic code search, symbol
+You have access to the `codexa` CLI for semantic code search, symbol
 explanation, dependency analysis, and more.
 
 ### Available Commands
@@ -239,51 +239,51 @@ Before answering questions about this codebase, use CodexA to gather context:
 
 - **Search the codebase:**
   ```bash
-  codex search "<natural language query>" --json
+  codexa search "<natural language query>" --json
   ```
 
 - **Explain a symbol (function/class/method):**
   ```bash
-  codex tool run explain_symbol --arg symbol_name="<name>" --json
+  codexa tool run explain_symbol --arg symbol_name="<name>" --json
   ```
 
 - **Get the call graph of a function:**
   ```bash
-  codex tool run get_call_graph --arg symbol_name="<name>" --json
+  codexa tool run get_call_graph --arg symbol_name="<name>" --json
   ```
 
 - **Get file dependencies/imports:**
   ```bash
-  codex tool run get_dependencies --arg file_path="<path>" --json
+  codexa tool run get_dependencies --arg file_path="<path>" --json
   ```
 
 - **Find all references to a symbol:**
   ```bash
-  codex tool run find_references --arg symbol_name="<name>" --json
+  codexa tool run find_references --arg symbol_name="<name>" --json
   ```
 
 - **Get rich context for a symbol:**
   ```bash
-  codex tool run get_context --arg symbol_name="<name>" --json
+  codexa tool run get_context --arg symbol_name="<name>" --json
   ```
 
 - **Summarize the entire repo:**
   ```bash
-  codex tool run summarize_repo --json
+  codexa tool run summarize_repo --json
   ```
 
 - **Explain all symbols in a file:**
   ```bash
-  codex tool run explain_file --arg file_path="<path>" --json
+  codexa tool run explain_file --arg file_path="<path>" --json
   ```
 
 ### Rules
 
 1. Always use `--json` flag for machine-readable output.
-2. When asked about code structure, search with `codex search` first.
-3. When explaining a function or class, use `codex tool run explain_symbol`.
-4. When analyzing impact of changes, use `codex impact`.
-5. When reviewing code, run `codex quality <path>` first.
+2. When asked about code structure, search with `codexa search` first.
+3. When explaining a function or class, use `codexa tool run explain_symbol`.
+4. When analyzing impact of changes, use `codexa impact`.
+5. When reviewing code, run `codexa quality <path>` first.
 6. Prefer CodexA tools over reading large files manually — they provide
    structured, indexed results.
 ````
@@ -319,28 +319,28 @@ commands and will automatically use CodexA per your instructions.
 >
 > **Copilot** runs:
 > ```
-> codex tool run explain_symbol --arg symbol_name="process_payment" --json
-> codex tool run get_call_graph --arg symbol_name="process_payment" --json
+> codexa tool run explain_symbol --arg symbol_name="process_payment" --json
+> codexa tool run get_call_graph --arg symbol_name="process_payment" --json
 > ```
 > Then gives you a structured answer with callers, callees, and explanation.
 
 > **You:** Find all code related to authentication
 >
-> **Copilot** runs: `codex search "authentication" --json`
+> **Copilot** runs: `codexa search "authentication" --json`
 > Returns ranked semantic search results across your entire codebase.
 
 > **You:** What would break if I change `UserService`?
 >
 > **Copilot** runs:
 > ```
-> codex tool run find_references --arg symbol_name="UserService" --json
-> codex impact
+> codexa tool run find_references --arg symbol_name="UserService" --json
+> codexa impact
 > ```
 > Shows blast radius and all dependents.
 
 > **You:** Review the code quality of src/api/
 >
-> **Copilot** runs: `codex quality src/api/ --json`
+> **Copilot** runs: `codexa quality src/api/ --json`
 > Returns complexity scores, dead code, duplicates, and security issues.
 
 ### Step 6 — Start the Bridge Server (optional, for MCP)
@@ -348,15 +348,15 @@ commands and will automatically use CodexA per your instructions.
 For persistent connections (MCP servers, custom agent frameworks):
 
 ```bash
-codex serve --port 24842
+codexa serve --port 24842
 ```
 
 The agent can then call `http://127.0.0.1:24842/tools/invoke` directly.
 
 ### Step 7 — Configure LLM provider (optional)
 
-For AI-powered commands (`codex ask`, `codex review`, `codex chat`, etc.),
-edit `.codex/config.json`:
+For AI-powered commands (`codexa ask`, `codexa review`, `codexa chat`, etc.),
+edit `.codexa/config.json`:
 
 ```json
 {
@@ -382,63 +382,63 @@ CodexA provides **38 commands** (plus subcommands) organized by capability:
 
 | Command | Description |
 |---------|-------------|
-| `codex init [path]` | Initialize project — creates `.codex/` directory (supports `--index` and `--vscode`) |
-| `codex index [path]` | Index codebase for semantic search |
-| `codex search "<query>"` | Natural-language semantic search |
-| `codex explain <symbol>` | Structural explanation of a symbol or file |
-| `codex context <symbol>` | Rich context window for AI consumption |
-| `codex summary` | Structured repository summary |
-| `codex deps <file>` | File/project dependency map |
-| `codex watch` | Background indexing daemon (Rust-backed native file watcher) |
-| `codex grep "<pattern>"` | Raw filesystem grep — no index required (ripgrep backend) |
-| `codex benchmark` | Performance benchmarking (indexing, search, memory) |
+| `codexa init [path]` | Initialize project — creates `.codexa/` directory (supports `--index` and `--vscode`) |
+| `codexa index [path]` | Index codebase for semantic search |
+| `codexa search "<query>"` | Natural-language semantic search |
+| `codexa explain <symbol>` | Structural explanation of a symbol or file |
+| `codexa context <symbol>` | Rich context window for AI consumption |
+| `codexa summary` | Structured repository summary |
+| `codexa deps <file>` | File/project dependency map |
+| `codexa watch` | Background indexing daemon (Rust-backed native file watcher) |
+| `codexa grep "<pattern>"` | Raw filesystem grep — no index required (ripgrep backend) |
+| `codexa benchmark` | Performance benchmarking (indexing, search, memory) |
 
 ### AI-Powered
 
 | Command | Description |
 |---------|-------------|
-| `codex ask "<question>"` | Ask a question about the codebase (LLM) |
-| `codex review <file>` | AI-powered code review |
-| `codex refactor <file>` | AI-powered refactoring suggestions |
-| `codex suggest <symbol>` | Intelligent improvement suggestions |
-| `codex chat` | Multi-turn conversation with session persistence |
-| `codex investigate <goal>` | Autonomous multi-step code investigation |
+| `codexa ask "<question>"` | Ask a question about the codebase (LLM) |
+| `codexa review <file>` | AI-powered code review |
+| `codexa refactor <file>` | AI-powered refactoring suggestions |
+| `codexa suggest <symbol>` | Intelligent improvement suggestions |
+| `codexa chat` | Multi-turn conversation with session persistence |
+| `codexa investigate <goal>` | Autonomous multi-step code investigation |
 
 ### Quality & Metrics
 
 | Command | Description |
 |---------|-------------|
-| `codex quality [path]` | Code quality analysis |
-| `codex metrics` | Code metrics, snapshots, and trends |
-| `codex hotspots` | Identify high-risk code hotspots |
-| `codex gate` | Enforce quality gates for CI pipelines |
-| `codex impact` | Blast radius analysis of code changes |
+| `codexa quality [path]` | Code quality analysis |
+| `codexa metrics` | Code metrics, snapshots, and trends |
+| `codexa hotspots` | Identify high-risk code hotspots |
+| `codexa gate` | Enforce quality gates for CI pipelines |
+| `codexa impact` | Blast radius analysis of code changes |
 
 ### DevOps & Integration
 
 | Command | Description |
 |---------|-------------|
-| `codex serve` | Start HTTP bridge server for AI agents |
-| `codex tool list\|run\|schema` | AI Agent Tooling Protocol commands |
-| `codex pr-summary` | Generate PR intelligence report |
-| `codex ci-gen` | Generate CI workflow templates |
-| `codex web` | Start web interface and REST API |
-| `codex viz` | Generate Mermaid visualizations |
-| `codex evolve` | Self-improving development loop |
+| `codexa serve` | Start HTTP bridge server for AI agents |
+| `codexa tool list\|run\|schema` | AI Agent Tooling Protocol commands |
+| `codexa pr-summary` | Generate PR intelligence report |
+| `codexa ci-gen` | Generate CI workflow templates |
+| `codexa web` | Start web interface and REST API |
+| `codexa viz` | Generate Mermaid visualizations |
+| `codexa evolve` | Self-improving development loop |
 
 ### Workspace & Utilities
 
 | Command | Description |
 |---------|-------------|
-| `codex workspace` | Multi-repo workspace management |
-| `codex cross-refactor` | Cross-repository refactoring |
-| `codex trace <symbol>` | Trace execution relationships |
-| `codex docs` | Generate project documentation |
-| `codex doctor` | Environment health check |
-| `codex plugin list\|scaffold\|discover` | Plugin management |
-| `codex tui` | Interactive terminal REPL |
-| `codex mcp` | Start MCP (Model Context Protocol) server |
-| `codex models list\|info\|download\|switch` | Manage embedding models |
+| `codexa workspace` | Multi-repo workspace management |
+| `codexa cross-refactor` | Cross-repository refactoring |
+| `codexa trace <symbol>` | Trace execution relationships |
+| `codexa docs` | Generate project documentation |
+| `codexa doctor` | Environment health check |
+| `codexa plugin list\|scaffold\|discover` | Plugin management |
+| `codexa tui` | Interactive terminal REPL |
+| `codexa mcp` | Start MCP (Model Context Protocol) server |
+| `codexa models list\|info\|download\|switch` | Manage embedding models |
 
 ### VS Code Extension
 
@@ -457,7 +457,7 @@ CodexA provides **38 commands** (plus subcommands) organized by capability:
 
 ## Built-in Tools (AI Agent Protocol)
 
-These tools can be invoked via CLI (`codex tool run`), HTTP (`POST /tools/invoke`),
+These tools can be invoked via CLI (`codexa tool run`), HTTP (`POST /tools/invoke`),
 or Python API (`ToolExecutor.execute()`):
 
 | Tool | Arguments | Description |
@@ -500,7 +500,7 @@ Additional tools can be registered via the plugin system using the
 ├──────────────┴──────────────────────────────────────┤
 │              Plugin System (22 hooks)                │
 ├─────────────────────────────────────────────────────┤
-│         Storage (.codex/ — config, index, cache)     │
+│         Storage (.codexa/ — config, index, cache)     │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -508,7 +508,7 @@ Additional tools can be registered via the plugin system using the
 
 ## Configuration
 
-After `codex init`, your project has `.codex/config.json`:
+After `codexa init`, your project has `.codexa/config.json`:
 
 ```json
 {
@@ -578,7 +578,7 @@ mypy semantic_code_intelligence --exclude "tests/"
 pytest semantic_code_intelligence/tests/test_phase23.py -v
 
 # Run with verbose output
-codex --verbose search "query"
+codexa --verbose search "query"
 ```
 
 ## Tech Stack

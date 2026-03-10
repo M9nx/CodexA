@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "codex-ai"
+name = "codexa-ai"
 version = "0.29.0"
 description = "Developer intelligence CLI — semantic code search, AI-assisted understanding, and workspace tooling"
 readme = "README.md"
@@ -66,7 +66,10 @@ Issues = "https://github.com/M9nx/CodexA/issues"
 Changelog = "https://github.com/M9nx/CodexA/blob/main/CHANGELOG.md"
 
 [project.scripts]
-codex = "semantic_code_intelligence.cli.main:main"
+codexa = "semantic_code_intelligence.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["semantic_code_intelligence*"]
 
 [tool.pytest.ini_options]
 testpaths = ["semantic_code_intelligence/tests"]

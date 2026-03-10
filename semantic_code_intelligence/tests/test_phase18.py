@@ -545,7 +545,7 @@ class TestResolveTarget:
 
 
 # =========================================================================
-# CLI: codex hotspots
+# CLI: codexa hotspots
 # =========================================================================
 
 
@@ -607,7 +607,7 @@ class TestHotspotsCLI:
 
 
 # =========================================================================
-# CLI: codex impact
+# CLI: codexa impact
 # =========================================================================
 
 
@@ -669,7 +669,7 @@ class TestImpactCLI:
 
 
 # =========================================================================
-# CLI: codex trace
+# CLI: codexa trace
 # =========================================================================
 
 
@@ -865,9 +865,9 @@ class TestDocsGeneration:
         assert "Hotspot Detection" in md
         assert "Impact Analysis" in md
         assert "Symbol Trace" in md
-        assert "codex hotspots" in md
-        assert "codex impact" in md
-        assert "codex trace" in md
+        assert "codexa hotspots" in md
+        assert "codexa impact" in md
+        assert "codexa trace" in md
 
     def test_workflow_intelligence_in_all_docs(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs

@@ -686,7 +686,7 @@ class TestPluginHooksPhase19:
 
 
 class TestCLIToolCommand:
-    """Tests for the `codex tool` CLI command group."""
+    """Tests for the `codexa tool` CLI command group."""
 
     def test_tool_group_exists(self):
         from semantic_code_intelligence.cli.commands.tool_cmd import tool_cmd
@@ -884,8 +884,8 @@ class TestDocGenerationPhase19:
         from semantic_code_intelligence.docs import generate_ai_tool_protocol_reference
 
         md = generate_ai_tool_protocol_reference()
-        assert "codex tool list" in md
-        assert "codex tool run" in md
+        assert "codexa tool list" in md
+        assert "codexa tool run" in md
 
     def test_generate_all_docs_includes_protocol(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs

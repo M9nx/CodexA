@@ -44,15 +44,15 @@ def watch_cmd(ctx: click.Context, path: str, interval: float) -> None:
 
     Examples:
 
-        codex watch
+        codexa watch
 
-        codex watch --interval 5
+        codexa watch --interval 5
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error("Project not initialized. Run 'codex init' first.")
+        print_error("Project not initialized. Run 'codexa init' first.")
         return
 
     print_info(f"Starting watch daemon for {root} (poll every {interval}s)")

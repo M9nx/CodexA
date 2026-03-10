@@ -149,20 +149,20 @@ def search_cmd(
     Examples:
 
     \b
-        codex search "jwt verification"
-        codex search "database connection" --mode hybrid
-        codex search "def\\s+authenticate" --mode regex -n
-        codex search "error handling" --mode keyword --full-section
-        codex search "error handling" -k 5 --json
-        codex search "TODO" --mode regex -l
-        codex search "pattern" --jsonl | jq .file_path
+        codexa search "jwt verification"
+        codexa search "database connection" --mode hybrid
+        codexa search "def\\s+authenticate" --mode regex -n
+        codexa search "error handling" --mode keyword --full-section
+        codexa search "error handling" -k 5 --json
+        codexa search "TODO" --mode regex -l
+        codexa search "pattern" --jsonl | jq .file_path
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
         print_error(
-            f"Project not initialized at {root}. Run 'codex init' first."
+            f"Project not initialized at {root}. Run 'codexa init' first."
         )
         ctx.exit(1)
         return
@@ -187,7 +187,7 @@ def search_cmd(
             pass  # no output for JSONL with no results
         else:
             print_warning(
-                "Search index is empty. Run 'codex index' to build the index."
+                "Search index is empty. Run 'codexa index' to build the index."
             )
         return
 

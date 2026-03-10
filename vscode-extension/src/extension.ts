@@ -2,7 +2,7 @@
  * CodexA VS Code Extension — Developer Intelligence Engine
  *
  * Multi-panel sidebar with semantic search, symbol explorer, quality
- * analysis, tool runner, and AI Q&A — all powered by the `codex` CLI.
+ * analysis, tool runner, and AI Q&A — all powered by the `codexa` CLI.
  */
 
 import * as vscode from "vscode";
@@ -24,11 +24,11 @@ function codexBin(): string {
   if (root) {
     const isWin = process.platform === "win32";
     const venvBin = isWin
-      ? path.join(root, ".venv", "Scripts", "codex.exe")
-      : path.join(root, ".venv", "bin", "codex");
+      ? path.join(root, ".venv", "Scripts", "codexa.exe")
+      : path.join(root, ".venv", "bin", "codexa");
     if (fs.existsSync(venvBin)) { return venvBin; }
   }
-  return "codex";
+  return "codexa";
 }
 
 function workspaceRoot(): string {
@@ -44,7 +44,7 @@ async function runCodex(argv: string[]): Promise<string> {
   // --pipe is a GLOBAL flag (before subcommand) that disables Rich
   // console formatting so stdout is clean text/JSON.
   const fullArgv = ["--pipe", ...argv];
-  outputChannel.appendLine(`$ codex ${fullArgv.join(" ")}`);
+  outputChannel.appendLine(`$ codexa ${fullArgv.join(" ")}`);
   const { stdout, stderr } = await execFileAsync(bin, fullArgv, {
     cwd: root,
     maxBuffer: 10 * 1024 * 1024,
@@ -62,7 +62,7 @@ function extractJson(raw: string): any {
       try { return JSON.parse(raw.slice(idx)); } catch { /* ignore */ }
     }
   }
-  throw new Error("No valid JSON found in codex output");
+  throw new Error("No valid JSON found in codexa output");
 }
 
 function setStatus(text: string, timeout = 5000): void {

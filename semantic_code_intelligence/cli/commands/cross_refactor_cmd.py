@@ -86,7 +86,7 @@ def cross_refactor_cmd(
         from rich.panel import Panel
 
         if not result.repos_analyzed:
-            print_info("No workspace found. Use 'codex workspace init' first.")
+            print_info("No workspace found. Use 'codexa workspace init' first.")
             return
 
         console.print(f"[bold]Cross-repo analysis[/] — {result.total_symbols} symbols across {len(result.repos_analyzed)} repos")

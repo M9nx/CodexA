@@ -56,11 +56,11 @@ def impact_cmd(
 
     Examples:
 
-        codex impact parse_file
+        codexa impact parse_file
 
-        codex impact src/parser.py --json
+        codexa impact src/parser.py --json
 
-        codex impact MyClass --max-depth 3 --pipe
+        codexa impact MyClass --max-depth 3 --pipe
     """
     from semantic_code_intelligence.ci.impact import analyze_impact
     from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder, DependencyMap

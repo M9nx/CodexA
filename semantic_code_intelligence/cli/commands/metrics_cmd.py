@@ -197,13 +197,13 @@ def metrics_cmd(
 
     Examples:
 
-        codex metrics
+        codexa metrics
 
-        codex metrics --snapshot --json
+        codexa metrics --snapshot --json
 
-        codex metrics --history 10
+        codexa metrics --history 10
 
-        codex metrics --trend
+        codexa metrics --trend
     """
     from semantic_code_intelligence.ci.metrics import (
         compute_project_metrics,

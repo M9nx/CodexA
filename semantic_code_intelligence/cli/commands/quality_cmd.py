@@ -161,13 +161,13 @@ def quality_cmd(
 
     Examples:
 
-        codex quality
+        codexa quality
 
-        codex quality --json
+        codexa quality --json
 
-        codex quality --safety-only --pipe
+        codexa quality --safety-only --pipe
 
-        codex quality --complexity-threshold 15
+        codexa quality --complexity-threshold 15
     """
     from semantic_code_intelligence.ci.quality import analyze_project, QualityReport
     from semantic_code_intelligence.llm.safety import SafetyValidator

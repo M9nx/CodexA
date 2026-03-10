@@ -7,7 +7,7 @@ AI tools.
 ## Quick Start
 
 ```bash
-codex mcp --path /your/project
+codexa mcp --path /your/project
 ```
 
 This starts a JSON-RPC server over stdio that exposes all 11 CodexA tools.
@@ -19,8 +19,8 @@ Add to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "codex": {
-      "command": "codex",
+    "codexa": {
+      "command": "codexa",
       "args": ["mcp", "--path", "/your/project"]
     }
   }
@@ -37,8 +37,8 @@ In Cursor settings, add CodexA as an MCP server:
 {
   "mcp": {
     "servers": {
-      "codex": {
-        "command": "codex",
+      "codexa": {
+        "command": "codexa",
         "args": ["mcp", "--path", "/your/project"]
       }
     }
@@ -73,7 +73,7 @@ The MCP server implements the official MCP SDK protocol:
 
 ## Requirements
 
-The MCP SDK (`mcp`) is an optional dependency. If not installed, `codex mcp`
+The MCP SDK (`mcp`) is an optional dependency. If not installed, `codexa mcp`
 raises a helpful error:
 
 ```bash
@@ -82,7 +82,7 @@ pip install mcp
 ```
 
 ::: tip
-The MCP import is optional — CodexA works fine without it. Only the `codex mcp`
+The MCP import is optional — CodexA works fine without it. Only the `codexa mcp`
 command requires the MCP SDK.
 :::
 

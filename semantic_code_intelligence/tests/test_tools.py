@@ -172,8 +172,8 @@ class TestToolRegistry:
         assert result.success is False
 
     def test_index_directory(self, tmp_path):
-        (tmp_path / ".codex").mkdir()
-        (tmp_path / ".codex" / "config.json").write_text("{}", encoding="utf-8")
+        (tmp_path / ".codexa").mkdir()
+        (tmp_path / ".codexa" / "config.json").write_text("{}", encoding="utf-8")
         (tmp_path / "a.py").write_text("x = 1\n", encoding="utf-8")
         (tmp_path / "b.py").write_text("y = 2\n", encoding="utf-8")
 

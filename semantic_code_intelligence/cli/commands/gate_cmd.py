@@ -81,13 +81,13 @@ def gate_cmd(
 
     Examples:
 
-        codex gate
+        codexa gate
 
-        codex gate --strict --json
+        codexa gate --strict --json
 
-        codex gate --min-maintainability 60 --max-complexity 15
+        codexa gate --min-maintainability 60 --max-complexity 15
 
-        codex gate --pipe --strict
+        codexa gate --pipe --strict
     """
     import sys
 

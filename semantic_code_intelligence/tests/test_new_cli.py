@@ -31,7 +31,7 @@ def runner():
 @pytest.fixture
 def project_dir(tmp_path):
     """Create a minimal initialized project."""
-    config_dir = tmp_path / ".codex"
+    config_dir = tmp_path / ".codexa"
     config_dir.mkdir()
     (config_dir / "config.json").write_text("{}", encoding="utf-8")
     (tmp_path / "main.py").write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -80,7 +80,7 @@ class TestSummaryCmd:
         assert result.exit_code == 0
 
     def test_summary_empty_project(self, runner, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
         result = runner.invoke(cli, ["summary", "-p", str(tmp_path)])

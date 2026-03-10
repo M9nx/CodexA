@@ -1,12 +1,12 @@
 # Bridge Protocol
 
-CodexA exposes a stateless JSON/HTTP bridge (`codex serve`) that any
+CodexA exposes a stateless JSON/HTTP bridge (`codexa serve`) that any
 IDE extension or AI assistant can use to request context.
 
 ## Quick Start
 
 ```bash
-codex serve --port 24842
+codexa serve --port 24842
 ```
 
 The bridge binds to `127.0.0.1:24842` by default.
@@ -129,7 +129,7 @@ The bridge includes CORS headers for browser-based clients. Preflight
 ## Configuration
 
 ```bash
-codex serve [options]
+codexa serve [options]
 
 Options:
   --host, -h TEXT     Host to bind (default: 127.0.0.1)

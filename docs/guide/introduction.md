@@ -16,9 +16,9 @@ development workflow. It's designed for:
 Find code by concept, not keywords:
 
 ```bash
-codex search "error handling"
-codex search "authentication middleware"
-codex search "database connection pooling"
+codexa search "error handling"
+codexa search "authentication middleware"
+codexa search "database connection pooling"
 ```
 
 ### 36 CLI Commands
@@ -26,10 +26,10 @@ codex search "database connection pooling"
 Comprehensive tooling from the terminal:
 
 ```bash
-codex quality src/          # Code quality analysis
-codex hotspots              # Find high-risk code
-codex impact                # Blast radius analysis
-codex explain MyClass       # Structural explanation
+codexa quality src/          # Code quality analysis
+codexa hotspots              # Find high-risk code
+codexa impact                # Blast radius analysis
+codexa explain MyClass       # Structural explanation
 ```
 
 ### AI Agent Integration
@@ -37,9 +37,9 @@ codex explain MyClass       # Structural explanation
 Built-in tool protocol for AI coding assistants:
 
 ```bash
-codex tool run semantic_search --arg query="auth" --json
-codex serve --port 24842     # HTTP bridge
-codex mcp                    # MCP server for Claude/Cursor
+codexa tool run semantic_search --arg query="auth" --json
+codexa serve --port 24842     # HTTP bridge
+codexa mcp                    # MCP server for Claude/Cursor
 ```
 
 ### Quality & Metrics
@@ -47,9 +47,9 @@ codex mcp                    # MCP server for Claude/Cursor
 Full quality pipeline with CI integration:
 
 ```bash
-codex quality src/           # Radon complexity + Bandit security
-codex gate                   # Pass/fail quality gates
-codex metrics --trend        # Track quality over time
+codexa quality src/           # Radon complexity + Bandit security
+codexa gate                   # Pass/fail quality gates
+codexa metrics --trend        # Track quality over time
 ```
 
 ## How It Works

@@ -59,18 +59,18 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
         force=True,
     )
 
-    logger = logging.getLogger("codex")
+    logger = logging.getLogger("codexa")
     logger.setLevel(level)
     return logger
 
 
 def get_logger(name: Optional[str] = None) -> logging.Logger:
-    """Get a child logger under the 'codex' namespace.
+    """Get a child logger under the 'codexa' namespace.
 
     Args:
-        name: Optional sub-logger name. If None, returns the root codex logger.
+        name: Optional sub-logger name. If None, returns the root codexa logger.
     """
-    base = "codex"
+    base = "codexa"
     if name:
         return logging.getLogger(f"{base}.{name}")
     return logging.getLogger(base)

@@ -60,11 +60,11 @@ def hotspots_cmd(
 
     Examples:
 
-        codex hotspots
+        codexa hotspots
 
-        codex hotspots --top-n 10 --json
+        codexa hotspots --top-n 10 --json
 
-        codex hotspots --no-git --pipe
+        codexa hotspots --no-git --pipe
     """
     from semantic_code_intelligence.ci.hotspots import analyze_hotspots
     from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder, DependencyMap

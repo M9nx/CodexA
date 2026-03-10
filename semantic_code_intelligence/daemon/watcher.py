@@ -154,7 +154,7 @@ class NativeFileWatcher:
             return
         self._running = True
         self._thread = threading.Thread(
-            target=self._watch_loop, daemon=True, name="codex-native-watcher",
+            target=self._watch_loop, daemon=True, name="codexa-native-watcher",
         )
         self._thread.start()
 
@@ -291,7 +291,7 @@ class FileWatcher:
         if self._running:
             return
         self._running = True
-        self._thread = threading.Thread(target=self._poll_loop, daemon=True, name="codex-watcher")
+        self._thread = threading.Thread(target=self._poll_loop, daemon=True, name="codexa-watcher")
         self._thread.start()
 
     def stop(self) -> None:
@@ -422,7 +422,7 @@ class AsyncIndexer:
             return
         self._running = True
         self._thread = threading.Thread(
-            target=self._process_loop, daemon=True, name="codex-indexer"
+            target=self._process_loop, daemon=True, name="codexa-indexer"
         )
         self._thread.start()
         logger.info("Async indexer started.")

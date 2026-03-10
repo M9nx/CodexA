@@ -56,15 +56,15 @@ def suggest_cmd(
 
     Examples:
 
-        codex suggest search_codebase
+        codexa suggest search_codebase
 
-        codex suggest "error handling patterns" --json
+        codexa suggest "error handling patterns" --json
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

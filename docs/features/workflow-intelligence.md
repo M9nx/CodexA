@@ -9,9 +9,9 @@ git history to surface actionable insights.
 Identifies high-risk code areas using a weighted multi-factor heuristic.
 
 ```bash
-codex hotspots
-codex hotspots --top-n 10 --json
-codex hotspots --no-git --pipe
+codexa hotspots
+codexa hotspots --top-n 10 --json
+codexa hotspots --no-git --pipe
 ```
 
 ### Risk Factors
@@ -32,9 +32,9 @@ Predicts the blast radius of modifying a symbol or file using BFS over
 the call graph and dependency map.
 
 ```bash
-codex impact parse_file
-codex impact src/parser.py --json
-codex impact MyClass --max-depth 3 --pipe
+codexa impact parse_file
+codexa impact src/parser.py --json
+codexa impact MyClass --max-depth 3 --pipe
 ```
 
 ### How It Works
@@ -50,9 +50,9 @@ codex impact MyClass --max-depth 3 --pipe
 Traces execution relationships upstream (callers) and downstream (callees).
 
 ```bash
-codex trace parse_file
-codex trace MyClass.process --json
-codex trace build_context --max-depth 3 --pipe
+codexa trace parse_file
+codexa trace MyClass.process --json
+codexa trace build_context --max-depth 3 --pipe
 ```
 
 ### How It Works

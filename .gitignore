@@ -9,7 +9,7 @@ build/
 .eggs/
 *.egg
 .pytest_cache/
-.codex/
+.codexa/
 *.so
 .mypy_cache/
 .tox/

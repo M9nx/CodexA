@@ -1,6 +1,6 @@
 # Configuration
 
-CodexA stores its configuration in `.codex/config.json`, created by `codex init`.
+CodexA stores its configuration in `.codexa/config.json`, created by `codexa init`.
 
 ## Configuration File
 
@@ -104,10 +104,10 @@ Controls the quality analysis pipeline and gates.
 
 ## Project Structure
 
-After `codex init`:
+After `codexa init`:
 
 ```
-.codex/
+.codexa/
 ├── config.json     # Configuration file
 ├── index/          # FAISS vector index
 ├── cache/          # Query and embedding caches

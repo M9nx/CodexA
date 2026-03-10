@@ -572,7 +572,7 @@ class TestIndexingIntegration:
             encoding="utf-8",
         )
         # Config file
-        (tmp_path / ".codex.yaml").write_text(
+        (tmp_path / ".codexa.yaml").write_text(
             "index:\n  ignore_dirs: []\n  extensions: ['.py']\n",
             encoding="utf-8",
         )
@@ -596,7 +596,7 @@ class TestIndexingIntegration:
         mock_embed.return_value = np.random.rand(1, 384).astype(np.float32)
 
         result = run_indexing(project)
-        index_dir = project / ".codex" / "index"
+        index_dir = project / ".codexa" / "index"
         manifest = IndexManifest.load(index_dir)
 
         assert manifest is not None
@@ -623,7 +623,7 @@ class TestIndexingIntegration:
         mock_embed.return_value = np.random.rand(1, 384).astype(np.float32)
 
         result = run_indexing(project)
-        index_dir = project / ".codex" / "index"
+        index_dir = project / ".codexa" / "index"
         reg = SymbolRegistry.load(index_dir)
 
         assert reg.size > 0
@@ -647,7 +647,7 @@ class TestIndexingIntegration:
         mock_embed.return_value = np.random.rand(1, 384).astype(np.float32)
 
         result = run_indexing(project)
-        index_dir = project / ".codex" / "index"
+        index_dir = project / ".codexa" / "index"
         stats = IndexStats.load(index_dir)
 
         assert stats is not None
@@ -708,8 +708,8 @@ class TestSearchIntegration:
         mock_embed.return_value = np.random.rand(1, 384).astype(np.float32)
 
         # Create required config and index dir
-        (tmp_path / ".codex.yaml").write_text("", encoding="utf-8")
-        index_dir = tmp_path / ".codex" / "index"
+        (tmp_path / ".codexa.yaml").write_text("", encoding="utf-8")
+        index_dir = tmp_path / ".codexa" / "index"
         index_dir.mkdir(parents=True, exist_ok=True)
 
         results = search_codebase("hello world", tmp_path, top_k=5, threshold=0.1)
@@ -732,8 +732,8 @@ class TestSearchIntegration:
 
         mock_embed.return_value = np.random.rand(1, 384).astype(np.float32)
 
-        (tmp_path / ".codex.yaml").write_text("", encoding="utf-8")
-        index_dir = tmp_path / ".codex" / "index"
+        (tmp_path / ".codexa.yaml").write_text("", encoding="utf-8")
+        index_dir = tmp_path / ".codexa" / "index"
         index_dir.mkdir(parents=True, exist_ok=True)
 
         results = search_codebase("nonexistent query", tmp_path, top_k=5, threshold=0.1)

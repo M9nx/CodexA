@@ -95,17 +95,17 @@ def evolve_cmd(
 
     Examples:
 
-        codex evolve
+        codexa evolve
 
-        codex evolve --iterations 5 --budget 50000
+        codexa evolve --iterations 5 --budget 50000
 
-        codex evolve --path /my/project --timeout 300
+        codexa evolve --path /my/project --timeout 300
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 
@@ -168,4 +168,4 @@ def evolve_cmd(
             if rec.error:
                 console.print(f"     [dim]{rec.error}[/dim]")
 
-    print_info("History saved to .codex/evolution_history.json")
+    print_info("History saved to .codexa/evolution_history.json")

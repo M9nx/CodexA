@@ -383,7 +383,7 @@ from semantic_code_intelligence.cli.commands.viz_cmd import viz_cmd
 
 
 class TestWebCLI:
-    """Tests for the codex web command."""
+    """Tests for the codexa web command."""
 
     @pytest.fixture
     def runner(self):
@@ -408,7 +408,7 @@ class TestWebCLI:
 
 
 class TestVizCLI:
-    """Tests for the codex viz command."""
+    """Tests for the codexa viz command."""
 
     @pytest.fixture
     def runner(self):
@@ -442,7 +442,7 @@ class TestVizCLI:
 
     def test_viz_callgraph(self, runner, tmp_path):
         """Viz callgraph should produce Mermaid output."""
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         (codex_dir / "config.json").write_text("{}")
         result = runner.invoke(viz_cmd, ["callgraph", "--path", str(tmp_path)])
@@ -451,7 +451,7 @@ class TestVizCLI:
 
     def test_viz_deps(self, runner, tmp_path):
         """Viz deps should produce Mermaid output."""
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         (codex_dir / "config.json").write_text("{}")
         result = runner.invoke(viz_cmd, ["deps", "--path", str(tmp_path)])

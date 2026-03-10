@@ -136,7 +136,7 @@ def models_download(model_name: str, backend: str) -> None:
 def models_switch(model_name: str, path: str) -> None:
     """Switch the active embedding model for a project.
 
-    Note: after switching models you must re-index (codex index --reindex).
+    Note: after switching models you must re-index (codexa index --reindex).
     """
     resolved = resolve_model_name(model_name)
     info = get_model_info(resolved)
@@ -146,7 +146,7 @@ def models_switch(model_name: str, path: str) -> None:
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         raise SystemExit(1)
 
     config = load_config(root)
@@ -154,4 +154,4 @@ def models_switch(model_name: str, path: str) -> None:
     config.embedding.model_name = resolved
     save_config(config, root)
     print_success(f"Switched model: {old_model} → {resolved}")
-    print_info("Run 'codex index --reindex' to rebuild the index with the new model.")
+    print_info("Run 'codexa index --reindex' to rebuild the index with the new model.")

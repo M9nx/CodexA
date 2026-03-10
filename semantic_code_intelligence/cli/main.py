@@ -12,7 +12,7 @@ from semantic_code_intelligence.utils.logging import setup_logging
 
 
 @click.group()
-@click.version_option(version=__version__, prog_name="codex")
+@click.version_option(version=__version__, prog_name="codexa")
 @click.option(
     "--verbose",
     "-v",
@@ -28,7 +28,7 @@ from semantic_code_intelligence.utils.logging import setup_logging
 )
 @click.pass_context
 def cli(ctx: click.Context, verbose: bool, pipe: bool) -> None:
-    """Codex - Local semantic code search and AI-assisted code understanding.
+    """CodexA - Local semantic code search and AI-assisted code understanding.
 
     A CLI tool that indexes codebases, performs semantic search, and provides
     structured code context for AI integration.

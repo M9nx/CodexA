@@ -51,11 +51,11 @@ def ci_gen_cmd(
 
     Examples:
 
-        codex ci-gen analysis
+        codexa ci-gen analysis
 
-        codex ci-gen safety -o .github/workflows/codex-safety.yml
+        codexa ci-gen safety -o .github/workflows/codexa-safety.yml
 
-        codex ci-gen precommit -o .pre-commit-config.yaml
+        codexa ci-gen precommit -o .pre-commit-config.yaml
     """
     from semantic_code_intelligence.ci.templates import get_template
 

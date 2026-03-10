@@ -499,9 +499,9 @@ def analyze_project(
         files = []
         for f in project_root.rglob("*"):
             if f.is_file() and f.suffix in EXTENSION_TO_LANGUAGE:
-                # Skip hidden dirs, .codex, __pycache__, node_modules
+                # Skip hidden dirs, .codexa, __pycache__, node_modules
                 parts = f.relative_to(project_root).parts
-                if any(p.startswith(".") or p in ("__pycache__", "node_modules", ".codex") for p in parts):
+                if any(p.startswith(".") or p in ("__pycache__", "node_modules", ".codexa") for p in parts):
                     continue
                 files.append(str(f))
 

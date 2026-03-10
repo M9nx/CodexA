@@ -44,11 +44,11 @@ def deps_cmd(ctx: click.Context, target: str, path: str, json_mode: bool) -> Non
 
     Examples:
 
-        codex deps src/main.py
+        codexa deps src/main.py
 
-        codex deps .
+        codexa deps .
 
-        codex deps . --json
+        codexa deps . --json
     """
     import json as json_mod
 

@@ -46,11 +46,11 @@ def web_cmd(
 
     Examples:
 
-        codex web
+        codexa web
 
-        codex web --port 9000
+        codexa web --port 9000
 
-        codex web --host 0.0.0.0 --port 8080 --path /my/project
+        codexa web --host 0.0.0.0 --port 8080 --path /my/project
     """
     from semantic_code_intelligence.web.server import WebServer
 

@@ -25,16 +25,16 @@ tools via CLI, HTTP, or MCP.
 ### CLI
 
 ```bash
-codex tool list                                            # List tools
-codex tool run semantic_search --arg query="auth" --json   # Run a tool
-codex tool schema semantic_search                          # View schema
+codexa tool list                                            # List tools
+codexa tool run semantic_search --arg query="auth" --json   # Run a tool
+codexa tool schema semantic_search                          # View schema
 ```
 
 ### HTTP Bridge
 
 ```bash
 # Start the bridge server
-codex serve --port 24842
+codexa serve --port 24842
 
 # Invoke a tool
 curl -X POST http://127.0.0.1:24842/tools/invoke \
@@ -51,7 +51,7 @@ curl http://127.0.0.1:24842/tools/stream
 ### MCP (Model Context Protocol)
 
 ```bash
-codex mcp --path /your/project
+codexa mcp --path /your/project
 ```
 
 All 11 tools are exposed as MCP tools with proper schemas.
@@ -96,20 +96,20 @@ All 11 tools are exposed as MCP tools with proper schemas.
 Persistent conversations about your codebase:
 
 ```bash
-codex chat "How does auth work?"
-codex chat --session my-session "Follow up question"
-codex chat --list-sessions
+codexa chat "How does auth work?"
+codexa chat --session my-session "Follow up question"
+codexa chat --list-sessions
 ```
 
-Sessions are stored in `.codex/sessions/` with full message history.
+Sessions are stored in `.codexa/sessions/` with full message history.
 
 ### Autonomous Investigation
 
 Multi-step autonomous code exploration:
 
 ```bash
-codex investigate "Find all security vulnerabilities"
-codex investigate "How is the payment flow implemented?" --max-steps 10
+codexa investigate "Find all security vulnerabilities"
+codexa investigate "How is the payment flow implemented?" --max-steps 10
 ```
 
 The investigation loop:
@@ -123,7 +123,7 @@ The investigation loop:
 Find duplicate logic across workspace repos:
 
 ```bash
-codex cross-refactor --threshold 0.70
+codexa cross-refactor --threshold 0.70
 ```
 
 ### Streaming Responses
@@ -131,8 +131,8 @@ codex cross-refactor --threshold 0.70
 All LLM-powered commands support streaming:
 
 ```bash
-codex chat --stream "Explain the auth flow"
-codex investigate --stream "Find performance issues"
+codexa chat --stream "Explain the auth flow"
+codexa investigate --stream "Find performance issues"
 ```
 
 | Provider | Streaming |

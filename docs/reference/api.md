@@ -78,7 +78,7 @@ print(f"Security issues: {len(report.bandit_issues)}")
 Start the web server:
 
 ```bash
-codex web --port 8080
+codexa web --port 8080
 ```
 
 ### Endpoints
@@ -118,7 +118,7 @@ curl "http://localhost:8080/api/search?q=authentication&top_k=5"
 The bridge provides a stateless JSON/HTTP protocol for IDE extensions:
 
 ```bash
-codex serve --port 24842
+codexa serve --port 24842
 ```
 
 ### Tool Invocation
@@ -168,7 +168,7 @@ See the [Bridge Reference](bridge) for the full protocol specification.
 ## MCP (Model Context Protocol)
 
 ```bash
-codex mcp --path /your/project
+codexa mcp --path /your/project
 ```
 
 All 8 tools are exposed via MCP with typed schemas. See [MCP Integration](../features/mcp-integration) for setup instructions.

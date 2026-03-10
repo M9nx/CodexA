@@ -31,8 +31,8 @@ def mcp_cmd(ctx: click.Context, path: str) -> None:
     Configuration for Claude Desktop (claude_desktop_config.json):
       {
         "mcpServers": {
-          "codex": {
-            "command": "codex",
+          "codexa": {
+            "command": "codexa",
             "args": ["mcp", "--path", "/your/project"]
           }
         }
@@ -42,7 +42,7 @@ def mcp_cmd(ctx: click.Context, path: str) -> None:
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

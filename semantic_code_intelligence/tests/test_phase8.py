@@ -290,8 +290,8 @@ class TestSessionMemory:
 
 class TestWorkspaceMemory:
     def test_add_and_get(self, tmp_path):
-        # Set up a .codex dir structure
-        codex_dir = tmp_path / ".codex"
+        # Set up a .codexa dir structure
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         with patch(
             "semantic_code_intelligence.config.settings.AppConfig.config_dir",
@@ -304,7 +304,7 @@ class TestWorkspaceMemory:
             assert entry.content == "test_value"
 
     def test_persistence(self, tmp_path):
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         with patch(
             "semantic_code_intelligence.config.settings.AppConfig.config_dir",
@@ -320,7 +320,7 @@ class TestWorkspaceMemory:
             assert entry.content == "v1"
 
     def test_remove(self, tmp_path):
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         with patch(
             "semantic_code_intelligence.config.settings.AppConfig.config_dir",
@@ -332,7 +332,7 @@ class TestWorkspaceMemory:
             assert mem.get("k") is None
 
     def test_search(self, tmp_path):
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         with patch(
             "semantic_code_intelligence.config.settings.AppConfig.config_dir",
@@ -345,7 +345,7 @@ class TestWorkspaceMemory:
             assert len(results) == 1
 
     def test_clear(self, tmp_path):
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         with patch(
             "semantic_code_intelligence.config.settings.AppConfig.config_dir",
@@ -405,7 +405,7 @@ class TestReasoningEngine:
         """Helper: create an engine with a mock provider and a dummy project."""
         provider = MockProvider(default_response=mock_response)
         # Create a minimal project structure
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir(parents=True)
         index_dir = codex_dir / "index"
         index_dir.mkdir()
@@ -500,7 +500,7 @@ class TestLLMConfig:
         app.llm.provider = "openai"
         app.llm.model = "gpt-4"
 
-        codex_dir = tmp_path / ".codex"
+        codex_dir = tmp_path / ".codexa"
         codex_dir.mkdir()
         save_config(app, tmp_path)
 

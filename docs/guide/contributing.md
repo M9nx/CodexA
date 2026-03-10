@@ -124,7 +124,7 @@ def create_plugin():
     return MyPlugin()
 ```
 
-Place plugin files in `.codex/plugins/` for automatic discovery, or register programmatically via `PluginManager`.
+Place plugin files in `.codexa/plugins/` for automatic discovery, or register programmatically via `PluginManager`.
 
 ## Code Style
 
@@ -180,5 +180,5 @@ npm run docs:preview  # Preview production build
 ## Reporting Issues
 
 - Use GitHub Issues with the provided templates
-- Include: Python version, OS, CodexA version (`codex --version`), and steps to reproduce
+- Include: Python version, OS, CodexA version (`codexa --version`), and steps to reproduce
 - For security vulnerabilities, see [SECURITY.md](https://github.com/M9nx/CodexA/blob/main/SECURITY.md)

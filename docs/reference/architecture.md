@@ -146,7 +146,7 @@ sequenceDiagram
     participant FAISS
     participant Embeddings
 
-    User->>CLI: codex search "auth middleware"
+    User->>CLI: codexa search "auth middleware"
     CLI->>ToolExecutor: execute(semantic_search, {query: "auth middleware"})
     ToolExecutor->>Search: hybrid_search(query, top_k=10)
     Search->>Embeddings: encode("auth middleware")

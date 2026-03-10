@@ -58,7 +58,7 @@ def workspace_add(name: str, repo_path: str, path: str) -> None:
     try:
         ws = Workspace.load(Path(path))
     except FileNotFoundError:
-        print_error("Workspace not initialised. Run 'codex workspace init' first.")
+        print_error("Workspace not initialised. Run 'codexa workspace init' first.")
         return
 
     try:

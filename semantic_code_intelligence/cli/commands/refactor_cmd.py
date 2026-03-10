@@ -58,15 +58,15 @@ def refactor_cmd(
 
     Examples:
 
-        codex refactor src/main.py
+        codexa refactor src/main.py
 
-        codex refactor src/utils.py -i "Extract duplicated logic into helpers"
+        codexa refactor src/utils.py -i "Extract duplicated logic into helpers"
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

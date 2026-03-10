@@ -5,8 +5,8 @@ code quality checks. This example flags common issues like TODO
 comments and print statements in production code.
 
 Usage:
-    1. Copy this file to `.codex/plugins/`
-    2. Custom validations will run during `codex review`
+    1. Copy this file to `.codexa/plugins/`
+    2. Custom validations will run during `codexa review`
 """
 
 from __future__ import annotations

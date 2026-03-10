@@ -11,7 +11,7 @@ A clear description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Run `codex ...`
+1. Run `codexa ...`
 2. ...
 
 **Expected behavior**
@@ -20,7 +20,7 @@ What you expected to happen.
 **Environment**
 - OS: [e.g. Windows 11, Ubuntu 22.04]
 - Python version: [e.g. 3.12.1]
-- CodexA version: [output of `codex --version`]
+- CodexA version: [output of `codexa --version`]
 
 **Additional context**
 Any other relevant information (error messages, logs with `--verbose`).

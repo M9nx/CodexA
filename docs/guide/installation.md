@@ -39,10 +39,10 @@ pip install -e ".[dev,tui]"
 ## Verify Installation
 
 ```bash
-codex --version
-# codex-ai 0.29.0
+codexa --version
+# codexa-ai 0.29.0
 
-codex doctor
+codexa doctor
 # Checks environment health
 ```
 
@@ -52,13 +52,13 @@ Initialize CodexA in your project:
 
 ```bash
 cd /path/to/your-project
-codex init
+codexa init
 ```
 
-This creates a `.codex/` directory with:
+This creates a `.codexa/` directory with:
 
 ```
-.codex/
+.codexa/
 ├── config.json     # Configuration (embedding, search, LLM settings)
 ├── index/          # FAISS vector index (after indexing)
 ├── cache/          # Query and embedding caches
@@ -67,7 +67,7 @@ This creates a `.codex/` directory with:
 
 ## LLM Configuration (Optional)
 
-For AI-powered commands (`ask`, `review`, `refactor`, `chat`, etc.), configure an LLM provider in `.codex/config.json`:
+For AI-powered commands (`ask`, `review`, `refactor`, `chat`, etc.), configure an LLM provider in `.codexa/config.json`:
 
 ```json
 {

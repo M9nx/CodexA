@@ -814,8 +814,8 @@ class TestGenerateAnalysisWorkflow:
 
     def test_contains_steps(self):
         wf = generate_analysis_workflow()
-        assert "codex init" in wf
-        assert "codex quality" in wf
+        assert "codexa init" in wf
+        assert "codexa quality" in wf
 
     def test_permissions(self):
         wf = generate_analysis_workflow()
@@ -826,8 +826,8 @@ class TestGenerateAnalysisWorkflow:
 class TestGeneratePrecommitConfig:
     def test_contains_hooks(self):
         cfg = generate_precommit_config()
-        assert "codex-safety" in cfg
-        assert "codex-quality" in cfg
+        assert "codexa-safety" in cfg
+        assert "codexa-quality" in cfg
 
     def test_repo_local(self):
         cfg = generate_precommit_config()
@@ -2019,7 +2019,7 @@ class TestAppConfig:
 
     def test_config_dir(self):
         d = AppConfig.config_dir(Path("/tmp/test"))
-        assert ".codex" in str(d)
+        assert ".codexa" in str(d)
 
 
 # ---------------------------------------------------------------------------
@@ -2417,7 +2417,7 @@ class TestVersionMeta:
         assert len(parts) == 3
 
     def test_app_name(self):
-        assert __app_name__ == "codex"
+        assert __app_name__ == "codexa"
 
 
 # ---------------------------------------------------------------------------
@@ -2470,8 +2470,8 @@ class TestCopilotInstructionsExists:
 
     def test_contains_codex_commands(self):
         content = self._ci_path.read_text(encoding="utf-8")
-        assert "codex search" in content
-        assert "codex tool run" in content
+        assert "codexa search" in content
+        assert "codexa tool run" in content
 
     def test_contains_rules(self):
         content = self._ci_path.read_text(encoding="utf-8")

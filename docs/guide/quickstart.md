@@ -6,74 +6,74 @@ Get from zero to semantic code search in under 60 seconds.
 
 ```bash
 cd /path/to/your-project
-codex init --index  # Creates .codex/ and builds index in one step
-codex doctor        # Verify everything is healthy
+codexa init --index  # Creates .codexa/ and builds index in one step
+codexa doctor        # Verify everything is healthy
 ```
 
 Or step by step:
 
 ```bash
-codex init          # Creates .codex/ directory
-codex index .       # Index the entire codebase
+codexa init          # Creates .codexa/ directory
+codexa index .       # Index the entire codebase
 ```
 
 ## 2. Search Your Code
 
 ```bash
 # Semantic search (natural language)
-codex search "authentication middleware"
+codexa search "authentication middleware"
 
 # Get JSON output for tooling
-codex search "error handling" --json
+codexa search "error handling" --json
 ```
 
 ## 3. Explore Symbols
 
 ```bash
 # Explain a function or class
-codex explain process_payment
+codexa explain process_payment
 
 # Get rich context
-codex context process_payment
+codexa context process_payment
 
 # Trace dependencies
-codex deps src/api/handlers.py
+codexa deps src/api/handlers.py
 ```
 
 ## 4. AI-Powered Analysis
 
 ::: tip Requires LLM Configuration
-Set up an LLM provider in `.codex/config.json` first. See [Installation](installation#llm-configuration-optional).
+Set up an LLM provider in `.codexa/config.json` first. See [Installation](installation#llm-configuration-optional).
 :::
 
 ```bash
 # Ask questions about your code
-codex ask "How does the authentication flow work?"
+codexa ask "How does the authentication flow work?"
 
 # Multi-turn conversation
-codex chat
+codexa chat
 
 # AI code review
-codex review src/api/auth.py
+codexa review src/api/auth.py
 
 # Autonomous investigation
-codex investigate "Find all security vulnerabilities"
+codexa investigate "Find all security vulnerabilities"
 ```
 
 ## 5. Quality & Metrics
 
 ```bash
 # Analyze code quality
-codex quality src/
+codexa quality src/
 
 # Find risky hotspots
-codex hotspots
+codexa hotspots
 
 # Impact analysis (what breaks if I change this?)
-codex impact
+codexa impact
 
 # Enforce quality gates in CI
-codex gate
+codexa gate
 ```
 
 ## 6. VS Code Integration
@@ -103,7 +103,7 @@ Now Copilot Chat in Agent mode will automatically use CodexA for code understand
 For persistent IDE or agent connections:
 
 ```bash
-codex serve --port 24842
+codexa serve --port 24842
 ```
 
 Agents can then call `http://127.0.0.1:24842/tools/invoke` directly.

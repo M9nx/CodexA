@@ -202,7 +202,7 @@ def compute_project_metrics(
             if f.is_file() and f.suffix in EXTENSION_TO_LANGUAGE:
                 parts = f.relative_to(root).parts
                 if any(
-                    p.startswith(".") or p in ("__pycache__", "node_modules", ".codex")
+                    p.startswith(".") or p in ("__pycache__", "node_modules", ".codexa")
                     for p in parts
                 ):
                     continue

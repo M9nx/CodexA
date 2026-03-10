@@ -43,14 +43,14 @@ def tui_cmd(ctx: click.Context, path: str, mode: str, top_k: int) -> None:
     Examples:
 
     \b
-        codex tui
-        codex tui --mode hybrid -k 20
+        codexa tui
+        codexa tui --mode hybrid -k 20
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

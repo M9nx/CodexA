@@ -8,10 +8,10 @@ and customizing every stage of the pipeline.
 Create a plugin:
 
 ```bash
-codex plugin new my-formatter --hooks POST_SEARCH,POST_AI
+codexa plugin new my-formatter --hooks POST_SEARCH,POST_AI
 ```
 
-This generates a ready-to-use plugin file in `.codex/plugins/`.
+This generates a ready-to-use plugin file in `.codexa/plugins/`.
 
 ## Plugin Base Class
 
@@ -110,7 +110,7 @@ def create_plugin():
 
 ## Plugin Discovery
 
-Plugins are discovered from `.codex/plugins/`. Each file must export a
+Plugins are discovered from `.codexa/plugins/`. Each file must export a
 `create_plugin()` factory function.
 
 ## Plugin Lifecycle
@@ -123,9 +123,9 @@ Plugins are discovered from `.codex/plugins/`. Each file must export a
 ## CLI Management
 
 ```bash
-codex plugin list              # List discovered plugins
-codex plugin info my-plugin    # Plugin details
-codex plugin new name          # Scaffold new plugin
+codexa plugin list              # List discovered plugins
+codexa plugin info my-plugin    # Plugin details
+codexa plugin new name          # Scaffold new plugin
 ```
 
 ## Custom Tool Registration

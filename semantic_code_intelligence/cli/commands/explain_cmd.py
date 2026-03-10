@@ -55,11 +55,11 @@ def explain_cmd(
 
     Examples:
 
-        codex explain MyClass -f src/models.py
+        codexa explain MyClass -f src/models.py
 
-        codex explain --file src/main.py .
+        codexa explain --file src/main.py .
 
-        codex explain search_codebase
+        codexa explain search_codebase
     """
     import json as json_mod
 

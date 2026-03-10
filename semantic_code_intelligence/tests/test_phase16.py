@@ -117,7 +117,7 @@ class TestSessionStore:
         from semantic_code_intelligence.llm.conversation import SessionStore
 
         store = SessionStore(tmp_path)
-        assert (tmp_path / ".codex" / "sessions").is_dir()
+        assert (tmp_path / ".codexa" / "sessions").is_dir()
 
     def test_save_and_load(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import (
@@ -488,7 +488,7 @@ class TestStreaming:
 
 
 class TestChatCLI:
-    """Tests for the `codex chat` command."""
+    """Tests for the `codexa chat` command."""
 
     @pytest.fixture
     def runner(self):
@@ -557,7 +557,7 @@ class TestChatCLI:
 
 
 class TestInvestigateCLI:
-    """Tests for the `codex investigate` command."""
+    """Tests for the `codexa investigate` command."""
 
     @pytest.fixture
     def runner(self):
@@ -599,7 +599,7 @@ class TestInvestigateCLI:
 
 
 class TestCrossRefactorCLI:
-    """Tests for the `codex cross-refactor` command."""
+    """Tests for the `codexa cross-refactor` command."""
 
     @pytest.fixture
     def runner(self):
@@ -728,9 +728,9 @@ class TestDocsGenerator:
 
         md = generate_ai_workflows_reference()
         assert "AI Workflows" in md
-        assert "codex chat" in md
-        assert "codex investigate" in md
-        assert "codex cross-refactor" in md
+        assert "codexa chat" in md
+        assert "codexa investigate" in md
+        assert "codexa cross-refactor" in md
         assert "stream_chat" in md
         assert "ON_STREAM" in md
 

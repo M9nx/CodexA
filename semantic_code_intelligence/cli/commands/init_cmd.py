@@ -31,8 +31,8 @@ def _generate_vscode_mcp_config(root: Path) -> bool:
     mcp_block = {
         "mcp": {
             "servers": {
-                "codex": {
-                    "command": "codex",
+                "codexa": {
+                    "command": "codexa",
                     "args": ["mcp", "--path", str(root)],
                 }
             }
@@ -85,14 +85,14 @@ def _generate_vscode_mcp_config(root: Path) -> bool:
 def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool) -> None:
     """Initialize a project for semantic code indexing.
 
-    Creates a .codex/ directory with default configuration and an empty index.
+    Creates a .codexa/ directory with default configuration and an empty index.
 
     \b
     Quick start:
-        codex init                  # basic setup
-        codex init --index          # setup + build index immediately
-        codex init --vscode         # setup + configure VS Code MCP
-        codex init --index --vscode # full setup in one command
+        codexa init                  # basic setup
+        codexa init --index          # setup + build index immediately
+        codexa init --vscode         # setup + configure VS Code MCP
+        codexa init --index --vscode # full setup in one command
     """
     root = Path(path).resolve()
 
@@ -131,9 +131,9 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
     else:
         print_info("")
         print_info("Next steps:")
-        print_info("  codex index    — Build the search index")
-        print_info("  codex search   — Search your code")
-        print_info("  codex grep     — Raw file search (no index needed)")
+        print_info("  codexa index    — Build the search index")
+        print_info("  codexa search   — Search your code")
+        print_info("  codexa grep     — Raw file search (no index needed)")
 
 
 def _run_index(root: Path) -> None:
@@ -149,4 +149,4 @@ def _run_index(root: Path) -> None:
         )
     except Exception as e:
         print_warning(f"Indexing failed: {e}")
-        print_info("Run 'codex index' manually to build the index.")
+        print_info("Run 'codexa index' manually to build the index.")

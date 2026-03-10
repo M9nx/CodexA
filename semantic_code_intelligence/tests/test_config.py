@@ -53,15 +53,15 @@ class TestConfigPaths:
 
     def test_config_dir(self, tmp_path: Path):
         config_dir = AppConfig.config_dir(tmp_path)
-        assert config_dir == tmp_path / ".codex"
+        assert config_dir == tmp_path / ".codexa"
 
     def test_config_path(self, tmp_path: Path):
         config_path = AppConfig.config_path(tmp_path)
-        assert config_path == tmp_path / ".codex" / "config.json"
+        assert config_path == tmp_path / ".codexa" / "config.json"
 
     def test_index_dir(self, tmp_path: Path):
         index_dir = AppConfig.index_dir(tmp_path)
-        assert index_dir == tmp_path / ".codex" / "index"
+        assert index_dir == tmp_path / ".codexa" / "index"
 
 
 class TestLoadConfig:
@@ -73,7 +73,7 @@ class TestLoadConfig:
         assert cfg.embedding.model_name == "all-MiniLM-L6-v2"
 
     def test_load_config_from_file(self, tmp_path: Path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         config_data = {
             "project_root": str(tmp_path),
@@ -109,7 +109,7 @@ class TestSaveConfig:
         cfg = AppConfig(project_root=str(tmp_path))
         save_config(cfg, tmp_path)
 
-        assert (tmp_path / ".codex").is_dir()
+        assert (tmp_path / ".codexa").is_dir()
 
 
 class TestInitProject:
@@ -117,11 +117,11 @@ class TestInitProject:
 
     def test_init_creates_config_dir(self, tmp_path: Path):
         config, config_path = init_project(tmp_path)
-        assert (tmp_path / ".codex").is_dir()
+        assert (tmp_path / ".codexa").is_dir()
 
     def test_init_creates_index_dir(self, tmp_path: Path):
         config, config_path = init_project(tmp_path)
-        assert (tmp_path / ".codex" / "index").is_dir()
+        assert (tmp_path / ".codexa" / "index").is_dir()
 
     def test_init_creates_config_file(self, tmp_path: Path):
         config, config_path = init_project(tmp_path)

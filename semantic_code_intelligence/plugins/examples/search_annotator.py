@@ -5,8 +5,8 @@ hooks into the search pipeline. It adds a timestamp and custom tag
 to every search result passing through.
 
 Usage:
-    1. Copy this file to `.codex/plugins/`
-    2. Results from `codex search` will include the annotation
+    1. Copy this file to `.codexa/plugins/`
+    2. Results from `codexa search` will include the annotation
 
 This serves as a starting point for building your own plugins.
 """

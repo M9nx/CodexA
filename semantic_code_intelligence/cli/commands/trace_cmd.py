@@ -56,11 +56,11 @@ def trace_cmd(
 
     Examples:
 
-        codex trace parse_file
+        codexa trace parse_file
 
-        codex trace MyClass.process --json
+        codexa trace MyClass.process --json
 
-        codex trace build_context --max-depth 3 --pipe
+        codexa trace build_context --max-depth 3 --pipe
     """
     from semantic_code_intelligence.ci.trace import trace_symbol
     from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder

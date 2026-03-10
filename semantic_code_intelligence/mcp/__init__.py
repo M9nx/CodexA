@@ -280,7 +280,7 @@ def _create_server(project_root: Path) -> "Server":
     """Create and configure an MCP ``Server`` with all CodexA tools."""
     if not _HAS_MCP:
         raise RuntimeError("The 'mcp' package is required but not installed.")
-    server = Server("codex-mcp")
+    server = Server("codexa-mcp")
 
     @server.list_tools()
     async def handle_list_tools() -> list:

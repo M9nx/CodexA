@@ -118,15 +118,15 @@ def ask_cmd(
 
     Examples:
 
-        codex ask "How does authentication work?"
+        codexa ask "How does authentication work?"
 
-        codex ask "What does the search_codebase function do?" --json
+        codexa ask "What does the search_codebase function do?" --json
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

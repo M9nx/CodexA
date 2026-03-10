@@ -166,14 +166,14 @@ class SessionMemory:
 
 
 # ---------------------------------------------------------------------------
-# Workspace Memory (persistent, stored in .codex/)
+# Workspace Memory (persistent, stored in .codexa/)
 # ---------------------------------------------------------------------------
 
 MEMORY_FILE = "memory.json"
 
 
 class WorkspaceMemory:
-    """Persistent memory stored in the project's .codex/ directory.
+    """Persistent memory stored in the project's .codexa/ directory.
 
     Survives across sessions. Cached insights, frequently-asked questions,
     and project-specific knowledge live here.

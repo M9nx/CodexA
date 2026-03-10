@@ -23,19 +23,19 @@ This project uses CodexA for semantic code search.
 
 ### Available Commands
 
-- `codex search "<query>" --json` — Search the codebase
-- `codex tool run explain_symbol --arg symbol_name="<name>" --json`
-- `codex tool run get_call_graph --arg symbol_name="<name>" --json`
-- `codex tool run get_dependencies --arg file_path="<path>" --json`
-- `codex tool run find_references --arg symbol_name="<name>" --json`
-- `codex quality <path> --json` — Code quality analysis
-- `codex impact <target> --json` — Blast radius analysis
+- `codexa search "<query>" --json` — Search the codebase
+- `codexa tool run explain_symbol --arg symbol_name="<name>" --json`
+- `codexa tool run get_call_graph --arg symbol_name="<name>" --json`
+- `codexa tool run get_dependencies --arg file_path="<path>" --json`
+- `codexa tool run find_references --arg symbol_name="<name>" --json`
+- `codexa quality <path> --json` — Code quality analysis
+- `codexa impact <target> --json` — Blast radius analysis
 
 ### Rules
 
 1. Always use `--json` flag for machine-readable output.
-2. When asked about code structure, search with `codex search` first.
-3. When explaining a function, use `codex tool run explain_symbol`.
+2. When asked about code structure, search with `codexa search` first.
+3. When explaining a function, use `codexa tool run explain_symbol`.
 ```
 
 Then enable it in VS Code `settings.json`:
@@ -53,7 +53,7 @@ Then enable it in VS Code `settings.json`:
 Start the MCP server for Claude Desktop or Cursor:
 
 ```bash
-codex mcp --path /your/project
+codexa mcp --path /your/project
 ```
 
 ### Claude Desktop Configuration
@@ -63,8 +63,8 @@ Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "codex": {
-      "command": "codex",
+    "codexa": {
+      "command": "codexa",
       "args": ["mcp", "--path", "/your/project"]
     }
   }
@@ -91,7 +91,7 @@ All 8 built-in tools are exposed via MCP:
 For persistent connections from any HTTP client:
 
 ```bash
-codex serve --host 127.0.0.1 --port 24842 --path /your/project
+codexa serve --host 127.0.0.1 --port 24842 --path /your/project
 ```
 
 ### Invoke a Tool
@@ -127,11 +127,11 @@ Any agent that can spawn subprocesses can use CodexA directly:
 
 ```bash
 # All commands support --json for structured output
-codex search "error handling" --json
-codex tool run semantic_search --arg query="auth" --json
-codex quality src/ --json
-codex impact parse_file --json
-codex summary --json
+codexa search "error handling" --json
+codexa tool run semantic_search --arg query="auth" --json
+codexa quality src/ --json
+codexa impact parse_file --json
+codexa summary --json
 ```
 
 ### Output Format

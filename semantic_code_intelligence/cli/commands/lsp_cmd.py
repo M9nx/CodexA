@@ -29,19 +29,19 @@ def lsp_cmd(ctx: click.Context, path: str) -> None:
 
     \b
     VS Code settings.json:
-      "codex.lsp.path": "/path/to/your/project"
+      "codexa.lsp.path": "/path/to/your/project"
 
     \b
     Neovim (nvim-lspconfig):
-      require('lspconfig').codex.setup {
-        cmd = { "codex", "lsp", "--path", "/your/project" },
+      require('lspconfig').codexa.setup {
+        cmd = { "codexa", "lsp", "--path", "/your/project" },
       }
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

@@ -66,13 +66,13 @@ def viz_cmd(
 
     Examples:
 
-        codex viz callgraph
+        codexa viz callgraph
 
-        codex viz deps --target src/main.py
+        codexa viz deps --target src/main.py
 
-        codex viz symbols --target auth.py -o symbols.mmd
+        codexa viz symbols --target auth.py -o symbols.mmd
 
-        codex viz callgraph --json
+        codexa viz callgraph --json
     """
     from semantic_code_intelligence.bridge.context_provider import ContextProvider
     from semantic_code_intelligence.web.visualize import (

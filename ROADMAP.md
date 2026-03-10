@@ -3,10 +3,10 @@
 ## Completed Phases
 
 ### Phase 1: CLI Framework ✅
-- Click-based CLI with `codex init`, `codex index`, `codex search` commands
+- Click-based CLI with `codexa init`, `codexa index`, `codexa search` commands
 - Pydantic v2 configuration models (`AppConfig`, `EmbeddingConfig`, `SearchConfig`, `IndexConfig`)
 - Rich-powered logging with colored output and progress indicators
-- Project scaffolding: `.codex/` directory, `config.json`, index storage
+- Project scaffolding: `.codexa/` directory, `config.json`, index storage
 - **52 tests** | Commit `de3c69c`
 
 ### Phase 2: Repository Indexing ✅
@@ -69,7 +69,7 @@ Transformed CodexA from a CLI tool into a **developer semantic intelligence plat
 - `FileWatcher`: polling-based file change detection with hash comparison
 - `AsyncIndexer`: queue-based background indexing with completion callbacks
 - `IndexingDaemon`: combines watcher + indexer into a single start/stop API
-- `codex watch` CLI command with configurable poll interval
+- `codexa watch` CLI command with configurable poll interval
 
 #### AI Tool Interaction Layer
 - `ToolResult` structured response protocol for LLM agents
@@ -78,10 +78,10 @@ Transformed CodexA from a CLI tool into a **developer semantic intelligence plat
 - Lazy ContextBuilder initialization, per-file and directory indexing
 
 #### Expanded CLI Commands
-- `codex explain <symbol>`: structural explanation of symbols or entire files
-- `codex summary`: repository summary with language breakdown
-- `codex deps [target]`: dependency/import map (single file or whole project)
-- `codex watch`: background daemon for automatic re-indexing on file changes
+- `codexa explain <symbol>`: structural explanation of symbols or entire files
+- `codexa summary`: repository summary with language breakdown
+- `codexa deps [target]`: dependency/import map (single file or whole project)
+- `codexa watch`: background daemon for automatic re-indexing on file changes
 - All commands support `--json` output mode
 
 #### Plugin Architecture SDK
@@ -119,7 +119,7 @@ Transformed CodexA from a semantic code search engine into a **full AI coding as
 
 #### Context & Memory Management
 - `SessionMemory`: in-process memory with keyword search, recency, and max-entry eviction
-- `WorkspaceMemory`: persistent memory stored in `.codex/memory.json` with cross-session caching
+- `WorkspaceMemory`: persistent memory stored in `.codexa/memory.json` with cross-session caching
 - `MemoryEntry` / `ReasoningStep` data types with full serialization
 - Multi-step reasoning chains: `start_chain()`, `add_step()`, `get_chain()`
 
@@ -127,13 +127,13 @@ Transformed CodexA from a semantic code search engine into a **full AI coding as
 - `SafetyValidator`: scans LLM-generated code for dangerous patterns (eval, exec, os.system, shell injection, SQL injection, etc.)
 - `SafetyReport` / `SafetyIssue` structured output with line numbers and severity
 - Extensible pattern system with custom pattern injection
-- Integrated into `codex refactor` workflow
+- Integrated into `codexa refactor` workflow
 
 #### Expanded CLI Commands
-- `codex ask <question>`: natural-language Q&A about the codebase
-- `codex review <file>`: AI-powered code review with severity levels
-- `codex refactor <file>`: AI-assisted refactoring with safety checks
-- `codex suggest <target>`: intelligent suggestions with priority and rationale
+- `codexa ask <question>`: natural-language Q&A about the codebase
+- `codexa review <file>`: AI-powered code review with severity levels
+- `codexa refactor <file>`: AI-assisted refactoring with safety checks
+- `codexa suggest <target>`: intelligent suggestions with priority and rationale
 - All commands support `--json` output mode
 
 #### Plugin AI Hooks
@@ -180,8 +180,8 @@ Designed CodexA as a **lightweight AI developer assistant** that integrates and 
 - `generate_extension_manifest()`: package.json fragment for companion extension
 
 #### New CLI Commands
-- `codex serve`: start the bridge server with configurable host/port
-- `codex context <mode> [target]`: generate structured context (query/symbol/file/repo) for piping to external tools
+- `codexa serve`: start the bridge server with configurable host/port
+- `codexa context <mode> [target]`: generate structured context (query/symbol/file/repo) for piping to external tools
 - All commands support `--json` output mode
 
 - **Tests for all new modules** | 13 CLI commands total
@@ -193,18 +193,18 @@ Introduced first-class multi-repository workspace support — manage, index, and
 
 #### Workspace Model
 - `RepoEntry` dataclass: name, path, last_indexed timestamp, file_count, vector_count
-- `WorkspaceManifest`: versioned JSON manifest at `.codex/workspace.json`
+- `WorkspaceManifest`: versioned JSON manifest at `.codexa/workspace.json`
 - `Workspace` class: load/save persistence, add/remove/get repo management
-- Per-repo vector indexes stored under `.codex/repos/<name>/`
+- Per-repo vector indexes stored under `.codexa/repos/<name>/`
 - Merged cross-repo search with score-sorted results
 
 #### Workspace CLI
-- `codex workspace init`: initialize a workspace
-- `codex workspace add <name> <path>`: register a repository
-- `codex workspace remove <name>`: unregister a repository
-- `codex workspace list`: show all repos (Rich table or `--json`)
-- `codex workspace index`: index one (`--repo`) or all repos with `--force` option
-- `codex workspace search <query>`: cross-repo semantic search with `--repo` filtering
+- `codexa workspace init`: initialize a workspace
+- `codexa workspace add <name> <path>`: register a repository
+- `codexa workspace remove <name>`: unregister a repository
+- `codexa workspace list`: show all repos (Rich table or `--json`)
+- `codexa workspace index`: index one (`--repo`) or all repos with `--force` option
+- `codexa workspace search <query>`: cross-repo semantic search with `--repo` filtering
 - All commands support `--path` for workspace root and `--json` output
 
 - **52 new tests (516 → 568)** | 14 CLI commands total | Commit `01019db`
@@ -276,11 +276,11 @@ Transformed CodexA into a community-ready open source project with auto-document
 - `generate_all_docs()`: batch-generates all references into a `docs/` directory
 
 #### New CLI Commands
-- `codex docs`: auto-generate Markdown documentation (`--section cli|plugins|bridge|tools|all`, `--json`)
-- `codex doctor`: environment health check — Python version, dependencies, project status (`--json`)
-- `codex plugin new <name>`: scaffold a new plugin from template (`--hooks`, `--author`, `--description`)
-- `codex plugin list`: discover and list installed plugins (`--json`)
-- `codex plugin info <name>`: show plugin details
+- `codexa docs`: auto-generate Markdown documentation (`--section cli|plugins|bridge|tools|all`, `--json`)
+- `codexa doctor`: environment health check — Python version, dependencies, project status (`--json`)
+- `codexa plugin new <name>`: scaffold a new plugin from template (`--hooks`, `--author`, `--description`)
+- `codexa plugin list`: discover and list installed plugins (`--json`)
+- `codexa plugin info <name>`: show plugin details
 
 #### CLI Ergonomics
 - `--pipe` global flag for pipeline-friendly output (no Rich formatting)
@@ -322,8 +322,8 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 - Uses Python stdlib `http.server` — zero external deps
 
 #### New CLI Commands
-- `codex web [--host HOST] [--port PORT] [--path PATH]` — start web server
-- `codex viz KIND [--target T] [--output FILE] [--json] [--path PATH]` — generate Mermaid diagrams
+- `codexa web [--host HOST] [--port PORT] [--path PATH]` — start web server
+- `codexa viz KIND [--target T] [--output FILE] [--json] [--path PATH]` — generate Mermaid diagrams
 
 #### Documentation
 - `generate_web_reference()` added to auto-doc generator → `WEB.md`
@@ -349,9 +349,9 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 | GitHub Actions workflow templates (analysis, safety) | ✅ |
 | Pre-commit config generation | ✅ |
 | Pre-commit hook support (safety + plugin dispatch) | ✅ |
-| `codex quality` CLI command | ✅ |
-| `codex pr-summary` CLI command | ✅ |
-| `codex ci-gen` CLI command | ✅ |
+| `codexa quality` CLI command | ✅ |
+| `codexa pr-summary` CLI command | ✅ |
+| `codexa ci-gen` CLI command | ✅ |
 | Auto-documentation: `CI.md` | ✅ |
 | 79 new tests, backward compatible | ✅ |
 
@@ -365,7 +365,7 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 |---|---|
 | Multi-turn conversation memory with session persistence | ✅ |
 | ConversationSession (uuid-based, serializable, turn-limited) | ✅ |
-| SessionStore (file-backed `.codex/sessions/`, path-safe) | ✅ |
+| SessionStore (file-backed `.codexa/sessions/`, path-safe) | ✅ |
 | Autonomous multi-step code investigation chains | ✅ |
 | InvestigationChain (LLM planner loop, search/analyze/deps) | ✅ |
 | Cross-repo refactoring suggestions (trigram Jaccard) | ✅ |
@@ -373,9 +373,9 @@ Added an optional lightweight web interface with REST API, browser UI, and Merma
 | Streaming LLM responses (Ollama, OpenAI, Mock, fallback) | ✅ |
 | Real-time plugin hooks (ON_STREAM dispatch) | ✅ |
 | StreamEvent with SSE serialization | ✅ |
-| `codex chat` CLI command (session resume, list, max-turns) | ✅ |
-| `codex investigate` CLI command (step-by-step display) | ✅ |
-| `codex cross-refactor` CLI command (threshold, suggestions) | ✅ |
+| `codexa chat` CLI command (session resume, list, max-turns) | ✅ |
+| `codexa investigate` CLI command (step-by-step display) | ✅ |
+| `codexa cross-refactor` CLI command (threshold, suggestions) | ✅ |
 | Auto-documentation: `AI_WORKFLOWS.md` | ✅ |
 | 64 new tests, backward compatible | ✅ |
 
@@ -443,7 +443,7 @@ Major rewrite of the VS Code extension from basic 4-command wrapper to a rich mu
 | VS Code extension scaffold with 4 commands and sidebar search panel | ✅ |
 | Single-binary distribution via PyInstaller | ✅ |
 | IVF index support for large repos (>50k vectors) | ✅ |
-| `codex models` CLI (list, info, download, switch) | ✅ |
+| `codexa models` CLI (list, info, download, switch) | ✅ |
 | 35 CLI commands | ✅ |
 
 **2556 tests, all passing**
@@ -479,14 +479,14 @@ Major rewrite of the VS Code extension from basic 4-command wrapper to a rich mu
 Package CodexA as a Docker container with a REST API so teams can share one index server. Add auth, rate limiting, team dashboards.
 
 ### Phase 30: CI/CD Deep Integration
-GitHub Actions / GitLab CI plugin that runs `codex quality` on PRs, blocks merges on regressions, and posts inline review comments.
+GitHub Actions / GitLab CI plugin that runs `codexa quality` on PRs, blocks merges on regressions, and posts inline review comments.
 
 ### Phase 31: RAG Pipeline
 Connect the vector store to LLMs for retrieval-augmented code generation — "write a function like X but for Y" with real codebase context.
 
 ---
 ### Evolution Cycle 1 ✔️
-First run of the self-improving development loop (`codex evolve`).
+First run of the self-improving development loop (`codexa evolve`).
 
 - Rich `markup=True` → `markup=False` on RichHandler to fix CI crash on Python 3.11/Windows ✔️
 - `__test__ = False` on TestResult/TestRunner to suppress PytestCollectionWarning ✔️
@@ -494,7 +494,7 @@ First run of the self-improving development loop (`codex evolve`).
 - Warnings reduced from 15 → 3 (remaining 3 are SWIG/frozen-importlib internals) ✔️
 - 18 public-method docstrings added across evolution + tools/protocol packages ✔️
 - Engine `run()` refactored: extracted `_run_iteration()` with per-iteration error isolation ✔️
-- Evolution history recorded to `.codex/evolution_history.json` ✔️
+- Evolution history recorded to `.codexa/evolution_history.json` ✔️
 
 **2320 tests, all passing, 3 warnings** | Commits `4d7b109`, `31d41a3`
 
@@ -531,8 +531,8 @@ Three targeted improvements: debugging UX, observability, and documentation.
 - Priority-based task selector (fix tests → type hints → error handling → dedup → optimise) ✅
 - Minimal context builder with token-budget-aware prompt assembly ✅
 - Patch generator with LLM diff generation, safety validation, git apply ✅
-- `codex evolve` CLI command with --iterations, --budget, --timeout flags ✅
-- Evolution history persisted to .codex/evolution_history.json ✅
+- `codexa evolve` CLI command with --iterations, --budget, --timeout flags ✅
+- Evolution history persisted to .codexa/evolution_history.json ✅
 - Phase 24 test suite with full coverage ✅
 
 ### Phase 23: Persistent Intelligence Index ✅
@@ -573,7 +573,7 @@ Three targeted improvements: debugging UX, observability, and documentation.
 - Tool Execution Engine (ToolExecutor with validation, routing, timing) ✅
 - Extended capability manifest (tools field in BridgeCapabilities) ✅
 - Agent-friendly streaming (SSE /tools/stream endpoint) ✅
-- CLI tool mode: `codex tool run|list|schema` ✅
+- CLI tool mode: `codexa tool run|list|schema` ✅
 - AI safety guardrails (deterministic, no code execution, schema validation) ✅
 - Plugin integration (REGISTER_TOOL, PRE_TOOL_INVOKE, POST_TOOL_INVOKE hooks) ✅
 - AI_TOOL_PROTOCOL.md auto-generated documentation ✅
@@ -600,7 +600,7 @@ Three targeted improvements: debugging UX, observability, and documentation.
 - Tool Execution Engine (ToolExecutor with validation, routing, timing) ✅
 - Extended capability manifest (tools field in BridgeCapabilities) ✅
 - Agent-friendly streaming (SSE /tools/stream endpoint) ✅
-- CLI tool mode: `codex tool run|list|schema` ✅
+- CLI tool mode: `codexa tool run|list|schema` ✅
 - AI safety guardrails (deterministic, no code execution, schema validation) ✅
 - Plugin integration (REGISTER_TOOL, PRE_TOOL_INVOKE, POST_TOOL_INVOKE hooks) ✅
 - AI_TOOL_PROTOCOL.md auto-generated documentation ✅
@@ -611,7 +611,7 @@ Three targeted improvements: debugging UX, observability, and documentation.
 ## Architecture
 
 ```
-codex CLI (Click) — 36 commands
+codexa CLI (Click) — 36 commands
   ├── init / index / search / explain / summary / watch / deps
   ├── ask / review / refactor / suggest
   ├── serve / context
@@ -646,7 +646,7 @@ codex CLI (Click) — 36 commands
   │
   ├── Multi-Repo Workspace
   │     Workspace → RepoEntry · WorkspaceManifest
-  │     Per-repo indexing (.codex/repos/<name>/)
+  │     Per-repo indexing (.codexa/repos/<name>/)
   │     Merged cross-repo search
   │
   ├── AI Features

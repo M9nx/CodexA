@@ -29,9 +29,9 @@ def tool_cmd() -> None:
 
     Examples:
 
-        codex tool list
-        codex tool run semantic_search --arg query="parse file"
-        codex tool schema semantic_search
+        codexa tool list
+        codexa tool run semantic_search --arg query="parse file"
+        codexa tool schema semantic_search
     """
 
 
@@ -113,9 +113,9 @@ def tool_run(
 
     Examples:
 
-        codex tool run semantic_search --arg query="parse file"
-        codex tool run explain_symbol --arg symbol_name=ToolRegistry
-        codex tool run summarize_repo --json
+        codexa tool run semantic_search --arg query="parse file"
+        codexa tool run explain_symbol --arg symbol_name=ToolRegistry
+        codexa tool run summarize_repo --json
     """
     from semantic_code_intelligence.tools.executor import ToolExecutor
     from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -240,8 +240,8 @@ def tool_schema(tool_name: str, json_mode: bool) -> None:
 
     Examples:
 
-        codex tool schema semantic_search
-        codex tool schema explain_symbol --json
+        codexa tool schema semantic_search
+        codexa tool schema explain_symbol --json
     """
     from semantic_code_intelligence.tools.executor import ToolExecutor
 

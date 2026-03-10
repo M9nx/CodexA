@@ -422,8 +422,8 @@ class TestTemplates:
 
         content = generate_analysis_workflow()
         assert "CodexA Analysis" in content
-        assert "codex quality" in content
-        assert "codex pr-summary" in content
+        assert "codexa quality" in content
+        assert "codexa pr-summary" in content
         assert "pull_request" in content
 
     def test_analysis_custom_python(self):
@@ -443,8 +443,8 @@ class TestTemplates:
         from semantic_code_intelligence.ci.templates import generate_precommit_config
 
         content = generate_precommit_config()
-        assert "codex-safety" in content
-        assert "codex-quality" in content
+        assert "codexa-safety" in content
+        assert "codexa-quality" in content
         assert "pre-commit" in content.lower()
 
     def test_template_registry(self):
@@ -458,7 +458,7 @@ class TestTemplates:
         from semantic_code_intelligence.ci.templates import get_template
 
         content = get_template("analysis")
-        assert "codex quality" in content
+        assert "codexa quality" in content
 
     def test_get_template_unknown(self):
         from semantic_code_intelligence.ci.templates import get_template
@@ -515,7 +515,7 @@ class TestPrecommitHooks:
 
 
 class TestQualityCLI:
-    """Tests for the `codex quality` command."""
+    """Tests for the `codexa quality` command."""
 
     @pytest.fixture
     def runner(self):
@@ -572,7 +572,7 @@ class TestQualityCLI:
 
 
 class TestPRSummaryCLI:
-    """Tests for the `codex pr-summary` command."""
+    """Tests for the `codexa pr-summary` command."""
 
     @pytest.fixture
     def runner(self):
@@ -622,7 +622,7 @@ class TestPRSummaryCLI:
 
 
 class TestCIGenCLI:
-    """Tests for the `codex ci-gen` command."""
+    """Tests for the `codexa ci-gen` command."""
 
     @pytest.fixture
     def runner(self):
@@ -765,9 +765,9 @@ class TestDocsGenerator:
         md = generate_ci_reference()
         assert "CI/CD" in md
         assert "Quality" in md
-        assert "codex quality" in md
-        assert "codex pr-summary" in md
-        assert "codex ci-gen" in md
+        assert "codexa quality" in md
+        assert "codexa pr-summary" in md
+        assert "codexa ci-gen" in md
 
     def test_generate_all_docs_includes_ci(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs

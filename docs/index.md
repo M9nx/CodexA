@@ -56,17 +56,17 @@ pip install -e "."
 
 # Initialize & index your project
 cd /path/to/your-project
-codex init
-codex index .
-codex doctor
+codexa init
+codexa index .
+codexa doctor
 
 # Search your code
-codex search "authentication middleware"
+codexa search "authentication middleware"
 
 # AI-powered analysis
-codex ask "How does the auth flow work?"
-codex quality src/
-codex hotspots
+codexa ask "How does the auth flow work?"
+codexa quality src/
+codexa hotspots
 ```
 
 ## At a Glance

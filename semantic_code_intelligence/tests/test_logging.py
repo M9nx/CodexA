@@ -26,7 +26,7 @@ class TestSetupLogging:
     def test_setup_returns_logger(self):
         logger = setup_logging()
         assert isinstance(logger, logging.Logger)
-        assert logger.name == "codex"
+        assert logger.name == "codexa"
 
 
 class TestGetLogger:
@@ -34,15 +34,15 @@ class TestGetLogger:
 
     def test_get_root_logger(self):
         logger = get_logger()
-        assert logger.name == "codex"
+        assert logger.name == "codexa"
 
     def test_get_child_logger(self):
         logger = get_logger("test")
-        assert logger.name == "codex.test"
+        assert logger.name == "codexa.test"
 
     def test_get_nested_child_logger(self):
         logger = get_logger("cli.init")
-        assert logger.name == "codex.cli.init"
+        assert logger.name == "codexa.cli.init"
 
 
 class TestConsoles:

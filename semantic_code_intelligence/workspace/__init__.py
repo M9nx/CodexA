@@ -1,8 +1,8 @@
 """Multi-repository workspace — manage, index, and search across multiple repos.
 
 A *workspace* is a collection of repositories stored in a lightweight JSON
-manifest at ``<root>/.codex/workspace.json``.  Each repository has its own
-vector index under ``.codex/repos/<repo_name>/``, enabling incremental
+manifest at ``<root>/.codexa/workspace.json``.  Each repository has its own
+vector index under ``.codexa/repos/<repo_name>/``, enabling incremental
 per-repo indexing while supporting merged cross-repo search.
 
 Typical usage::
@@ -124,8 +124,8 @@ class Workspace:
 
     @property
     def config_dir(self) -> Path:
-        """Path to the ``.codex`` configuration directory."""
-        return self._root / ".codex"
+        """Path to the ``.codexa`` configuration directory."""
+        return self._root / ".codexa"
 
     @property
     def repos_dir(self) -> Path:
@@ -154,7 +154,7 @@ class Workspace:
     def load(cls, root: Path) -> "Workspace":
         """Load an existing workspace. Raises FileNotFoundError if not found."""
         root = root.resolve()
-        path = root / ".codex" / WORKSPACE_FILE
+        path = root / ".codexa" / WORKSPACE_FILE
         if not path.exists():
             raise FileNotFoundError(f"No workspace found at {root}")
         data = json.loads(path.read_text(encoding="utf-8"))

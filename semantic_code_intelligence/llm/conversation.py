@@ -3,7 +3,7 @@
 Provides:
 - **ConversationSession**: an ordered list of LLMMessage turns with metadata,
   serialisable to / from disk.
-- **SessionStore**: manages multiple named sessions under ``.codex/sessions/``
+- **SessionStore**: manages multiple named sessions under ``.codexa/sessions/``
   with create, resume, list, and delete operations.
 """
 
@@ -122,7 +122,7 @@ SESSIONS_DIR = "sessions"
 class SessionStore:
     """File-backed store for conversation sessions.
 
-    Sessions live under ``<project_root>/.codex/sessions/<id>.json``.
+    Sessions live under ``<project_root>/.codexa/sessions/<id>.json``.
     """
 
     def __init__(self, project_root: Path) -> None:

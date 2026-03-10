@@ -94,9 +94,9 @@ def benchmark_cmd(
     Examples:
 
     \b
-        codex benchmark
-        codex benchmark --json
-        codex benchmark --rounds 5
+        codexa benchmark
+        codexa benchmark --json
+        codexa benchmark --rounds 5
     """
     from rich.table import Table
 
@@ -104,7 +104,7 @@ def benchmark_cmd(
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

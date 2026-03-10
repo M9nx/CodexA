@@ -1,7 +1,7 @@
 """Reasoning engine — orchestrates context gathering and LLM interaction.
 
-Provides the core logic behind ``codex ask``, ``codex review``, and
-``codex refactor`` by combining:
+Provides the core logic behind ``codexa ask``, ``codexa review``, and
+``codexa refactor`` by combining:
 1. Semantic search results
 2. Parsed symbol / context data
 3. LLM conversations

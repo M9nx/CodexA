@@ -95,7 +95,7 @@ CodexA/
 
 ## Plugin Development
 
-CodexA has a plugin system with 22 hook points. See `codex docs --section plugins` for the full reference, or check the [Plugin SDK](semantic_code_intelligence/plugins/__init__.py).
+CodexA has a plugin system with 22 hook points. See `codexa docs --section plugins` for the full reference, or check the [Plugin SDK](semantic_code_intelligence/plugins/__init__.py).
 
 ### Minimal Plugin
 
@@ -119,7 +119,7 @@ def create_plugin():
     return MyPlugin()
 ```
 
-Place plugin files in `.codex/plugins/` for automatic discovery, or register programmatically via `PluginManager`.
+Place plugin files in `.codexa/plugins/` for automatic discovery, or register programmatically via `PluginManager`.
 
 ## Submitting Changes
 
@@ -142,7 +142,7 @@ Types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`
 ## Reporting Issues
 
 - Use GitHub Issues with the provided templates
-- Include: Python version, OS, CodexA version (`codex --version`), and steps to reproduce
+- Include: Python version, OS, CodexA version (`codexa --version`), and steps to reproduce
 - For security vulnerabilities, see [SECURITY.md](SECURITY.md)
 
 ## License

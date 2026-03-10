@@ -99,7 +99,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
     def _handle_health(self, qs: dict[str, list[str]]) -> None:
         """GET /health — project status and basic info."""
-        codex_dir = self.project_root / ".codex"
+        codex_dir = self.project_root / ".codexa"
         self._json(200, {
             "status": "ok",
             "project_root": str(self.project_root),

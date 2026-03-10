@@ -68,7 +68,7 @@ def run_precommit_check(
             from semantic_code_intelligence.plugins import PluginManager, PluginHook
 
             mgr = PluginManager()
-            plugin_dir = project_root / ".codex" / "plugins"
+            plugin_dir = project_root / ".codexa" / "plugins"
             if plugin_dir.is_dir():
                 mgr.discover_from_directory(plugin_dir)
                 for name in mgr.registered_plugins:

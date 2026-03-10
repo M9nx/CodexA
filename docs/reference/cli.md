@@ -4,52 +4,52 @@ Auto-generated from the registered Click command tree. All commands support `--j
 
 ## Core Commands
 
-### `codex init`
+### `codexa init`
 
-Initialize a project for semantic code indexing. Creates a `.codex/` directory with default configuration.
+Initialize a project for semantic code indexing. Creates a `.codexa/` directory with default configuration.
 
 ```bash
-codex init [PATH]
-codex init --index          # Init + build index
-codex init --vscode         # Init + VS Code MCP config
-codex init --index --vscode # Full setup in one command
+codexa init [PATH]
+codexa init --index          # Init + build index
+codexa init --vscode         # Init + VS Code MCP config
+codexa init --index --vscode # Full setup in one command
 ```
 
-### `codex index`
+### `codexa index`
 
 Index a codebase for semantic search. Scans files, extracts chunks, generates embeddings.
 
 ```bash
-codex index .
-codex index . --force    # Full re-index
+codexa index .
+codexa index . --force    # Full re-index
 ```
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--force` | boolean | false | Force full re-index, ignoring cache |
 
-### `codex doctor`
+### `codexa doctor`
 
 Check environment health, dependencies, and project status.
 
 ```bash
-codex doctor
-codex doctor --json
+codexa doctor
+codexa doctor --json
 ```
 
 ## Search & Discovery
 
-### `codex search`
+### `codexa search`
 
 Search the indexed codebase using a natural language query.
 
 ```bash
-codex search "jwt verification"
-codex search "database connection" --mode hybrid
-codex search "def\s+authenticate" --mode regex -n
-codex search "error handling" --mode keyword --full-section
-codex search "TODO" --mode regex -l
-codex search "pattern" --jsonl | jq .file_path
+codexa search "jwt verification"
+codexa search "database connection" --mode hybrid
+codexa search "def\s+authenticate" --mode regex -n
+codexa search "error handling" --mode keyword --full-section
+codexa search "TODO" --mode regex -l
+codexa search "pattern" --jsonl | jq .file_path
 ```
 
 | Flag | Type | Default | Description |
@@ -67,14 +67,14 @@ codex search "pattern" --jsonl | jq .file_path
 | `--line-numbers, -n` | boolean | false | Prefix with line numbers (grep -n) |
 | `--path, -p` | directory | . | Project root path |
 
-### `codex explain`
+### `codexa explain`
 
 Explain a code symbol or all symbols in a file.
 
 ```bash
-codex explain MyClass -f src/models.py
-codex explain --file src/main.py .
-codex explain search_codebase --json
+codexa explain MyClass -f src/models.py
+codexa explain --file src/main.py .
+codexa explain search_codebase --json
 ```
 
 | Flag | Type | Default | Description |
@@ -83,15 +83,15 @@ codex explain search_codebase --json
 | `--json-output, --json` | boolean | false | JSON output |
 | `--path, -p` | directory | . | Project root path |
 
-### `codex context`
+### `codexa context`
 
 Generate structured context for external AI pipelines.
 
 ```bash
-codex context query "authentication"
-codex context symbol MyClass
-codex context file src/main.py
-codex context repo
+codexa context query "authentication"
+codexa context symbol MyClass
+codexa context file src/main.py
+codexa context repo
 ```
 
 Modes: `query` (semantic search), `symbol` (symbol context), `file` (file context), `repo` (repo summary).
@@ -103,33 +103,33 @@ Modes: `query` (semantic search), `symbol` (symbol context), `file` (file contex
 | `--json-output, --json` | boolean | false | JSON output |
 | `--path, -p` | directory | . | Project root path |
 
-### `codex deps`
+### `codexa deps`
 
 Show the dependency/import map for a file or project.
 
 ```bash
-codex deps src/main.py
-codex deps . --json
+codexa deps src/main.py
+codexa deps . --json
 ```
 
-### `codex summary`
+### `codexa summary`
 
 Generate a structured summary of the repository.
 
 ```bash
-codex summary
-codex summary --json
+codexa summary
+codexa summary --json
 ```
 
 ## AI-Powered Commands
 
-### `codex ask`
+### `codexa ask`
 
 Ask a natural-language question about the codebase.
 
 ```bash
-codex ask "How does authentication work?"
-codex ask "What does search_codebase do?" --json
+codexa ask "How does authentication work?"
+codexa ask "What does search_codebase do?" --json
 ```
 
 | Flag | Type | Default | Description |
@@ -138,15 +138,15 @@ codex ask "What does search_codebase do?" --json
 | `--json-output, --json` | boolean | false | JSON output |
 | `--path, -p` | directory | . | Project root path |
 
-### `codex chat`
+### `codexa chat`
 
 Multi-turn conversation about the codebase.
 
 ```bash
-codex chat "How does auth work?"
-codex chat --session my-session "Follow up"
-codex chat --list-sessions
-codex chat --stream "Explain the flow"
+codexa chat "How does auth work?"
+codexa chat --session my-session "Follow up"
+codexa chat --list-sessions
+codexa chat --stream "Explain the flow"
 ```
 
 | Flag | Type | Default | Description |
@@ -158,13 +158,13 @@ codex chat --stream "Explain the flow"
 | `--json-output, --json` | boolean | false | JSON output |
 | `--path, -p` | directory | . | Project root path |
 
-### `codex investigate`
+### `codexa investigate`
 
 Autonomous multi-step investigation to answer a question.
 
 ```bash
-codex investigate "Find all security vulnerabilities"
-codex investigate "How is payment flow implemented?" --max-steps 10
+codexa investigate "Find all security vulnerabilities"
+codexa investigate "How is payment flow implemented?" --max-steps 10
 ```
 
 | Flag | Type | Default | Description |
@@ -174,22 +174,22 @@ codex investigate "How is payment flow implemented?" --max-steps 10
 | `--json-output, --json` | boolean | false | JSON output |
 | `--path, -p` | directory | . | Project root path |
 
-### `codex review`
+### `codexa review`
 
 AI-assisted code review.
 
 ```bash
-codex review src/main.py
-codex review src/utils.py --json
+codexa review src/main.py
+codexa review src/utils.py --json
 ```
 
-### `codex refactor`
+### `codexa refactor`
 
 AI-powered refactoring suggestions.
 
 ```bash
-codex refactor src/main.py
-codex refactor src/utils.py -i "Extract duplicated logic"
+codexa refactor src/main.py
+codexa refactor src/utils.py -i "Extract duplicated logic"
 ```
 
 | Flag | Type | Default | Description |
@@ -197,34 +197,34 @@ codex refactor src/utils.py -i "Extract duplicated logic"
 | `--instruction, -i` | text | Improve quality | Refactoring instruction |
 | `--json-output, --json` | boolean | false | JSON output |
 
-### `codex suggest`
+### `codexa suggest`
 
 Intelligent suggestions for a symbol, file, or topic.
 
 ```bash
-codex suggest search_codebase
-codex suggest "error handling patterns" --json
+codexa suggest search_codebase
+codexa suggest "error handling patterns" --json
 ```
 
-### `codex cross-refactor`
+### `codexa cross-refactor`
 
 Find duplicate logic across workspace repos.
 
 ```bash
-codex cross-refactor --threshold 0.70
+codexa cross-refactor --threshold 0.70
 ```
 
 ## Quality & Metrics
 
-### `codex quality`
+### `codexa quality`
 
 Analyze code quality — complexity, dead code, duplicates, security.
 
 ```bash
-codex quality
-codex quality --json
-codex quality --safety-only --pipe
-codex quality --complexity-threshold 15
+codexa quality
+codexa quality --json
+codexa quality --safety-only --pipe
+codexa quality --complexity-threshold 15
 ```
 
 | Flag | Type | Default | Description |
@@ -235,15 +235,15 @@ codex quality --complexity-threshold 15
 | `--pipe` | boolean | false | Plain text for CI |
 | `--path, -p` | directory | . | Project root path |
 
-### `codex metrics`
+### `codexa metrics`
 
 Compute quality metrics, save snapshots, track trends.
 
 ```bash
-codex metrics
-codex metrics --snapshot --json
-codex metrics --history 10
-codex metrics --trend
+codexa metrics
+codexa metrics --snapshot --json
+codexa metrics --history 10
+codexa metrics --trend
 ```
 
 | Flag | Type | Default | Description |
@@ -254,13 +254,13 @@ codex metrics --trend
 | `--json-output, --json` | boolean | false | JSON output |
 | `--pipe` | boolean | false | Plain text for CI |
 
-### `codex gate`
+### `codexa gate`
 
 Enforce quality gates for CI.
 
 ```bash
-codex gate --strict
-codex gate --min-maintainability 60 --max-complexity 15
+codexa gate --strict
+codexa gate --min-maintainability 60 --max-complexity 15
 ```
 
 | Flag | Type | Default | Description |
@@ -270,14 +270,14 @@ codex gate --min-maintainability 60 --max-complexity 15
 | `--max-issues` | integer | 20 | Max total issues |
 | `--strict` | boolean | false | Exit code 1 on failure |
 
-### `codex hotspots`
+### `codexa hotspots`
 
 Identify high-risk code hotspots.
 
 ```bash
-codex hotspots
-codex hotspots --top-n 10 --json
-codex hotspots --no-git --pipe
+codexa hotspots
+codexa hotspots --top-n 10 --json
+codexa hotspots --no-git --pipe
 ```
 
 | Flag | Type | Default | Description |
@@ -285,51 +285,51 @@ codex hotspots --no-git --pipe
 | `--top-n, -n` | integer | 20 | Number of hotspots |
 | `--include-git / --no-git` | boolean | true | Include git churn |
 
-### `codex impact`
+### `codexa impact`
 
 Analyze blast radius of a change.
 
 ```bash
-codex impact parse_file
-codex impact src/parser.py --json
-codex impact MyClass --max-depth 3 --pipe
+codexa impact parse_file
+codexa impact src/parser.py --json
+codexa impact MyClass --max-depth 3 --pipe
 ```
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--max-depth, -d` | integer | 5 | BFS depth limit |
 
-### `codex trace`
+### `codexa trace`
 
 Trace execution relationships for a symbol.
 
 ```bash
-codex trace parse_file
-codex trace MyClass.process --json
+codexa trace parse_file
+codexa trace MyClass.process --json
 ```
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--max-depth, -d` | integer | 5 | Traversal depth |
 
-### `codex pr-summary`
+### `codexa pr-summary`
 
 Generate a Pull Request intelligence report.
 
 ```bash
-codex pr-summary
-codex pr-summary --json
-codex pr-summary -f src/main.py -f src/utils.py
+codexa pr-summary
+codexa pr-summary --json
+codexa pr-summary -f src/main.py -f src/utils.py
 ```
 
 ## Servers & Integration
 
-### `codex serve`
+### `codexa serve`
 
 Start the HTTP bridge server for AI agents.
 
 ```bash
-codex serve --port 24842
+codexa serve --port 24842
 ```
 
 | Flag | Type | Default | Description |
@@ -338,13 +338,13 @@ codex serve --port 24842
 | `--port, -p` | integer | 24842 | Port to bind |
 | `--path` | directory | . | Project root |
 
-### `codex web`
+### `codexa web`
 
 Start the web interface and REST API.
 
 ```bash
-codex web
-codex web --port 9000 --host 0.0.0.0
+codexa web
+codexa web --port 9000 --host 0.0.0.0
 ```
 
 | Flag | Type | Default | Description |
@@ -353,26 +353,26 @@ codex web --port 9000 --host 0.0.0.0
 | `--port, -p` | integer | 8080 | Port to bind |
 | `--path` | directory | . | Project root |
 
-### `codex mcp`
+### `codexa mcp`
 
 Start the MCP server for Claude/Cursor. Exposes 11 tools.
 
 ```bash
-codex mcp --path /your/project
+codexa mcp --path /your/project
 ```
 
 ## Performance & Diagnostics
 
-### `codex grep`
+### `codexa grep`
 
 Search raw files using regex — no index required.
 
 ```bash
-codex grep "TODO|FIXME"
-codex grep "def authenticate" -g "*.py"
-codex grep "password" --case-sensitive
-codex grep "import re" --json
-codex grep "class.*Service" -l
+codexa grep "TODO|FIXME"
+codexa grep "def authenticate" -g "*.py"
+codexa grep "password" --case-sensitive
+codexa grep "import re" --json
+codexa grep "class.*Service" -l
 ```
 
 | Flag | Type | Default | Description |
@@ -385,13 +385,13 @@ codex grep "class.*Service" -l
 | `--json` | flag | false | JSON output |
 | `--files-only, -l` | flag | false | Print only file paths |
 
-### `codex benchmark`
+### `codexa benchmark`
 
 Performance benchmarking — indexing speed, search latency, memory usage.
 
 ```bash
-codex benchmark
-codex benchmark --json
+codexa benchmark
+codexa benchmark --json
 ```
 
 | Flag | Type | Default | Description |
@@ -400,21 +400,21 @@ codex benchmark --json
 | `--json` | flag | false | JSON output |
 ```
 
-### `codex lsp`
+### `codexa lsp`
 
 Start the Language Server Protocol server (stdio).
 
 ```bash
-codex lsp --path /your/project
+codexa lsp --path /your/project
 ```
 
-### `codex tui`
+### `codexa tui`
 
 Interactive terminal search interface.
 
 ```bash
-codex tui
-codex tui --mode hybrid -k 20
+codexa tui
+codexa tui --mode hybrid -k 20
 ```
 
 | Flag | Type | Default | Description |
@@ -424,14 +424,14 @@ codex tui --mode hybrid -k 20
 
 ## Code Generation & Automation
 
-### `codex evolve`
+### `codexa evolve`
 
 Run the self-improving development loop.
 
 ```bash
-codex evolve
-codex evolve --iterations 5 --budget 50000
-codex evolve --timeout 300
+codexa evolve
+codexa evolve --iterations 5 --budget 50000
+codexa evolve --timeout 300
 ```
 
 | Flag | Type | Default | Description |
@@ -440,34 +440,34 @@ codex evolve --timeout 300
 | `--budget, -b` | integer | 20000 | Max total tokens |
 | `--timeout, -t` | integer | 600 | Max wall-clock seconds |
 
-### `codex ci-gen`
+### `codexa ci-gen`
 
 Generate CI/CD workflow templates.
 
 ```bash
-codex ci-gen analysis       # Full analysis workflow
-codex ci-gen safety         # Lightweight safety-only
-codex ci-gen precommit      # Pre-commit hook config
+codexa ci-gen analysis       # Full analysis workflow
+codexa ci-gen safety         # Lightweight safety-only
+codexa ci-gen precommit      # Pre-commit hook config
 ```
 
-### `codex docs`
+### `codexa docs`
 
 Generate documentation for CodexA components.
 
 ```bash
-codex docs
-codex docs --section plugins -o reference/
+codexa docs
+codexa docs --section plugins -o reference/
 ```
 
-### `codex viz`
+### `codexa viz`
 
 Generate Mermaid diagrams from codebase analysis.
 
 ```bash
-codex viz callgraph
-codex viz deps --target src/main.py
-codex viz symbols --target auth.py
-codex viz workspace
+codexa viz callgraph
+codexa viz deps --target src/main.py
+codexa viz symbols --target auth.py
+codexa viz workspace
 ```
 
 | Flag | Type | Default | Description |
@@ -475,80 +475,80 @@ codex viz workspace
 | `--target, -t` | text | — | Symbol or file to visualize |
 | `--output, -o` | file | — | Write to file instead of stdout |
 
-### `codex watch`
+### `codexa watch`
 
 Watch for changes and re-index automatically.
 
 ```bash
-codex watch
-codex watch --interval 5
+codexa watch
+codexa watch --interval 5
 ```
 
 ## Model Management
 
-### `codex models list`
+### `codexa models list`
 
 List available embedding models.
 
-### `codex models info <name>`
+### `codexa models info <name>`
 
 Show detailed model information.
 
-### `codex models download <name>`
+### `codexa models download <name>`
 
 Pre-download a model for offline use.
 
-### `codex models switch <name>`
+### `codexa models switch <name>`
 
 Switch active embedding model (requires re-index).
 
 ## Plugin Management
 
-### `codex plugin list`
+### `codexa plugin list`
 
 List discovered plugins.
 
-### `codex plugin info <name>`
+### `codexa plugin info <name>`
 
 Show plugin details.
 
-### `codex plugin new <name>`
+### `codexa plugin new <name>`
 
 Scaffold a new plugin from template.
 
 ```bash
-codex plugin new my-formatter
-codex plugin new lint-checker --hooks CUSTOM_VALIDATION,POST_AI
-codex plugin new metrics -o ./plugins/ -a "Your Name"
+codexa plugin new my-formatter
+codexa plugin new lint-checker --hooks CUSTOM_VALIDATION,POST_AI
+codexa plugin new metrics -o ./plugins/ -a "Your Name"
 ```
 
 ## Workspace Management
 
-### `codex workspace init`
+### `codexa workspace init`
 
 Initialize a new workspace.
 
-### `codex workspace add <name> <path>`
+### `codexa workspace add <name> <path>`
 
 Register a repository in the workspace.
 
-### `codex workspace list`
+### `codexa workspace list`
 
 List all registered repositories.
 
-### `codex workspace remove <name>`
+### `codexa workspace remove <name>`
 
 Unregister a repository.
 
-### `codex workspace index`
+### `codexa workspace index`
 
 Index workspace repositories.
 
-### `codex workspace search <query>`
+### `codexa workspace search <query>`
 
 Search across all workspace repos.
 
 ```bash
-codex workspace search "authentication" --top-k 10 --json
-codex workspace search "auth" --repo backend --repo frontend
+codexa workspace search "authentication" --top-k 10 --json
+codexa workspace search "auth" --repo backend --repo frontend
 ```

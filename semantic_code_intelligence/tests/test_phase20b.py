@@ -146,7 +146,7 @@ class TestAppConfig:
     def test_config_dir(self):
         with tempfile.TemporaryDirectory() as tmp:
             cd = AppConfig.config_dir(tmp)
-            assert cd.name == ".codex"
+            assert cd.name == ".codexa"
             assert cd.parent == Path(tmp).resolve()
 
     def test_config_path(self):
@@ -1484,7 +1484,7 @@ class TestWorkspaceExtended:
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace(Path(tmp))
             assert ws.root == Path(tmp).resolve()
-            assert ws.config_dir.name == ".codex"
+            assert ws.config_dir.name == ".codexa"
             assert ws.repos_dir.name == "repos"
 
     def test_add_repo(self):
@@ -1887,7 +1887,7 @@ class TestVersionExtended:
             assert p.isdigit()
 
     def test_app_name_value(self):
-        assert __app_name__ == "codex"
+        assert __app_name__ == "codexa"
 
     def test_version_not_empty(self):
         assert len(__version__) >= 5

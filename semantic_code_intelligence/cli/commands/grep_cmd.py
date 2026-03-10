@@ -1,6 +1,6 @@
 """CLI command: grep — Raw filesystem search without requiring an index.
 
-Unlike ``codex search --mode regex``, this command searches raw files on disk
+Unlike ``codexa search --mode regex``, this command searches raw files on disk
 using ripgrep (if available) or a pure-Python fallback. Zero setup required.
 """
 
@@ -87,16 +87,16 @@ def grep_cmd(
     """Search raw files using regex — no index required.
 
     Uses ripgrep for maximum speed when available, with a pure-Python
-    fallback. Unlike 'codex search --mode regex', this searches the
+    fallback. Unlike 'codexa search --mode regex', this searches the
     actual filesystem, not the index.
 
     \b
     Examples:
-        codex grep "TODO|FIXME"
-        codex grep "def authenticate" -g "*.py"
-        codex grep "password" --case-sensitive
-        codex grep "import re" --json
-        codex grep "class.*Service" -l
+        codexa grep "TODO|FIXME"
+        codexa grep "def authenticate" -g "*.py"
+        codexa grep "password" --case-sensitive
+        codexa grep "import re" --json
+        codexa grep "class.*Service" -l
     """
     import json as json_mod
 

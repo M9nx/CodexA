@@ -60,7 +60,7 @@ DEFAULT_EXTENSIONS: set[str] = {
     ".exs",
 }
 
-CONFIG_DIR_NAME = ".codex"
+CONFIG_DIR_NAME = ".codexa"
 CONFIG_FILE_NAME = "config.json"
 INDEX_DIR_NAME = "index"
 
@@ -196,7 +196,7 @@ class AppConfig(BaseModel):
 
     @classmethod
     def config_dir(cls, project_root: str | Path) -> Path:
-        """Return the .codex config directory for a given project root."""
+        """Return the .codexa config directory for a given project root."""
         return Path(project_root).resolve() / CONFIG_DIR_NAME
 
     @classmethod
@@ -211,7 +211,7 @@ class AppConfig(BaseModel):
 
 
 def load_config(project_root: str | Path = ".") -> AppConfig:
-    """Load configuration from the project's .codex/config.json.
+    """Load configuration from the project's .codexa/config.json.
 
     Falls back to default configuration if the file doesn't exist.
     """
@@ -223,7 +223,7 @@ def load_config(project_root: str | Path = ".") -> AppConfig:
 
 
 def save_config(config: AppConfig, project_root: Optional[str | Path] = None) -> Path:
-    """Save configuration to the project's .codex/config.json.
+    """Save configuration to the project's .codexa/config.json.
 
     Creates the config directory if it doesn't exist.
     Returns the path to the saved config file.

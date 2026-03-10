@@ -57,8 +57,8 @@ class TestCLIReferenceGenerator:
 
     def test_includes_commands(self):
         md = generate_cli_reference(self._make_group())
-        assert "## `codex init`" in md
-        assert "## `codex search`" in md
+        assert "## `codexa init`" in md
+        assert "## `codexa search`" in md
 
     def test_includes_arguments(self):
         md = generate_cli_reference(self._make_group())
@@ -91,8 +91,8 @@ class TestCLIReferenceGenerator:
             """Add a repo."""
 
         md = generate_cli_reference(root)
-        assert "## `codex workspace`" in md
-        assert "## `codex workspace add`" in md
+        assert "## `codexa workspace`" in md
+        assert "## `codexa workspace add`" in md
 
 
 class TestPluginReferenceGenerator:
@@ -266,13 +266,13 @@ class TestDoctorChecks:
         assert "Not initialized" in proj["detail"]
 
     def test_project_initialized(self, tmp_path):
-        (tmp_path / ".codex").mkdir()
+        (tmp_path / ".codexa").mkdir()
         checks = run_checks(tmp_path)
         proj = next(c for c in checks if c["name"] == "Project")
         assert proj["ok"] is True
 
     def test_project_indexed(self, tmp_path):
-        idx = tmp_path / ".codex" / "index"
+        idx = tmp_path / ".codexa" / "index"
         idx.mkdir(parents=True)
         (idx / "vectors.faiss").write_text("dummy")
         checks = run_checks(tmp_path)
@@ -656,7 +656,7 @@ class TestProjectMetadata:
 
     def test_app_name(self):
         from semantic_code_intelligence import __app_name__
-        assert __app_name__ == "codex"
+        assert __app_name__ == "codexa"
 
     def test_pyproject_exists(self):
         root = Path(__file__).resolve().parent.parent.parent

@@ -51,9 +51,9 @@ class TestInitCommand:
     def test_init_creates_project(self, runner: CliRunner, tmp_path: Path):
         result = runner.invoke(cli, ["init", str(tmp_path)])
         assert result.exit_code == 0
-        assert (tmp_path / ".codex").is_dir()
-        assert (tmp_path / ".codex" / "config.json").exists()
-        assert (tmp_path / ".codex" / "index").is_dir()
+        assert (tmp_path / ".codexa").is_dir()
+        assert (tmp_path / ".codexa" / "config.json").exists()
+        assert (tmp_path / ".codexa" / "index").is_dir()
 
     def test_init_already_initialized(self, runner: CliRunner, tmp_path: Path):
         # First init
@@ -67,7 +67,7 @@ class TestInitCommand:
         with runner.isolated_filesystem() as td:
             result = runner.invoke(cli, ["init"])
             assert result.exit_code == 0
-            assert Path(td, ".codex").is_dir()
+            assert Path(td, ".codexa").is_dir()
 
 
 class TestIndexCommand:
@@ -92,7 +92,7 @@ class TestIndexCommand:
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(cli, ["index", str(tmp_path)])
         assert result.exit_code == 0
-        # Should find 2 py files (not counting files in .codex)
+        # Should find 2 py files (not counting files in .codexa)
         assert "2 files" in result.output
 
     def test_index_ignores_excluded_dirs(self, runner: CliRunner, tmp_path: Path):

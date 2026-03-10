@@ -45,11 +45,11 @@ def summary_cmd(ctx: click.Context, path: str, json_mode: bool) -> None:
 
     Examples:
 
-        codex summary
+        codexa summary
 
-        codex summary --json
+        codexa summary --json
 
-        codex summary -p /path/to/project
+        codexa summary -p /path/to/project
     """
     root = Path(path).resolve()
     config = load_config(root)

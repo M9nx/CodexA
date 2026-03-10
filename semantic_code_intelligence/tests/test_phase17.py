@@ -256,7 +256,7 @@ class TestQualitySnapshots:
         )
         from semantic_code_intelligence.ci.quality import QualityReport
 
-        (tmp_path / ".codex").mkdir(exist_ok=True)
+        (tmp_path / ".codexa").mkdir(exist_ok=True)
         pm = ProjectMetrics(
             files_analyzed=5,
             total_loc=200,
@@ -280,7 +280,7 @@ class TestQualitySnapshots:
         )
         from semantic_code_intelligence.ci.quality import QualityReport
 
-        (tmp_path / ".codex").mkdir(exist_ok=True)
+        (tmp_path / ".codexa").mkdir(exist_ok=True)
         pm = ProjectMetrics(
             files_analyzed=3,
             total_loc=100,
@@ -303,7 +303,7 @@ class TestQualitySnapshots:
     def test_load_empty(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import load_snapshots
 
-        (tmp_path / ".codex").mkdir(exist_ok=True)
+        (tmp_path / ".codexa").mkdir(exist_ok=True)
         snaps = load_snapshots(tmp_path)
         assert snaps == []
 
@@ -545,7 +545,7 @@ class TestGateEnforcement:
 
 
 class TestMetricsCLI:
-    """Tests for the `codex metrics` CLI command."""
+    """Tests for the `codexa metrics` CLI command."""
 
     @pytest.fixture
     def runner(self):
@@ -587,7 +587,7 @@ class TestMetricsCLI:
         from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
 
         _write_sample_project(tmp_path)
-        (tmp_path / ".codex").mkdir(exist_ok=True)
+        (tmp_path / ".codexa").mkdir(exist_ok=True)
         result = runner.invoke(metrics_cmd, [
             "--path", str(tmp_path), "--json", "--snapshot",
         ], obj={"pipe": False})
@@ -598,7 +598,7 @@ class TestMetricsCLI:
     def test_history_empty(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
 
-        (tmp_path / ".codex").mkdir(exist_ok=True)
+        (tmp_path / ".codexa").mkdir(exist_ok=True)
         result = runner.invoke(metrics_cmd, [
             "--path", str(tmp_path), "--history", "5",
         ], obj={"pipe": False})
@@ -607,7 +607,7 @@ class TestMetricsCLI:
     def test_trend_needs_data(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
 
-        (tmp_path / ".codex").mkdir(exist_ok=True)
+        (tmp_path / ".codexa").mkdir(exist_ok=True)
         result = runner.invoke(metrics_cmd, [
             "--path", str(tmp_path), "--trend",
         ], obj={"pipe": False})
@@ -622,7 +622,7 @@ class TestMetricsCLI:
 
 
 class TestGateCLI:
-    """Tests for the `codex gate` CLI command."""
+    """Tests for the `codexa gate` CLI command."""
 
     @pytest.fixture
     def runner(self):
@@ -727,8 +727,8 @@ class TestDocsPhase17:
         md = generate_quality_metrics_reference()
         assert "Maintainability Index" in md
         assert "Quality Gates" in md
-        assert "codex gate" in md
-        assert "codex metrics" in md
+        assert "codexa gate" in md
+        assert "codexa metrics" in md
 
     def test_generate_all_docs_includes_quality(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
@@ -740,8 +740,8 @@ class TestDocsPhase17:
         from semantic_code_intelligence.docs import generate_ci_reference
 
         md = generate_ci_reference()
-        assert "codex metrics" in md
-        assert "codex gate" in md
+        assert "codexa metrics" in md
+        assert "codexa gate" in md
 
 
 # =========================================================================

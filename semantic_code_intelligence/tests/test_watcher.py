@@ -49,8 +49,8 @@ class TestFileChangeEvent:
 
 class TestFileWatcher:
     def test_init(self, tmp_path):
-        # Create minimal codex config
-        config_dir = tmp_path / ".codex"
+        # Create minimal codexa config
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
 
@@ -58,7 +58,7 @@ class TestFileWatcher:
         assert not watcher.is_running
 
     def test_callback_registration(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
 
@@ -68,7 +68,7 @@ class TestFileWatcher:
         assert len(watcher._callbacks) == 1
 
     def test_scan_once_baseline(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
         (tmp_path / "file.py").write_text("x = 1", encoding="utf-8")
@@ -79,7 +79,7 @@ class TestFileWatcher:
         assert events == []
 
     def test_scan_once_detects_new_file(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
         (tmp_path / "file.py").write_text("x = 1", encoding="utf-8")
@@ -93,7 +93,7 @@ class TestFileWatcher:
         assert any(e.change_type == "created" for e in events)
 
     def test_scan_once_detects_modification(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
         f = tmp_path / "file.py"
@@ -107,7 +107,7 @@ class TestFileWatcher:
         assert any(e.change_type == "modified" for e in events)
 
     def test_scan_once_detects_deletion(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
         f = tmp_path / "file.py"
@@ -121,7 +121,7 @@ class TestFileWatcher:
         assert any(e.change_type == "deleted" for e in events)
 
     def test_start_stop(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
 
@@ -172,7 +172,7 @@ class TestAsyncIndexer:
 
 class TestIndexingDaemon:
     def test_init(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
 
@@ -180,7 +180,7 @@ class TestIndexingDaemon:
         assert not daemon.is_running
 
     def test_get_status(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
 
@@ -191,7 +191,7 @@ class TestIndexingDaemon:
         assert "events_recorded" in status
 
     def test_event_log(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
 
@@ -199,7 +199,7 @@ class TestIndexingDaemon:
         assert daemon.event_log == []
 
     def test_start_stop(self, tmp_path):
-        config_dir = tmp_path / ".codex"
+        config_dir = tmp_path / ".codexa"
         config_dir.mkdir()
         (config_dir / "config.json").write_text("{}", encoding="utf-8")
 

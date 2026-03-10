@@ -8,9 +8,9 @@ hotspot detection, impact analysis, and CI-ready quality gates.
 Run a comprehensive scan with:
 
 ```bash
-codex quality src/
-codex quality --json            # JSON output
-codex quality --safety-only     # Security-only (fast)
+codexa quality src/
+codexa quality --json            # JSON output
+codexa quality --safety-only     # Security-only (fast)
 ```
 
 ### What Gets Analyzed
@@ -42,9 +42,9 @@ A per-file and project-wide score (0–100) based on:
 Find the riskiest code in your project:
 
 ```bash
-codex hotspots
-codex hotspots --top-n 10 --json
-codex hotspots --no-git       # Skip git churn data
+codexa hotspots
+codexa hotspots --top-n 10 --json
+codexa hotspots --no-git       # Skip git churn data
 ```
 
 ### Risk Factors
@@ -64,9 +64,9 @@ When git data is unavailable, churn weight is redistributed across the other fac
 Predict the blast radius of changes:
 
 ```bash
-codex impact parse_file          # Analyze a function
-codex impact src/parser.py       # Analyze a file
-codex impact MyClass --max-depth 3 --json
+codexa impact parse_file          # Analyze a function
+codexa impact src/parser.py       # Analyze a file
+codexa impact MyClass --max-depth 3 --json
 ```
 
 Impact analysis uses BFS over the call graph and dependency map to find:
@@ -81,8 +81,8 @@ Impact analysis uses BFS over the call graph and dependency map to find:
 Trace execution flow through the codebase:
 
 ```bash
-codex trace parse_file
-codex trace MyClass.process --json
+codexa trace parse_file
+codexa trace MyClass.process --json
 ```
 
 Shows upstream callers and downstream callees to map how execution flows.
@@ -92,10 +92,10 @@ Shows upstream callers and downstream callees to map how execution flows.
 Track quality over time:
 
 ```bash
-codex metrics                  # Current metrics
-codex metrics --snapshot       # Save a snapshot
-codex metrics --history 10     # Last 10 snapshots
-codex metrics --trend          # Direction analysis
+codexa metrics                  # Current metrics
+codexa metrics --snapshot       # Save a snapshot
+codexa metrics --history 10     # Last 10 snapshots
+codexa metrics --trend          # Direction analysis
 ```
 
 Trends report: **improving**, **stable**, or **degrading** for each metric.
@@ -105,8 +105,8 @@ Trends report: **improving**, **stable**, or **degrading** for each metric.
 Enforce quality policies in CI:
 
 ```bash
-codex gate --strict            # Exit code 1 on failure
-codex gate --min-maintainability 60 --max-complexity 15
+codexa gate --strict            # Exit code 1 on failure
+codexa gate --min-maintainability 60 --max-complexity 15
 ```
 
 | Policy | Default | Description |
@@ -123,9 +123,9 @@ codex gate --min-maintainability 60 --max-complexity 15
 Generate CI workflow templates:
 
 ```bash
-codex ci-gen analysis           # Full analysis workflow
-codex ci-gen safety             # Lightweight safety-only
-codex ci-gen precommit          # Pre-commit hook config
+codexa ci-gen analysis           # Full analysis workflow
+codexa ci-gen safety             # Lightweight safety-only
+codexa ci-gen precommit          # Pre-commit hook config
 ```
 
 ## Plugin Hooks

@@ -97,7 +97,7 @@ def plugin_cmd() -> None:
     "-o",
     default=None,
     type=click.Path(file_okay=False),
-    help="Output directory (default: .codex/plugins/).",
+    help="Output directory (default: .codexa/plugins/).",
 )
 def plugin_new(name: str, description: str, author: str, hooks: str, output: str | None) -> None:
     """Scaffold a new plugin from template.
@@ -106,11 +106,11 @@ def plugin_new(name: str, description: str, author: str, hooks: str, output: str
 
     Examples:
 
-        codex plugin new my-formatter
+        codexa plugin new my-formatter
 
-        codex plugin new lint-checker --hooks CUSTOM_VALIDATION,POST_AI
+        codexa plugin new lint-checker --hooks CUSTOM_VALIDATION,POST_AI
 
-        codex plugin new metrics -o ./plugins/ -a "Your Name"
+        codexa plugin new metrics -o ./plugins/ -a "Your Name"
     """
     # Validate hook names
     from semantic_code_intelligence.plugins import PluginHook
@@ -139,7 +139,7 @@ def plugin_new(name: str, description: str, author: str, hooks: str, output: str
     if output:
         out_dir = Path(output).resolve()
     else:
-        out_dir = Path(".codex/plugins").resolve()
+        out_dir = Path(".codexa/plugins").resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     filename = name.replace("-", "_") + ".py"
@@ -151,7 +151,7 @@ def plugin_new(name: str, description: str, author: str, hooks: str, output: str
 
     filepath.write_text(content, encoding="utf-8")
     print_success(f"Created plugin: {filepath}")
-    print_info(f"Register it by placing it in .codex/plugins/ or calling PluginManager.register()")
+    print_info(f"Register it by placing it in .codexa/plugins/ or calling PluginManager.register()")
 
 
 @plugin_cmd.command("list")
@@ -173,17 +173,17 @@ def plugin_new(name: str, description: str, author: str, hooks: str, output: str
 def plugin_list(path: str, json_mode: bool) -> None:
     """List available plugins in the project.
 
-    Scans .codex/plugins/ for discoverable plugin files.
+    Scans .codexa/plugins/ for discoverable plugin files.
 
     Examples:
 
-        codex plugin list
+        codexa plugin list
 
-        codex plugin list --json
+        codexa plugin list --json
     """
     from semantic_code_intelligence.plugins import PluginManager
 
-    plugin_dir = Path(path) / ".codex" / "plugins"
+    plugin_dir = Path(path) / ".codexa" / "plugins"
     mgr = PluginManager()
 
     if plugin_dir.is_dir():
@@ -203,7 +203,7 @@ def plugin_list(path: str, json_mode: bool) -> None:
 
     if not plugins:
         print_info(f"No plugins found in {plugin_dir}/")
-        print_info("Create one with: codex plugin new <name>")
+        print_info("Create one with: codexa plugin new <name>")
         return
 
     from rich.table import Table
@@ -247,11 +247,11 @@ def plugin_info(name: str, path: str, json_mode: bool) -> None:
 
     Examples:
 
-        codex plugin info my-formatter
+        codexa plugin info my-formatter
     """
     from semantic_code_intelligence.plugins import PluginManager
 
-    plugin_dir = Path(path) / ".codex" / "plugins"
+    plugin_dir = Path(path) / ".codexa" / "plugins"
     mgr = PluginManager()
 
     if plugin_dir.is_dir():

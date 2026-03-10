@@ -62,7 +62,7 @@ See [CLI Reference](cli) for the complete command documentation.
 
 ## config
 
-Pydantic configuration models loaded from `.codex/config.json`.
+Pydantic configuration models loaded from `.codexa/config.json`.
 
 | Symbol | Type | Description |
 |--------|------|-------------|
@@ -72,7 +72,7 @@ Pydantic configuration models loaded from `.codex/config.json`.
 | `IndexConfig` | class | Incremental indexing, file extensions |
 | `LLMConfig` | class | Provider, model, API key, temperature |
 | `QualityConfig` | class | Quality gate thresholds |
-| `load_config()` | function | Load config from `.codex/config.json` |
+| `load_config()` | function | Load config from `.codexa/config.json` |
 
 ## context
 

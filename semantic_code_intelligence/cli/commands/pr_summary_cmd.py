@@ -102,11 +102,11 @@ def pr_summary_cmd(
 
     Examples:
 
-        codex pr-summary
+        codexa pr-summary
 
-        codex pr-summary --json
+        codexa pr-summary --json
 
-        codex pr-summary -f src/main.py -f src/utils.py
+        codexa pr-summary -f src/main.py -f src/utils.py
     """
     from semantic_code_intelligence.ci.pr import generate_pr_report
 

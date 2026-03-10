@@ -174,7 +174,7 @@ def _run_textual_tui(
                 if results:
                     self._show_preview(results[0])
             except FileNotFoundError:
-                status.update("  Index not found. Run 'codex index' first.")
+                status.update("  Index not found. Run 'codexa index' first.")
             except Exception as e:
                 status.update(f"  Error: {e}")
 
@@ -423,7 +423,7 @@ def _run_fallback_repl(
             last_results = results
             _print_results(results, line)
         except FileNotFoundError:
-            print("  Index not found. Run 'codex index' first.")
+            print("  Index not found. Run 'codexa index' first.")
         except Exception as e:
             print(f"  Search error: {e}")
 

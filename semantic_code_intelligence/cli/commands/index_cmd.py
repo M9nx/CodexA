@@ -43,7 +43,7 @@ def index_cmd(ctx: click.Context, path: str, force: bool) -> None:
 
     if not config_dir.exists():
         print_error(
-            f"Project not initialized at {root}. Run 'codex init' first."
+            f"Project not initialized at {root}. Run 'codexa init' first."
         )
         ctx.exit(1)
         return

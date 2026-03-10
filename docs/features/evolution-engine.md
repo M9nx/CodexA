@@ -7,9 +7,9 @@ validates them with tests, and commits successes.
 ## Quick Start
 
 ```bash
-codex evolve
-codex evolve --iterations 5 --budget 50000
-codex evolve --timeout 300
+codexa evolve
+codexa evolve --iterations 5 --budget 50000
+codexa evolve --timeout 300
 ```
 
 ## How It Works

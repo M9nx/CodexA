@@ -47,11 +47,11 @@ def docs_cmd(output: str, section: str, json_mode: bool) -> None:
 
     Examples:
 
-        codex docs
+        codexa docs
 
-        codex docs --section plugins -o reference/
+        codexa docs --section plugins -o reference/
 
-        codex docs --json
+        codexa docs --json
     """
     import json
 

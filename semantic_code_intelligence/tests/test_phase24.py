@@ -617,7 +617,7 @@ class TestEvolutionEngineOrchestration:
             )
             engine.run()
 
-        history_file = tmp_path / ".codex" / "evolution_history.json"
+        history_file = tmp_path / ".codexa" / "evolution_history.json"
         assert history_file.exists()
         data = json.loads(history_file.read_text(encoding="utf-8"))
         assert isinstance(data, list)

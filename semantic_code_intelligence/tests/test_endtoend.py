@@ -1,8 +1,8 @@
 """Comprehensive end-to-end tests — simulates a real end user working with CodexA.
 
 Tests the entire user journey:
-  codex --version → codex init → codex index → codex search (all modes/flags)
-  → codex models (list/info/switch) → TUI helpers → VS Code extension
+  codexa --version → codexa init → codexa index → codexa search (all modes/flags)
+  → codexa models (list/info/switch) → TUI helpers → VS Code extension
   → config lifecycle → vector store → formatter → build script → doctor
 """
 
@@ -114,7 +114,7 @@ class TestCLIBasics:
         runner = CliRunner()
         result = runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
-        assert "codex" in result.output.lower()
+        assert "codexa" in result.output.lower()
 
     def test_command_count(self):
         assert len(cli.commands) == 38
@@ -154,18 +154,18 @@ class TestCLIBasics:
 # =========================================================================
 
 class TestInitLifecycle:
-    """Test codex init — the first thing an end user does."""
+    """Test codexa init — the first thing an end user does."""
 
     def test_init_creates_codex_dir(self, project: Path):
         runner = CliRunner()
         result = runner.invoke(cli, ["init", str(project)])
         assert result.exit_code == 0
-        assert (project / ".codex").is_dir()
+        assert (project / ".codexa").is_dir()
 
     def test_init_creates_config_json(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
-        cfg = project / ".codex" / "config.json"
+        cfg = project / ".codexa" / "config.json"
         assert cfg.exists()
         data = json.loads(cfg.read_text(encoding="utf-8"))
         assert "embedding" in data
@@ -174,7 +174,7 @@ class TestInitLifecycle:
     def test_init_creates_index_dir(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
-        assert (project / ".codex" / "index").is_dir()
+        assert (project / ".codexa" / "index").is_dir()
 
     def test_init_idempotent(self, project: Path):
         """Running init twice should not error."""
@@ -204,7 +204,7 @@ class TestInitLifecycle:
 # =========================================================================
 
 class TestIndexing:
-    """Test codex index — second step in the user journey."""
+    """Test codexa index — second step in the user journey."""
 
     def test_index_requires_init(self, project: Path):
         """index on an un-initialized dir should fail cleanly."""
@@ -232,7 +232,7 @@ class TestIndexing:
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
         runner.invoke(cli, ["index", str(project)])
-        index_dir = project / ".codex" / "index"
+        index_dir = project / ".codexa" / "index"
         # Either vectors.faiss exists or no indexable files were found
         faiss_file = index_dir / "vectors.faiss"
         metadata_file = index_dir / "metadata.json"
@@ -245,7 +245,7 @@ class TestIndexing:
 # =========================================================================
 
 class TestSearchModes:
-    """Test codex search across all four modes on an indexed project."""
+    """Test codexa search across all four modes on an indexed project."""
 
     @pytest.fixture(autouse=True)
     def _indexed_project(self, project: Path):
@@ -550,9 +550,9 @@ class TestConfigAPI:
 
     def test_config_dir_paths(self, tmp_path: Path):
         from semantic_code_intelligence.config.settings import AppConfig
-        assert AppConfig.config_dir(tmp_path) == tmp_path / ".codex"
-        assert AppConfig.config_path(tmp_path) == tmp_path / ".codex" / "config.json"
-        assert AppConfig.index_dir(tmp_path) == tmp_path / ".codex" / "index"
+        assert AppConfig.config_dir(tmp_path) == tmp_path / ".codexa"
+        assert AppConfig.config_path(tmp_path) == tmp_path / ".codexa" / "config.json"
+        assert AppConfig.index_dir(tmp_path) == tmp_path / ".codexa" / "index"
 
     def test_load_config_default_when_missing(self, tmp_path: Path):
         from semantic_code_intelligence.config.settings import load_config
@@ -1044,7 +1044,7 @@ class TestFullUserJourney:
         # 1. Init
         r = runner.invoke(cli, ["init", str(project)])
         assert r.exit_code == 0
-        assert (project / ".codex").is_dir()
+        assert (project / ".codexa").is_dir()
 
         # 2. Index
         r = runner.invoke(cli, ["index", str(project)])

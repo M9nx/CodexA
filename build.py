@@ -1,10 +1,10 @@
-"""Build a standalone ``codex`` binary using PyInstaller.
+"""Build a standalone ``codexa`` binary using PyInstaller.
 
 Usage::
 
     pip install pyinstaller
-    python build.py          # produces  dist/codex[.exe]
-    python build.py --onedir # produces  dist/codex/  (directory mode)
+    python build.py          # produces  dist/codexa[.exe]
+    python build.py --onedir # produces  dist/codexa/  (directory mode)
 
 The resulting binary is fully self-contained and does not require a
 Python installation on the target machine.
@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 ENTRY = ROOT / "semantic_code_intelligence" / "cli" / "main.py"
-NAME = "codex"
+NAME = "codexa"
 ICON = ROOT / "assets" / "icon.ico"  # optional — silently skipped if missing
 
 
@@ -62,7 +62,7 @@ def build(onedir: bool = False) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build standalone codex binary")
+    parser = argparse.ArgumentParser(description="Build standalone codexa binary")
     parser.add_argument("--onedir", action="store_true", help="Directory mode instead of single file")
     args = parser.parse_args()
     build(onedir=args.onedir)

@@ -50,15 +50,15 @@ def review_cmd(
 
     Examples:
 
-        codex review src/main.py
+        codexa review src/main.py
 
-        codex review src/utils.py --json
+        codexa review src/utils.py --json
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(f"Project not initialized at {root}. Run 'codex init' first.")
+        print_error(f"Project not initialized at {root}. Run 'codexa init' first.")
         ctx.exit(1)
         return
 

@@ -140,7 +140,7 @@
         "codexa.binaryPath": {
           "type": "string",
           "default": "",
-          "description": "Absolute path to the codex binary. Leave empty to auto-detect from .venv or PATH."
+          "description": "Absolute path to the codexa binary. Leave empty to auto-detect from .venv or PATH."
         }
       }
     }

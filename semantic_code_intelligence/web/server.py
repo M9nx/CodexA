@@ -1,7 +1,7 @@
 """Combined web server — serves both the REST API and web UI.
 
 Merges API and UI routing into a single HTTP handler so that
-a single ``codex web`` command provides both the browser interface and the
+a single ``codexa web`` command provides both the browser interface and the
 developer API on the same port.
 
 Uses only the Python standard library.
@@ -84,7 +84,7 @@ class _CombinedHandler(BaseHTTPRequestHandler):
         import time
 
         if path == "/health":
-            codex_dir = self.project_root / ".codex"
+            codex_dir = self.project_root / ".codexa"
             self._json(200, {
                 "status": "ok",
                 "project_root": str(self.project_root),

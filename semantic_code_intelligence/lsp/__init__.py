@@ -9,7 +9,7 @@ Provides a JSON-RPC 2.0 LSP server over stdio so any LSP-compatible editor
 - **workspace/symbol** — global symbol search
 - **textDocument/definition** — jump to symbol definition
 - **textDocument/references** — find all references
-- **codex/search** — custom semantic search request
+- **codexa/search** — custom semantic search request
 
 The server reuses the same service layer (SearchService, IndexingService,
 ContextProvider) as the MCP server, bridge, and CLI.
@@ -69,7 +69,7 @@ def _write_lsp_message(msg: dict[str, Any]) -> None:
 # ── LSP capabilities & constants ─────────────────────────────────────
 
 _SERVER_INFO = {
-    "name": "codex-lsp",
+    "name": "codexa-lsp",
     "version": "0.29.0",
 }
 
@@ -226,9 +226,9 @@ class LSPServer:
             return self._on_workspace_symbol(req_id, params)
 
         # Custom CodexA methods
-        if method == "codex/search":
+        if method == "codexa/search":
             return self._on_codex_search(req_id, params)
-        if method == "codex/quality":
+        if method == "codexa/quality":
             return self._on_codex_quality(req_id, params)
 
         # Unknown method
@@ -464,7 +464,7 @@ class LSPServer:
             logger.debug("Workspace symbol error: %s", exc)
             return _ok(req_id, [])
 
-    # ── custom codex/search ───────────────────────────────────────
+    # ── custom codexa/search ───────────────────────────────────────
 
     def _on_codex_search(
         self, req_id: Any, params: dict[str, Any]
@@ -487,7 +487,7 @@ class LSPServer:
         except Exception as exc:
             return _error(req_id, -32603, str(exc))
 
-    # ── custom codex/quality ──────────────────────────────────────
+    # ── custom codexa/quality ──────────────────────────────────────
 
     def _on_codex_quality(
         self, req_id: Any, params: dict[str, Any]
@@ -527,7 +527,7 @@ class LSPServer:
                             "end": {"line": max(0, r.end_line - 1), "character": 0},
                         },
                         "severity": 2 if r.rating == "high" else 1,  # Warning/Error
-                        "source": "codex",
+                        "source": "codexa",
                         "message": f"High cyclomatic complexity ({r.complexity}) "
                                    f"in {r.symbol_name}",
                     })

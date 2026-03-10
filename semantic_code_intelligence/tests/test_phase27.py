@@ -134,7 +134,7 @@ class TestLSPServerDispatch:
         import tempfile, os
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             resp = server._handle({
                 "jsonrpc": "2.0",
@@ -144,14 +144,14 @@ class TestLSPServerDispatch:
             })
             assert resp["id"] == 1
             assert "capabilities" in resp["result"]
-            assert resp["result"]["serverInfo"]["name"] == "codex-lsp"
+            assert resp["result"]["serverInfo"]["name"] == "codexa-lsp"
 
     def test_shutdown(self):
         from semantic_code_intelligence.lsp import LSPServer
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             resp = server._handle({
                 "jsonrpc": "2.0",
@@ -168,7 +168,7 @@ class TestLSPServerDispatch:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             resp = server._handle({
                 "jsonrpc": "2.0",
@@ -183,7 +183,7 @@ class TestLSPServerDispatch:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             resp = server._handle({
                 "jsonrpc": "2.0",
@@ -198,7 +198,7 @@ class TestLSPServerDispatch:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             resp = server._handle({
                 "jsonrpc": "2.0",
@@ -212,7 +212,7 @@ class TestLSPServerDispatch:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             server._handle({
                 "jsonrpc": "2.0",
@@ -231,12 +231,12 @@ class TestLSPServerDispatch:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             resp = server._handle({
                 "jsonrpc": "2.0",
                 "id": 10,
-                "method": "codex/search",
+                "method": "codexa/search",
                 "params": {},
             })
             assert resp["error"]["code"] == -32602
@@ -246,19 +246,19 @@ class TestLSPServerDispatch:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             server = LSPServer(root)
             resp = server._handle({
                 "jsonrpc": "2.0",
                 "id": 11,
-                "method": "codex/quality",
+                "method": "codexa/quality",
                 "params": {},
             })
             assert resp["error"]["code"] == -32602
 
 
 class TestLSPCLI:
-    """Test the codex lsp CLI command."""
+    """Test the codexa lsp CLI command."""
 
     def test_lsp_help(self):
         runner = CliRunner()
@@ -300,10 +300,10 @@ class TestIncrementalIndexingFunction:
         )
         from semantic_code_intelligence.config.settings import AppConfig
 
-        # Create a minimal codex project
+        # Create a minimal codexa project
         project = tmp_path / "proj"
         project.mkdir()
-        codex_dir = project / ".codex"
+        codex_dir = project / ".codexa"
         codex_dir.mkdir()
         (project / "hello.py").write_text("x = 1\n", encoding="utf-8")
 
@@ -326,7 +326,7 @@ class TestIncrementalIndexingFunction:
 
         project = tmp_path / "proj"
         project.mkdir()
-        (project / ".codex").mkdir()
+        (project / ".codexa").mkdir()
         (project / "a.py").write_text("def foo():\n    return 1\n", encoding="utf-8")
 
         run_indexing(project, force=True)
@@ -356,7 +356,7 @@ class TestIncrementalIndexingFunction:
 
         project = tmp_path / "proj"
         project.mkdir()
-        (project / ".codex").mkdir()
+        (project / ".codexa").mkdir()
         (project / "a.py").write_text("x = 1\n", encoding="utf-8")
         (project / "b.py").write_text("y = 2\n", encoding="utf-8")
 
@@ -384,7 +384,7 @@ class TestIncrementalIndexingFunction:
 
         project = tmp_path / "proj"
         project.mkdir()
-        (project / ".codex").mkdir()
+        (project / ".codexa").mkdir()
         (project / "a.py").write_text("x = 1\n", encoding="utf-8")
 
         run_indexing(project, force=True)
@@ -404,7 +404,7 @@ class TestIncrementalIndexingFunction:
 
         project = tmp_path / "proj"
         project.mkdir()
-        (project / ".codex").mkdir()
+        (project / ".codexa").mkdir()
         (project / "a.py").write_text("x = 1\n", encoding="utf-8")
 
         # No prior index exists — should fall back
@@ -448,7 +448,7 @@ class TestDaemonIncrementalWiring:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             daemon = IndexingDaemon(root)
 
             events = [
@@ -473,7 +473,7 @@ class TestDaemonIncrementalWiring:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             (root / "test.py").write_text("x = 1\n", encoding="utf-8")
 
             watcher = FileWatcher(root, poll_interval=60)
@@ -492,7 +492,7 @@ class TestDaemonIncrementalWiring:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             (root / "a.py").write_text("x = 1\n", encoding="utf-8")
 
             watcher = FileWatcher(root, poll_interval=60)
@@ -507,7 +507,7 @@ class TestDaemonIncrementalWiring:
         import tempfile
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            (root / ".codex").mkdir()
+            (root / ".codexa").mkdir()
             (root / "a.py").write_text("x = 1\n", encoding="utf-8")
 
             watcher = FileWatcher(root, poll_interval=60)

@@ -2,7 +2,7 @@
 
 Multi-panel developer intelligence sidebar — semantic search, symbol
 exploration, code quality analysis, AI agent tooling, and more — powered
-by the `codex` CLI.
+by the `codexa` CLI.
 
 ## Features
 
@@ -25,7 +25,7 @@ by the `codex` CLI.
 | **CodexA: List Models** | — | Quick-pick list of embedding models |
 | **CodexA: Code Quality Analysis** | `Ctrl+Shift+Q` | Full quality report |
 | **CodexA: Explain Symbol at Cursor** | `Ctrl+Shift+E` | Structural explanation of symbol under cursor |
-| **CodexA: Doctor (Health Check)** | — | Run `codex doctor` and show results |
+| **CodexA: Doctor (Health Check)** | — | Run `codexa doctor` and show results |
 | **CodexA: Re-Index Codebase** | — | Trigger a full re-index |
 
 ### Editor Integration
@@ -36,10 +36,10 @@ by the `codex` CLI.
 
 ## Prerequisites
 
-* The `codex` CLI must be installed and available on `PATH`,
+* The `codexa` CLI must be installed and available on `PATH`,
   or configure `codexa.binaryPath` in VS Code settings.
 * If working inside the CodexA repo itself, the extension auto-detects
-  `.venv/Scripts/codex.exe` (Windows) or `.venv/bin/codex` (Unix).
+  `.venv/Scripts/codexa.exe` (Windows) or `.venv/bin/codexa` (Unix).
 
 ## Development
 

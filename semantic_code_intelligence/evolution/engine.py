@@ -229,8 +229,8 @@ class EvolutionEngine:
     # ------------------------------------------------------------------ #
 
     def _write_history(self, result: EvolutionResult) -> None:
-        """Append the evolution run to ``.codex/evolution_history.json``."""
-        history_dir = self._root / ".codex"
+        """Append the evolution run to ``.codexa/evolution_history.json``."""
+        history_dir = self._root / ".codexa"
         history_dir.mkdir(parents=True, exist_ok=True)
         history_file = history_dir / "evolution_history.json"
 
