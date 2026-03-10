@@ -73,7 +73,7 @@ codexa hotspots
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.30.0 |
+| **Version** | 0.4.0 |
 | **CLI Commands** | 39 |
 | **AI Agent Tools** | 13 (+ plugin-registered) |
 | **Plugin Hooks** | 22 |

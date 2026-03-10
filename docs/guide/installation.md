@@ -6,6 +6,12 @@
 - **pip** or **uv** package manager
 - **Git** (for version-controlled projects)
 
+## Install from PyPI
+
+```bash
+pip install codexa
+```
+
 ## Install from Source
 
 ```bash
@@ -55,7 +61,7 @@ pip install -e ".[dev,tui]"
 
 ```bash
 codexa --version
-# codexa-ai 0.30.0
+# codexa 0.4.0
 
 codexa doctor
 # Checks environment health

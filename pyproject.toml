@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "codexa-ai"
-version = "0.30.0"
-description = "Developer intelligence CLI — semantic code search, AI-assisted understanding, and workspace tooling"
+name = "codexa"
+version = "0.4.0"
+description = "Developer intelligence CLI — semantic code search, AI-assisted understanding, and agent tooling for codebases"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -17,7 +17,9 @@ keywords = [
     "ai-assistant",
     "cli",
     "tree-sitter",
+    "faiss",
     "embeddings",
+    "mcp",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -60,7 +62,8 @@ build = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/M9nx/CodexA"
+Homepage = "https://codex-a.dev"
+Documentation = "https://codex-a.dev"
 Repository = "https://github.com/M9nx/CodexA"
 Issues = "https://github.com/M9nx/CodexA/issues"
 Changelog = "https://github.com/M9nx/CodexA/blob/main/CHANGELOG.md"

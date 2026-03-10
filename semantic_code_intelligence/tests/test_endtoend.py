@@ -990,14 +990,14 @@ class TestVSCodeExtension:
 class TestBuildScript:
     """Verify the PyInstaller build script is usable."""
 
-    BUILD_PY = Path(__file__).resolve().parents[2] / "build.py"
+    BUILD_PY = Path(__file__).resolve().parents[2] / "scripts" / "build_binary.py"
 
     def test_build_py_exists(self):
         assert self.BUILD_PY.exists()
 
     def test_build_py_importable(self):
         import importlib.util
-        spec = importlib.util.spec_from_file_location("build", str(self.BUILD_PY))
+        spec = importlib.util.spec_from_file_location("build_binary", str(self.BUILD_PY))
         assert spec is not None
         mod = importlib.util.module_from_spec(spec)
         # Don't exec the module (it would try to build) — just check it

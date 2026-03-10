@@ -18,7 +18,7 @@ from semantic_code_intelligence.cli.main import cli
 
 class TestVersion027:
     def test_version_is_027(self):
-        assert __version__ == "0.30.0"
+        assert __version__ == "0.4.0"
 
 
 # =========================================================================
@@ -204,11 +204,11 @@ class TestModelRegistry:
 
 class TestBuildScript:
     def test_build_script_exists(self):
-        assert Path("build.py").exists() or Path("d:/mounir/CodexA/build.py").exists()
+        assert Path("scripts/build_binary.py").exists() or Path("d:/mounir/CodexA/scripts/build_binary.py").exists()
 
     def test_build_script_importable(self):
         import importlib.util
-        spec = importlib.util.spec_from_file_location("build", "build.py")
+        spec = importlib.util.spec_from_file_location("build_binary", "scripts/build_binary.py")
         assert spec is not None
 
 

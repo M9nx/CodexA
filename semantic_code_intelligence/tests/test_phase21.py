@@ -410,14 +410,14 @@ class TestTypeCheckingGuard:
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestVersion:
-    """Version must be ≥ 0.21.0 for Phase 21."""
+    """Version must be ≥ 0.4.0 for stable release."""
 
     def test_version_in_init(self) -> None:
         from semantic_code_intelligence import __version__
         parts = __version__.split(".")
         assert len(parts) >= 3
         major, minor = int(parts[0]), int(parts[1])
-        assert (major, minor) >= (0, 21)
+        assert (major, minor) >= (0, 4)
 
     def test_version_in_pyproject(self) -> None:
         text = _read_pyproject()
@@ -425,4 +425,4 @@ class TestVersion:
         assert match is not None
         parts = match.group(1).split(".")
         major, minor = int(parts[0]), int(parts[1])
-        assert (major, minor) >= (0, 21)
+        assert (major, minor) >= (0, 4)

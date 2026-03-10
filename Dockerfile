@@ -2,7 +2,7 @@ FROM python:3.12-slim AS base
 
 LABEL maintainer="M9nx <https://github.com/M9nx>"
 LABEL description="CodexA — Developer intelligence CLI"
-LABEL version="0.30.0"
+LABEL version="0.4.0"
 
 # Install ripgrep for fast filesystem grep
 RUN apt-get update && \

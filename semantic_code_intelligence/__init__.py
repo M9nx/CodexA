@@ -1,4 +1,5 @@
 """Semantic Code Intelligence - Local semantic code search and AI-assisted code understanding."""
 
-__version__ = "0.30.0"
+from semantic_code_intelligence.version import __version__
+
 __app_name__ = "codexa"

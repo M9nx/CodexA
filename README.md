@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.30.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.4.0-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2595-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -40,24 +40,17 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 
 ## Quick Start
 
-### 1. Clone & Install
+### 1. Install
+
+```bash
+pip install codexa
+```
+
+Or install from source:
 
 ```bash
 git clone https://github.com/M9nx/CodexA.git
 cd CodexA
-
-# Create a virtual environment (recommended)
-python -m venv .venv
-
-# Activate it
-# Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# Windows (cmd):
-.venv\Scripts\activate.bat
-# macOS / Linux:
-source .venv/bin/activate
-
-# Install in editable mode with dev dependencies
 pip install -e ".[dev]"
 ```
 
@@ -208,7 +201,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codexa --version    # → codexa, version 0.30.0
+codexa --version    # → codexa, version 0.4.0
 ```
 
 ### Step 2 — Initialize your target project

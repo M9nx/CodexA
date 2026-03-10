@@ -2,6 +2,42 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.4.0] — First Stable Public Release
+
+### Release Highlights
+CodexA v0.4.0 is the first stable public release — focused on stabilization, packaging, and usability.
+
+### Packaging & Distribution
+- **Package renamed**: `codexa-ai` → `codexa` for cleaner `pip install codexa`
+- **`version.py`**: Single source of truth for version at `semantic_code_intelligence/version.py`
+- **PyPI ready**: `pip install codexa` installs CLI and all dependencies
+- **Docker**: Production-ready image with `docker build -t codexa .`
+- **Homebrew**: `brew install --formula Formula/codexa.rb`
+- **Reproducible builds**: `python -m build` generates sdist + wheel
+
+### CLI Stability
+- All **39 commands** verified with `--help`
+- Consistent `--json` output across all commands
+- Global error handler with graceful messages
+- `codexa --version` → `codexa, version 0.4.0`
+
+### Key Capabilities (cumulative)
+- **Semantic search**: FAISS vector index + sentence-transformers (`all-MiniLM-L6-v2`)
+- **Multi-mode search**: semantic, keyword (BM25), regex, hybrid (RRF), and grep
+- **Tree-sitter parsing**: 11 languages (Python, JS, TS, TSX, Java, Go, Rust, C++, C#, Ruby, PHP)
+- **13 AI agent tools**: via CLI, HTTP bridge, MCP server, or MCP-over-SSE
+- **Quality analysis**: complexity, security (Bandit), hotspots, impact, quality gates
+- **Plugin system**: 22 hooks across the full pipeline
+- **39 CLI commands** with `--json`, `--pipe`, `--verbose` flags
+- **2595 tests**, all passing
+
+### Changed
+- Version: 0.30.0 → 0.4.0 (semantic versioning for public release)
+- Package name: `codexa-ai` → `codexa`
+- Homepage: github.com/M9nx/CodexA → codex-a.dev
+
+---
+
 ## [0.30.0] — Competitive Feature Parity & Distribution
 
 ### New Commands
