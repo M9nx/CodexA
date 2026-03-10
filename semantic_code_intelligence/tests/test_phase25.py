@@ -450,7 +450,7 @@ class TestImportsAndVersion:
 
     def test_version_0_25(self) -> None:
         import semantic_code_intelligence
-        assert semantic_code_intelligence.__version__ == "0.4.0"
+        assert semantic_code_intelligence.__version__ == "0.4.1"
 
     def test_vector_store_has_remove_by_file(self) -> None:
         assert hasattr(VectorStore, "remove_by_file")

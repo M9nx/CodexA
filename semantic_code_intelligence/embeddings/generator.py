@@ -69,7 +69,13 @@ def get_model(
 
     if cache_key not in _model_cache:
         _configure_hf_token()
-        from sentence_transformers import SentenceTransformer
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError:
+            raise ImportError(
+                "sentence-transformers is required for embeddings. "
+                "Install it with: pip install codexa[ml]"
+            ) from None
 
         use_onnx = False
         if backend == "onnx":

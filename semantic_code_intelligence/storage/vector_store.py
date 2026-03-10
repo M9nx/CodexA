@@ -15,7 +15,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-import faiss
+try:
+    import faiss  # type: ignore[import-untyped]
+except ImportError:
+    faiss = None  # type: ignore[assignment]
+
 import numpy as np
 
 from semantic_code_intelligence.utils.logging import get_logger
@@ -53,6 +57,11 @@ class VectorStore:
     """
 
     def __init__(self, dimension: int, *, use_ivf: bool = False) -> None:
+        if faiss is None:
+            raise ImportError(
+                "faiss-cpu is required for vector search. "
+                "Install it with: pip install codexa[ml]"
+            )
         self.dimension = dimension
         self._use_ivf = use_ivf
         if use_ivf:
