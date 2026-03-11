@@ -494,14 +494,77 @@ Major rewrite of the VS Code extension from basic 4-command wrapper to a rich mu
 
 ## Upcoming Phases
 
-### Phase 31: Remote / Cloud Mode
-Package CodexA as a Docker container with a REST API so teams can share one index server. Add auth, rate limiting, team dashboards.
+### Phase 31: RAG Pipeline for LLM Commands ✅
 
-### Phase 32: CI/CD Deep Integration
-GitHub Actions / GitLab CI plugin that runs `codexa quality` on PRs, blocks merges on regressions, and posts inline review comments.
+| Feature | Status |
+|---------|--------|
+| 4-stage RAG pipeline (Retrieve → Deduplicate → Re-rank → Assemble) | ✅ |
+| Configurable retrieval strategies (semantic, keyword, hybrid, multi) | ✅ |
+| Cross-encoder re-ranking (`ms-marco-MiniLM-L-6-v2`) | ✅ |
+| Token-aware context assembly with budget (default 3000 tokens) | ✅ |
+| Source citations with `[N]` markers and file path/line references | ✅ |
+| RAG config: `rag_budget_tokens`, `rag_strategy`, `rag_use_cross_encoder` | ✅ |
+| `ask`, `chat`, `suggest`, `investigate` commands upgraded to RAG | ✅ |
 
-### Phase 33: RAG Pipeline
-Connect the vector store to LLMs for retrieval-augmented code generation — "write a function like X but for Y" with real codebase context.
+**2596 tests, all passing** | Version 0.4.5
+
+---
+
+### Phase 32: Rust Search Engine Core ✅
+Native Rust crate (`codexa-core`) compiled as a Python extension via PyO3/maturin,
+providing high-performance alternatives to the Python search and indexing stack.
+
+| Feature | Status |
+|---------|--------|
+| `RustVectorStore` — flat brute-force inner-product search with rayon parallelism | ✅ |
+| `HnswVectorStore` — HNSW approximate nearest-neighbour via `instant-distance` | ✅ |
+| Memory-mapped vector persistence (`load_mmap`) via `memmap2` | ✅ |
+| `RustBM25Index` — BM25 keyword search with identical tokenization to Python | ✅ |
+| `RustChunker` — line-boundary code chunker | ✅ |
+| `AstChunker` — tree-sitter AST-aware chunker (10 languages: Python, JS, TS, TSX, Rust, Go, Java, C, C++, Ruby) | ✅ |
+| `RustScanner` — parallel file scanner with blake3 hashing and `.codexaignore` | ✅ |
+| `reciprocal_rank_fusion_rs` — Rust-native RRF for hybrid search | ✅ |
+| `OnnxEmbedder` — ONNX Runtime embedding inference (feature-gated `onnx`) | ✅ |
+| Python integration: `rust_backend.py` bridge with graceful fallback | ✅ |
+| Transparent Rust acceleration in `vector_store.py`, `keyword_search.py`, `hybrid_search.py` | ✅ |
+| Binary formats: `vectors.bin` (flat), `hnsw_vectors.bin` (HNSW+metadata) | ✅ |
+
+**2596 tests, all passing** | Commits `a3ae6eb`, `66cebda`
+
+---
+
+### Phase 33: Remote / Cloud Mode
+Package CodexA as a Docker container with a shared REST API so teams can share
+one index server. Add authentication, rate limiting, and team dashboards.
+
+### Phase 34: GitHub / GitLab CI Plugin
+GitHub Actions / GitLab CI plugin that runs `codexa quality` on PRs, blocks
+merges on regressions, and posts inline review comments.
+
+### Phase 35: Multi-Agent Orchestration
+Allow multiple AI agents to share a single CodexA instance with isolated
+sessions, concurrent tool invocations, and coordinated context windows.
+
+### Phase 36: Incremental Embedding Models
+Hot-swap embedding models without full re-index — store raw chunks alongside
+vectors and re-embed lazily on model change.
+
+### Phase 37: Code Generation Pipeline
+Use RAG context + LLM to generate code scaffolds, tests, and documentation
+from natural language descriptions grounded in the actual codebase.
+
+### Phase 38: Distributed Workspace Federation
+Federate multiple CodexA instances across machines/orgs — search across remote
+indexes without copying data, with result merging and access control.
+
+### Phase 39: IDE Extension v2 — Multi-IDE Support
+Extend the VS Code extension to JetBrains (IntelliJ plugin) and Neovim (Lua),
+sharing the same bridge server backend.
+
+### Phase 40: Semantic Diff & Code Review AI
+AST-level diff analysis — detect semantic changes (renamed symbols, moved
+functions, signature changes) vs. cosmetic changes (formatting, comments).
+Power AI code review with structural understanding.
 
 ---
 
@@ -731,7 +794,9 @@ codexa CLI (Click) — 39 commands
 | Config | Pydantic v2 |
 | Logging / Output | Rich |
 | Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
-| Vector Search | FAISS (IndexFlatIP) |
-| Code Parsing | tree-sitter 0.25+ (11 language grammars) |
-| Testing | pytest + pytest-cov (2595 tests) |
+| Vector Search | FAISS (IndexFlatIP) + Rust HNSW (instant-distance) |
+| Rust Engine | PyO3 + maturin (`codexa-core` crate) |
+| Code Parsing | tree-sitter 0.25+ (11 Python grammars) + Rust tree-sitter 0.24 (10 grammars) |
+| RAG Pipeline | 4-stage retrieval with cross-encoder re-ranking |
+| Testing | pytest + pytest-cov (2596 tests) |
 | Python | 3.12+ |

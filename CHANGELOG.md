@@ -2,6 +2,27 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [0.5.0] — Rust Search Engine Core (Phase 32)
+
+### New Features
+- **Rust native engine**: `codexa-core` crate compiled via PyO3/maturin — transparent acceleration for search, indexing, and chunking
+- **HNSW vector index**: `HnswVectorStore` using `instant-distance` for O(log n) approximate nearest-neighbour search
+- **Memory-mapped persistence**: `RustVectorStore.load_mmap()` and `HnswVectorStore.load()` use `memmap2` for near-instant startup
+- **AST-aware chunker**: `AstChunker` splits code at function/class/method boundaries using tree-sitter grammars for 10 languages (Python, JS, TS, TSX, Rust, Go, Java, C, C++, Ruby)
+- **Rust BM25 index**: `RustBM25Index` with identical tokenization to the Python implementation
+- **Rust parallel scanner**: `RustScanner` with blake3 hashing and `.codexaignore` support via rayon
+- **Rust RRF fusion**: `reciprocal_rank_fusion_rs` for hybrid search
+- **ONNX embedder**: `OnnxEmbedder` for ONNX Runtime inference (feature-gated behind `onnx`)
+- **Graceful fallback**: All Rust components are optional — Python implementations used when crate is not installed
+
+### Changed
+- `vector_store.py`: Rust search fast path with cached `_rs_store` mirror, dual-format save (`vectors.faiss` + `vectors.bin`)
+- `keyword_search.py`: BM25 dispatches to `RustBM25Index` when available
+- `hybrid_search.py`: RRF delegates to Rust when available
+- `search_service.py`: Auto-index detects both index formats
+- Binary formats: `vectors.bin` (flat), `hnsw_vectors.bin` (HNSW with embedded metadata)
+- Version bumped to 0.5.0
+
 ## [0.4.5] — RAG Pipeline for LLM Commands (Phase 31)
 
 ### New Features

@@ -492,7 +492,7 @@ class TestPipelineMode:
     def test_version_option(self):
         runner = CliRunner()
         result = runner.invoke(cli, ["--version"])
-        assert "0.4.5" in result.output
+        assert "0.5.0" in result.output
 
 
 # =========================================================================
@@ -652,7 +652,7 @@ class TestProjectMetadata:
 
     def test_version_is_0_13(self):
         from semantic_code_intelligence import __version__
-        assert __version__ == "0.4.5"
+        assert __version__ == "0.5.0"
 
     def test_app_name(self):
         from semantic_code_intelligence import __app_name__

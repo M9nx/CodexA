@@ -837,7 +837,7 @@ class TestVersion:
     def test_version_string(self):
         from semantic_code_intelligence import __version__
 
-        assert __version__ == "0.4.5"
+        assert __version__ == "0.5.0"
 
     def test_cli_version(self):
         from semantic_code_intelligence.cli.main import cli
@@ -845,7 +845,7 @@ class TestVersion:
         runner = CliRunner()
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.4.5" in result.output
+        assert "0.5.0" in result.output
 
 
 # =========================================================================

@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/version-0.4.5-green" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.5.0-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2596-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
@@ -25,7 +25,9 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 | Area | What you get |
 |------|-------------|
 | **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `--watch` live re-indexing, `.codexaignore` support |
+| **Rust Search Engine** | Native `codexa-core` Rust crate via PyO3 — HNSW approximate nearest-neighbour search, BM25 keyword index, tree-sitter AST chunker (10 languages), memory-mapped vector persistence, parallel file scanner, optional ONNX embedding inference |
 | **Multi-Mode Search** | Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep (ripgrep backend) with full `-A/-B/-C/-w/-v/-c` flags |
+| **RAG Pipeline** | 4-stage Retrieval-Augmented Generation — Retrieve → Deduplicate → Re-rank → Assemble with token budget, cross-encoder re-ranking, source citations |
 | **Code Context** | Rich context windows — imports, dependencies, AST-based call graphs, surrounding code |
 | **Repository Analysis** | Language breakdown (`codexa languages`), module summaries, component detection |
 | **AI Agent Protocol** | 13 built-in tools exposed via HTTP bridge, MCP server (13 tools), MCP-over-SSE (`--mcp`), or CLI for any AI agent to invoke |
@@ -233,7 +235,7 @@ cd CodexA
 pip install -e ".[dev]"
 
 # Verify
-codexa --version    # → codexa, version 0.4.5
+codexa --version    # → codexa, version 0.5.0
 ```
 
 ### Step 2 — Initialize your target project
@@ -532,8 +534,13 @@ Additional tools can be registered via the plugin system using the
 │  /tools/invoke · /tools/list · /request · SSE stream │
 ├──────────────┬──────────────┬───────────────────────┤
 │ Parsing      │ Embedding    │ Search                │
-│ tree-sitter  │ sent-trans   │ FAISS                 │
+│ tree-sitter  │ sent-trans   │ FAISS / Rust HNSW     │
 ├──────────────┼──────────────┴───────────────────────┤
+│ Rust Engine  │  codexa-core (PyO3)                   │
+│ (optional)   │  HNSW · BM25 · AST chunk · mmap · RRF│
+├──────────────┼──────────────────────────────────────┤
+│ RAG Pipeline │  Retrieve → Dedup → Re-rank → Assemble│
+├──────────────┼──────────────────────────────────────┤
 │ Evolution    │  Self-improving dev loop              │
 │ engine       │  budget · task · patch · test · commit│
 ├──────────────┴──────────────────────────────────────┤
@@ -626,10 +633,11 @@ codexa --verbose search "query"
 ## Tech Stack
 
 - **Python 3.11+** — No heavy frameworks, stdlib-first design
+- **Rust (codexa-core)** — Native search engine via PyO3 — HNSW (instant-distance), BM25, tree-sitter AST chunking, mmap persistence, parallel scanning (rayon)
 - **click** — CLI framework
 - **sentence-transformers** — Embedding generation (`all-MiniLM-L6-v2`)
-- **faiss-cpu** — Vector similarity search (O(1) file-level index, batch reconstruction)
-- **tree-sitter** — Multi-language code parsing
+- **faiss-cpu** — Vector similarity search (with Rust HNSW acceleration)
+- **tree-sitter** — Multi-language code parsing (Python + Rust)
 - **watchfiles** — Rust-backed native file watching (inotify/FSEvents/ReadDirectoryChanges)
 - **pydantic** — Configuration & data models
 - **rich** — Terminal UI and formatting
