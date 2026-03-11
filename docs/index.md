@@ -17,11 +17,11 @@ features:
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'
     title: Semantic Search
-    details: Natural-language code search powered by sentence-transformers and FAISS. Find code by meaning, not just keywords — queries are embedded into vectors and matched against your entire codebase.
+    details: Natural-language code search powered by sentence-transformers, FAISS, and optional Tantivy full-text engine. Multi-mode — semantic, BM25, regex, hybrid (RRF), grep. JSONL streaming, --scores, --snippet-length, --no-snippet, --hybrid/--sem shorthands, pagination cursors.
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>'
     title: AI Agent Protocol
-    details: 13 structured tools invocable via CLI, HTTP bridge, MCP, or Python API. Designed for autonomous AI coding agents with structured JSON input/output.
+    details: 13 structured tools invocable via CLI, HTTP bridge, or MCP server with cursor-based pagination. codexa --serve shorthand, Claude Desktop auto-config (--claude-config), SSE streaming, and full Cursor/Windsurf compatibility.
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 10.5V7c0-1.38-1.12-2.5-2.5-2.5S12 5.62 12 7v3.5"/><path d="M7 10.5V7c0-1.38 1.12-2.5 2.5-2.5"/><path d="m2 19 5-5"/><path d="m7 19 5-5"/><path d="m12 19 5-5"/><path d="m17 19 5-5"/></svg>'
     title: Multi-Language Parsing
@@ -41,11 +41,11 @@ features:
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>'
     title: 39 CLI Commands
-    details: Comprehensive Click-based CLI with --json, --pipe, and --verbose flags. Every command returns structured output suitable for scripting and automation. Includes grep, benchmark, languages, and raw filesystem search.
+    details: Comprehensive Click-based CLI with --json, --pipe, --jsonl, and --verbose flags. Every command returns structured output suitable for scripting and automation. Includes grep with --exclude/--no-ignore/-L, benchmark, languages, and raw filesystem search. Single-binary distribution via PyInstaller.
   - icon:
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>'
     title: Multiple Interfaces
-    details: CLI, Web UI, REST API, Bridge Server, MCP Server, LSP Server, and interactive TUI — all built on the same tool protocol for consistent behavior everywhere.
+    details: CLI, Web UI, REST API, Bridge Server, MCP Server (with cursor-based pagination), LSP Server, and interactive TUI — all built on the same tool protocol for consistent behavior everywhere. Incremental indexing with --add/--inspect and model-consistency guards.
 ---
 
 ## Quick Start
@@ -64,6 +64,8 @@ codexa doctor
 
 # Search your code
 codexa search "authentication middleware"
+codexa search "auth flow" --hybrid --scores
+codexa grep "TODO|FIXME" --jsonl -L
 
 # AI-powered analysis
 codexa ask "How does the auth flow work?"
@@ -75,7 +77,7 @@ codexa hotspots
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.4.3 |
+| **Version** | 0.5.0 |
 | **CLI Commands** | 39 |
 | **AI Agent Tools** | 13 (+ plugin-registered) |
 | **Plugin Hooks** | 22 |

@@ -64,6 +64,20 @@ logger = get_logger("cli.search")
     help="Search mode: semantic (default), keyword (BM25), regex, or hybrid (RRF).",
 )
 @click.option(
+    "--hybrid",
+    "hybrid_shorthand",
+    is_flag=True,
+    default=False,
+    help="Shorthand for --mode hybrid.",
+)
+@click.option(
+    "--sem",
+    "sem_shorthand",
+    is_flag=True,
+    default=False,
+    help="Shorthand for --mode semantic.",
+)
+@click.option(
     "--full-section",
     "--full",
     is_flag=True,
@@ -111,6 +125,37 @@ logger = get_logger("cli.search")
     default=False,
     help="Prefix each output line with its line number (like grep -n).",
 )
+@click.option(
+    "--scores",
+    is_flag=True,
+    default=False,
+    help="Prefix each result with its relevance score (e.g. [0.847]).",
+)
+@click.option(
+    "--snippet-length",
+    type=int,
+    default=None,
+    help="Truncate snippet content to N characters.",
+)
+@click.option(
+    "--no-snippet",
+    is_flag=True,
+    default=False,
+    help="Omit snippet content — output metadata only.",
+)
+@click.option(
+    "--exclude",
+    "exclude_glob",
+    default=None,
+    type=str,
+    help="Exclude files matching this glob pattern from results.",
+)
+@click.option(
+    "--no-ignore",
+    is_flag=True,
+    default=False,
+    help="Include files normally ignored by .gitignore / .codexaignore.",
+)
 @click.pass_context
 def search_cmd(
     ctx: click.Context,
@@ -120,6 +165,8 @@ def search_cmd(
     jsonl_mode: bool,
     path: str,
     mode: str,
+    hybrid_shorthand: bool,
+    sem_shorthand: bool,
     full_section: bool,
     no_auto_index: bool,
     case_sensitive: bool,
@@ -127,6 +174,11 @@ def search_cmd(
     files_only: bool,
     files_without_match: bool,
     line_numbers: bool,
+    scores: bool,
+    snippet_length: int | None,
+    no_snippet: bool,
+    exclude_glob: str | None,
+    no_ignore: bool,
 ) -> None:
     """Search the indexed codebase using a natural language query.
 
@@ -146,6 +198,15 @@ def search_cmd(
         -n   prefix lines with line numbers
         -C N show N context lines before/after each match
 
+    Output control:
+
+    \b
+        --scores          prefix each result with [0.847] relevance score
+        --snippet-length  truncate snippet to N characters
+        --no-snippet      metadata only (no code content)
+        --exclude         exclude files matching a glob
+        --no-ignore       include ignored files
+
     Examples:
 
     \b
@@ -156,6 +217,8 @@ def search_cmd(
         codexa search "error handling" -k 5 --json
         codexa search "TODO" --mode regex -l
         codexa search "pattern" --jsonl | jq .file_path
+        codexa search "login" --scores --snippet-length 200
+        codexa search "auth" --no-snippet --jsonl
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
@@ -169,6 +232,12 @@ def search_cmd(
 
     config = load_config(root)
     result_count = top_k or config.search.top_k
+
+    # Apply shorthand flags
+    if hybrid_shorthand:
+        mode = "hybrid"
+    elif sem_shorthand:
+        mode = "semantic"
 
     try:
         results = search_codebase(
@@ -190,6 +259,20 @@ def search_cmd(
                 "Search index is empty. Run 'codexa index' to build the index."
             )
         return
+
+    # --- Filter by exclude glob ---
+    if exclude_glob:
+        import fnmatch
+        results = [r for r in results if not fnmatch.fnmatch(r.file_path, exclude_glob)]
+
+    # --- Apply snippet controls ---
+    if no_snippet:
+        for r in results:
+            r.content = ""
+    elif snippet_length is not None:
+        for r in results:
+            if len(r.content) > snippet_length:
+                r.content = r.content[:snippet_length]
 
     # --- Grep-style output modes ---
 
@@ -219,11 +302,21 @@ def search_cmd(
     # --- Machine-readable output ---
 
     if jsonl_mode:
-        click.echo(format_results_jsonl(results))
+        click.echo(format_results_jsonl(results, scores=scores))
         return
 
     if json_mode:
         click.echo(format_results_json(query, results, result_count))
+        return
+
+    # --- Scores-only text mode ---
+    if scores and not line_numbers:
+        for r in results:
+            prefix = f"[{r.score:.3f}] "
+            click.echo(f"{prefix}{r.file_path}:L{r.start_line}-L{r.end_line}")
+            if r.content:
+                for line in r.content.splitlines()[:5]:
+                    click.echo(f"  {line}")
         return
 
     # --- Rich / grep-style human output ---
@@ -233,4 +326,5 @@ def search_cmd(
         results,
         line_numbers=line_numbers,
         context_lines=context_lines,
+        show_scores=scores,
     )

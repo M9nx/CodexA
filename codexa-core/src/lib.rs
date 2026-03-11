@@ -14,6 +14,8 @@ mod embed;
 mod hnsw;
 mod hybrid;
 mod scan;
+#[cfg(feature = "tantivy-backend")]
+mod tantivy_search;
 
 /// The top-level Python module exposed via PyO3.
 #[pymodule]
@@ -44,6 +46,10 @@ fn codexa_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // ONNX embedder (only when compiled with --features onnx)
     #[cfg(feature = "onnx")]
     m.add_class::<embed::OnnxEmbedder>()?;
+
+    // Tantivy full-text search (only when compiled with --features tantivy-backend)
+    #[cfg(feature = "tantivy-backend")]
+    m.add_class::<tantivy_search::TantivyIndex>()?;
 
     Ok(())
 }

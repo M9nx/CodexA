@@ -4,9 +4,12 @@ Uses the official ``mcp`` SDK (https://pypi.org/project/mcp/) to expose
 CodexA as a tool provider for Claude Desktop, Cursor, and other
 MCP-compatible clients.
 
-Exposes 11 tools: semantic_search, keyword_search, hybrid_search,
+Exposes 13 tools: semantic_search, keyword_search, hybrid_search,
 regex_search, explain_symbol, index_status, reindex, health_check,
-get_quality_score, find_duplicates, grep_files.
+get_quality_score, find_duplicates, grep_files, get_file_context,
+list_languages.
+
+Search tools support pagination via ``page_size`` and ``cursor`` parameters.
 """
 
 from __future__ import annotations
@@ -45,6 +48,8 @@ if _HAS_MCP:
                 "properties": {
                     "query": {"type": "string", "description": "Natural language search query."},
                     "top_k": {"type": "integer", "description": "Number of results.", "default": 10},
+                    "page_size": {"type": "integer", "description": "Results per page (pagination).", "default": 10},
+                    "cursor": {"type": "string", "description": "Opaque cursor for next page."},
                 },
                 "required": ["query"],
             },
@@ -57,6 +62,8 @@ if _HAS_MCP:
                 "properties": {
                     "query": {"type": "string", "description": "Keyword query."},
                     "top_k": {"type": "integer", "default": 10},
+                    "page_size": {"type": "integer", "description": "Results per page.", "default": 10},
+                    "cursor": {"type": "string", "description": "Opaque cursor for next page."},
                 },
                 "required": ["query"],
             },
@@ -69,6 +76,8 @@ if _HAS_MCP:
                 "properties": {
                     "query": {"type": "string", "description": "Search query."},
                     "top_k": {"type": "integer", "default": 10},
+                    "page_size": {"type": "integer", "description": "Results per page.", "default": 10},
+                    "cursor": {"type": "string", "description": "Opaque cursor for next page."},
                 },
                 "required": ["query"],
             },
@@ -184,26 +193,48 @@ def _dispatch_tool(name: str, args: dict[str, Any], project_root: Path) -> Any:
 
     index_dir = AppConfig.index_dir(project_root)
 
+    def _paginate(results: list[dict[str, Any]], args: dict[str, Any]) -> dict[str, Any]:
+        """Apply cursor-based pagination to result list."""
+        page_size = args.get("page_size", 10)
+        cursor = args.get("cursor")
+        start = 0
+        if cursor:
+            try:
+                start = int(cursor)
+            except (ValueError, TypeError):
+                start = 0
+        page = results[start : start + page_size]
+        next_cursor = str(start + page_size) if start + page_size < len(results) else None
+        return {
+            "results": page,
+            "total": len(results),
+            "page_size": page_size,
+            "next_cursor": next_cursor,
+        }
+
     if name == "semantic_search":
+        top_k = args.get("top_k", args.get("page_size", 10))
         results = search_codebase(
             query=args["query"], project_root=project_root,
-            top_k=args.get("top_k", 10), mode="semantic",
+            top_k=max(top_k, 50), mode="semantic",
         )
-        return [r.to_dict() for r in results]
+        return _paginate([r.to_dict() for r in results], args)
 
     if name == "keyword_search":
+        top_k = args.get("top_k", args.get("page_size", 10))
         results = search_codebase(
             query=args["query"], project_root=project_root,
-            top_k=args.get("top_k", 10), mode="keyword",
+            top_k=max(top_k, 50), mode="keyword",
         )
-        return [r.to_dict() for r in results]
+        return _paginate([r.to_dict() for r in results], args)
 
     if name == "hybrid_search":
+        top_k = args.get("top_k", args.get("page_size", 10))
         results = search_codebase(
             query=args["query"], project_root=project_root,
-            top_k=args.get("top_k", 10), mode="hybrid",
+            top_k=max(top_k, 50), mode="hybrid",
         )
-        return [r.to_dict() for r in results]
+        return _paginate([r.to_dict() for r in results], args)
 
     if name == "regex_search":
         results = search_codebase(

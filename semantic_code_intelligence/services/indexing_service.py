@@ -164,6 +164,21 @@ def run_indexing(
     index_dir = AppConfig.index_dir(project_root)
     index_dir.mkdir(parents=True, exist_ok=True)
 
+    # Auto-create .codexaignore on first index if it doesn't exist
+    ignore_file = project_root / ".codexaignore"
+    if not ignore_file.exists():
+        ignore_file.write_text(
+            "# CodexA ignore patterns (gitignore syntax)\n"
+            "# Uncomment or add patterns to exclude from indexing\n"
+            "# node_modules/\n"
+            "# .venv/\n"
+            "# dist/\n"
+            "# build/\n"
+            "# *.min.js\n",
+            encoding="utf-8",
+        )
+        logger.info("Created .codexaignore at %s", ignore_file)
+
     indexing_start = time.time()
     result = IndexingResult()
 

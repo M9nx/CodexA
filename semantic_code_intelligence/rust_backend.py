@@ -27,6 +27,7 @@ _RUST_AVAILABLE = False
 _HNSW_AVAILABLE = False
 _AST_CHUNKER_AVAILABLE = False
 _ONNX_AVAILABLE = False
+_TANTIVY_AVAILABLE = False
 
 try:
     from codexa_core import (  # type: ignore[import-untyped]
@@ -69,11 +70,21 @@ try:
     except ImportError:
         OnnxEmbedder = None  # type: ignore[assignment,misc]
 
+    # Tantivy full-text search (optional — requires --features tantivy-backend)
+    try:
+        from codexa_core import TantivyIndex  # type: ignore[import-untyped]
+
+        _TANTIVY_AVAILABLE = True
+        logger.debug("Tantivy full-text search available.")
+    except ImportError:
+        TantivyIndex = None  # type: ignore[assignment,misc]
+
 except ImportError:
     logger.debug("Rust backend not available — using Python fallback.")
     HnswVectorStore = None  # type: ignore[assignment,misc]
     AstChunker = None  # type: ignore[assignment,misc]
     OnnxEmbedder = None  # type: ignore[assignment,misc]
+    TantivyIndex = None  # type: ignore[assignment,misc]
 
 
 def use_rust() -> bool:
@@ -96,6 +107,11 @@ def use_onnx() -> bool:
     return _ONNX_AVAILABLE
 
 
+def use_tantivy() -> bool:
+    """Return True if the Tantivy full-text search engine is available."""
+    return _TANTIVY_AVAILABLE
+
+
 def get_backend_name() -> str:
     """Return the active backend name for diagnostics."""
     return "rust (codexa_core)" if _RUST_AVAILABLE else "python"
@@ -110,6 +126,7 @@ __all__ = [
     "use_hnsw",
     "use_ast_chunker",
     "use_onnx",
+    "use_tantivy",
     "get_backend_name",
     "ChunkMeta",
     "RustBM25Index",
@@ -119,6 +136,7 @@ __all__ = [
     "HnswVectorStore",
     "AstChunker",
     "OnnxEmbedder",
+    "TantivyIndex",
     "ScannedFileResult",
     "reciprocal_rank_fusion_rs",
 ]

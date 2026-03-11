@@ -122,6 +122,33 @@ logger = get_logger("cli.grep")
     default=False,
     help="Include hidden files and directories in search.",
 )
+@click.option(
+    "--jsonl",
+    "jsonl_mode",
+    is_flag=True,
+    default=False,
+    help="Output one JSON object per match line (JSONL).",
+)
+@click.option(
+    "--exclude",
+    "exclude_glob",
+    default=None,
+    type=str,
+    help="Exclude files matching this glob pattern from results.",
+)
+@click.option(
+    "--no-ignore",
+    is_flag=True,
+    default=False,
+    help="Include files normally ignored by .gitignore / .codexaignore.",
+)
+@click.option(
+    "--files-without-match",
+    "-L",
+    is_flag=True,
+    default=False,
+    help="Print file paths WITHOUT any matches (like grep -L).",
+)
 @click.pass_context
 def grep_cmd(
     ctx: click.Context,
@@ -140,6 +167,10 @@ def grep_cmd(
     invert_match: bool,
     count_only: bool,
     hidden: bool,
+    jsonl_mode: bool,
+    exclude_glob: str | None,
+    no_ignore: bool,
+    files_without_match: bool,
 ) -> None:
     """Search raw files using regex — no index required.
 
@@ -179,9 +210,22 @@ def grep_cmd(
         context_after=ctx_after,
         word_match=word,
         invert_match=invert_match,
-        include_hidden=hidden,
+        include_hidden=hidden or no_ignore,
         count_only=count_only,
     )
+
+    # --- Filter by exclude glob ---
+    if exclude_glob:
+        import fnmatch as _fnmatch
+        result.matches = [
+            m for m in result.matches
+            if not _fnmatch.fnmatch(m.file_path, exclude_glob)
+        ]
+
+    if jsonl_mode:
+        for m in result.matches:
+            click.echo(json_mod.dumps(m.to_dict(), ensure_ascii=False))
+        return
 
     if json_mode:
         click.echo(json_mod.dumps(result.to_dict(), indent=2))
@@ -209,6 +253,22 @@ def grep_cmd(
             if m.file_path not in seen:
                 seen.add(m.file_path)
                 click.echo(m.file_path)
+        return
+
+    if files_without_match:
+        # -L: show files scanned that had zero matches
+        matched_files = {m.file_path for m in result.matches if not m.is_context}
+        # We need to walk the directory to know all files
+        import os as _os
+        for dirpath, _dirs, filenames in _os.walk(root):
+            for fname in filenames:
+                fp = Path(dirpath) / fname
+                try:
+                    rel = str(fp.relative_to(root))
+                except ValueError:
+                    continue
+                if rel not in matched_files:
+                    click.echo(rel)
         return
 
     # Rich output

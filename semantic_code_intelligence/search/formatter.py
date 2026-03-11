@@ -35,15 +35,20 @@ def format_results_json(query: str, results: list[SearchResult], top_k: int) -> 
     return json.dumps(output, indent=2, ensure_ascii=False)
 
 
-def format_results_jsonl(results: list[SearchResult]) -> str:
+def format_results_jsonl(results: list[SearchResult], *, scores: bool = False) -> str:
     """Format search results as JSONL (one JSON object per line).
 
     Each line is a self-contained JSON object suitable for piping into
     ``jq``, ``fzf``, or streaming ingestion.
+
+    When *scores* is True an extra ``"_score_prefix"`` key is included.
     """
     lines: list[str] = []
     for r in results:
-        lines.append(json.dumps(r.to_dict(), ensure_ascii=False))
+        d = r.to_dict()
+        if scores:
+            d["_score_prefix"] = f"[{r.score:.3f}]"
+        lines.append(json.dumps(d, ensure_ascii=False))
     return "\n".join(lines)
 
 
@@ -53,6 +58,7 @@ def format_results_rich(
     *,
     line_numbers: bool = False,
     context_lines: int = 0,
+    show_scores: bool = False,
 ) -> None:
     """Print search results as rich formatted output to the console.
 
@@ -61,6 +67,7 @@ def format_results_rich(
         results: List of SearchResult objects.
         line_numbers: If True, prefix code lines with line numbers (grep -n).
         context_lines: Number of extra context lines to display around content.
+        show_scores: If True, include score badge in each panel header.
     """
     if not results:
         console.print(f"\n[yellow]No results found for:[/yellow] \"{query}\"\n")

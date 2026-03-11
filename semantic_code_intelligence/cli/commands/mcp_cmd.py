@@ -20,12 +20,20 @@ logger = get_logger("cli.mcp")
     type=click.Path(exists=True, file_okay=False, resolve_path=True),
     help="Project root path.",
 )
+@click.option(
+    "--claude-config",
+    is_flag=True,
+    default=False,
+    help="Print Claude Desktop MCP configuration JSON and exit.",
+)
 @click.pass_context
-def mcp_cmd(ctx: click.Context, path: str) -> None:
+def mcp_cmd(ctx: click.Context, path: str, claude_config: bool) -> None:
     """Start the MCP server for AI agent integration.
 
     Runs a JSON-RPC server over stdio, compatible with Claude Desktop,
     Cursor, and other MCP-compatible AI tools.
+
+    Use --claude-config to print the Claude Desktop configuration block.
 
     \b
     Configuration for Claude Desktop (claude_desktop_config.json):
@@ -39,6 +47,12 @@ def mcp_cmd(ctx: click.Context, path: str) -> None:
       }
     """
     root = Path(path).resolve()
+
+    if claude_config:
+        from semantic_code_intelligence.mcp.claude_config import print_claude_desktop_config
+        print_claude_desktop_config(root)
+        return
+
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():

@@ -5,6 +5,8 @@
 
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://pypi.org/project/codexa/"><img src="https://img.shields.io/pypi/v/codexa?color=blue&label=PyPI" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/codexa"><img src="https://pepy.tech/badge/codexa" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/version-0.5.0-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2596-brightgreen" alt="Tests">
@@ -24,13 +26,13 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 
 | Area | What you get |
 |------|-------------|
-| **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `--watch` live re-indexing, `.codexaignore` support |
-| **Rust Search Engine** | Native `codexa-core` Rust crate via PyO3 — HNSW approximate nearest-neighbour search, BM25 keyword index, tree-sitter AST chunker (10 languages), memory-mapped vector persistence, parallel file scanner, optional ONNX embedding inference |
-| **Multi-Mode Search** | Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep (ripgrep backend) with full `-A/-B/-C/-w/-v/-c` flags |
+| **Code Indexing** | Scan repos, extract functions/classes, generate vector embeddings (sentence-transformers + FAISS), ONNX runtime option, parallel indexing, `--watch` live re-indexing, `.codexaignore` support, `--add`/`--inspect` per-file control, model-consistency guard, Ctrl+C partial-save |
+| **Rust Search Engine** | Native `codexa-core` Rust crate via PyO3 — HNSW approximate nearest-neighbour search, BM25 keyword index, tree-sitter AST chunker (10 languages), memory-mapped vector persistence, parallel file scanner, optional ONNX embedding inference, optional Tantivy full-text search |
+| **Multi-Mode Search** | Semantic, keyword (BM25), regex, hybrid (RRF), and raw filesystem grep (ripgrep backend) with full `-A/-B/-C/-w/-v/-c/-l/-L/--exclude/--no-ignore` flags, `--hybrid`/`--sem` shorthands, `--scores`, `--snippet-length`, `--no-snippet`, JSONL streaming |
 | **RAG Pipeline** | 4-stage Retrieval-Augmented Generation — Retrieve → Deduplicate → Re-rank → Assemble with token budget, cross-encoder re-ranking, source citations |
 | **Code Context** | Rich context windows — imports, dependencies, AST-based call graphs, surrounding code |
 | **Repository Analysis** | Language breakdown (`codexa languages`), module summaries, component detection |
-| **AI Agent Protocol** | 13 built-in tools exposed via HTTP bridge, MCP server (13 tools), MCP-over-SSE (`--mcp`), or CLI for any AI agent to invoke |
+| **AI Agent Protocol** | 13 built-in tools exposed via HTTP bridge, MCP server (13 tools with pagination/cursors), MCP-over-SSE (`--mcp`), `codexa --serve` shorthand, Claude Desktop auto-config (`--claude-config`), or CLI for any AI agent to invoke |
 | **Quality & Metrics** | Complexity analysis, maintainability scoring, quality gates for CI |
 | **Multi-Repo Workspaces** | Link multiple repos under one workspace for cross-repo search & refactoring |
 | **Interactive TUI** | Terminal REPL with mode switching for interactive exploration |
