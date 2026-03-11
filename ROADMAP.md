@@ -636,17 +636,22 @@ works on every platform with zero compilation.
 | **GitHub Releases** | Standalone binaries via PyInstaller for each platform |
 | **Docker image** | Production multi-stage image with pre-loaded models |
 
-### Phase 40: Remote / Cloud Mode & Team Features
-Package CodexA as a shared server for teams. Authentication, dashboards, and
-collaborative search.
+### Phase 40: Code Editor Compatibility
+First-class integration with every major code editor and IDE — not just
+VS Code. Native plugins sharing the same MCP/bridge server.
 
 | Feature | Description |
 |---------|-------------|
-| **Team REST API** | Shared index server with API key authentication |
-| **Rate limiting** | Per-user RPM/TPM limits on the shared server |
-| **Team dashboard** | Web UI showing search analytics, popular queries, index health |
-| **GitHub / GitLab CI plugin** | `codexa quality` on PRs, block merges on regressions, inline review comments |
-| **PR diff-aware indexing** | Only re-index changed files in CI |
+| **Zed extension** | Zed-native extension using Zed's built-in MCP client and language server protocol |
+| **JetBrains plugin** | IntelliJ IDEA, PyCharm, PhpStorm, WebStorm, GoLand, Rider — unified plugin via IntelliJ Platform SDK |
+| **Neovim integration** | Lua plugin with telescope.nvim picker, LSP integration, and floating preview windows |
+| **Vim plugin** | Lightweight Vimscript/Lua plugin for classic Vim with quickfix integration |
+| **Sublime Text package** | Sublime Text 4 plugin with command palette, goto-symbol, and inline annotations |
+| **Emacs package** | `codexa.el` package with helm/ivy completion, org-mode integration, and flycheck support |
+| **Helix integration** | Helix editor LSP + MCP configuration guide and tested setup |
+| **Cursor / Windsurf** | Documented MCP setup guides and verified configs |
+| **Eclipse plugin** | Eclipse IDE plugin for Java/PHP developers |
+| **Shared protocol** | All editors use the same MCP server / HTTP bridge — consistent behavior everywhere |
 
 ### Phase 41: Multi-Agent Orchestration & IDE v2
 Multiple AI agents sharing one CodexA instance. Multi-IDE support beyond

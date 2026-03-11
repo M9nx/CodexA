@@ -57,14 +57,19 @@ Planned improvements for CodexA, organized by priority.
 | GitHub Releases | Standalone binaries for every platform |
 | Docker image | Production multi-stage image with pre-loaded models |
 
-### Phase 40 — Remote / Cloud Mode & Team Features
+### Phase 40 — Code Editor Compatibility
 
 | Feature | Description |
 |---------|-------------|
-| Team REST API | Shared index server with API key auth |
-| Rate limiting | Per-user RPM/TPM limits |
-| Team dashboard | Search analytics, popular queries, index health |
-| CI plugin | GitHub/GitLab quality gates on PRs |
+| Zed extension | Native Zed MCP client integration |
+| JetBrains plugin | IntelliJ, PyCharm, PhpStorm, WebStorm, GoLand, Rider |
+| Neovim integration | telescope.nvim picker + LSP |
+| Vim plugin | Vimscript/Lua with quickfix integration |
+| Sublime Text package | Command palette, goto-symbol, inline annotations |
+| Emacs package | helm/ivy completion, org-mode, flycheck |
+| Helix integration | LSP + MCP config guide |
+| Cursor / Windsurf | Verified MCP setup guides |
+| Eclipse plugin | Java/PHP developer support |
 
 ### Phase 41 — Multi-Agent Orchestration & IDE v2
 
