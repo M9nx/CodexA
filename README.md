@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/M9nx/CodexA/actions"><img src="https://github.com/M9nx/CodexA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/codexa/"><img src="https://img.shields.io/pypi/v/codexa?color=blue&label=PyPI" alt="PyPI"></a>
-  <a href="https://pepy.tech/project/codexa"><img src="https://pepy.tech/badge/codexa" alt="Downloads"></a>
+  <a href="https://pepy.tech/project/codexa"><img src="https://img.shields.io/pepy/dt/codexa?color=blue&label=Downloads" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/version-0.5.0-green" alt="Version">
   <img src="https://img.shields.io/badge/tests-2596-brightgreen" alt="Tests">

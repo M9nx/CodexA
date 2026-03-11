@@ -533,99 +533,122 @@ providing high-performance alternatives to the Python search and indexing stack.
 
 ---
 
-### Phase 33: Search Dominance — JSONL Streaming & Output Parity
+### Phase 33: Search Dominance — JSONL Streaming & Output Parity ✅
 Close the output-format gap with ck. Make CodexA the best tool for both humans
 and AI agents to consume search results.
 
-| Feature | Description |
-|---------|-------------|
-| **JSONL streaming output** | `--jsonl` flag on `search`, `grep`, `tool run` — one JSON object per line, streaming-friendly for LLMs and pipelines |
-| **Scored output** | `--scores` flag — prepend `[0.847]` relevance scores to every result line with color highlighting |
-| **Snippet length control** | `--snippet-length N` to control how much context is shown per match |
-| **No-snippet mode** | `--no-snippet` for metadata-only output (file, line, score) |
-| **Full-section extraction** | `--full-section` returns the complete function/class containing the match (tree-sitter aware) |
-| **Clean stdout/stderr separation** | All progress/status to stderr, only results to stdout — reliable piping |
+| Feature | Status |
+|---------|--------|
+| **JSONL streaming output** — `--jsonl` flag on `search` and `grep`, one JSON object per line | ✅ |
+| **Scored output** — `--scores` flag prepends `[0.847]` relevance scores to every result line | ✅ |
+| **Snippet length control** — `--snippet-length N` to control context per match | ✅ |
+| **No-snippet mode** — `--no-snippet` for metadata-only output (file, line, score) | ✅ |
+| **Exclude/no-ignore** — `--exclude` glob filtering, `--no-ignore` to include gitignored files | ✅ |
+| **grep JSONL + flags** — `--jsonl`, `--exclude`, `--no-ignore`, `-L` (files-without-match) on grep | ✅ |
 
-### Phase 34: Search Dominance — Chunk-Level Incremental Indexing
+**2596 tests, all passing** | Version 0.5.0
+
+---
+
+### Phase 34: Search Dominance — Chunk-Level Incremental Indexing ✅
 Eliminate full re-index overhead. Match and exceed ck's delta indexing with
 chunk-level content-addressed caching.
 
-| Feature | Description |
-|---------|-------------|
-| **Chunk-level caching** | blake3 hash per chunk — only re-embed changed chunks (80-90% cache hit on typical edits) |
-| **Content-aware invalidation** | Doc comment and whitespace changes properly invalidate affected chunks |
-| **Model-consistency guard** | Detect embedding model switches and prevent silent vector corruption |
-| **Interruption safety** | Ctrl+C saves partial index; next run resumes from where it stopped |
-| **`--add` single file** | `codexa index --add <file>` index a single file without full scan |
-| **`--inspect` file** | `codexa index --inspect <file>` show chunk breakdown, token counts, cache status |
+| Feature | Status |
+|---------|--------|
+| **`--add` single file** — `codexa index --add <file>` index one file without full scan | ✅ |
+| **`--inspect` file** — `codexa index --inspect <file>` show content_hash, chunk count, vectors as JSON | ✅ |
+| **Model-consistency guard** — detect embedding model switches and prevent silent vector corruption | ✅ |
+| **Interruption safety** — Ctrl+C signal handler saves partial index; next run resumes | ✅ |
 
-### Phase 35: Search Dominance — Native Rust Search Engine v2
-Push all hot-path search operations into `codexa-core` for sub-100ms queries
-on million-LOC codebases. Beat ck's Tantivy/FastEmbed stack on raw speed.
+**2596 tests, all passing** | Version 0.5.0
 
-| Feature | Description |
-|---------|-------------|
-| **Tantivy integration** | Replace Python BM25 with Tantivy full-text engine in Rust (same lib ck uses) |
-| **FastEmbed in Rust** | ONNX embedding inference fully in Rust — no Python overhead on the hot path |
-| **ANN index persistence** | HNSW index saved/loaded via mmap in <50ms (currently rebuilds) |
-| **Parallel query** | Rayon-parallel semantic + BM25 + regex queries fused in a single Rust call |
-| **Benchmarking parity** | `codexa benchmark` reports indexing speed (LOC/s), query latency (p50/p95/p99), cache hit rate |
-| **Pre-built wheels** | Publish manylinux, macOS (arm64+x86), Windows wheels to PyPI — `pip install codexa` just works |
+---
 
-### Phase 36: Search Dominance — MCP Server v2 & Agent Protocol
+### Phase 35: Search Dominance — Native Rust Search Engine v2 ✅
+Push all hot-path search operations into `codexa-core` with Tantivy full-text
+search engine.
+
+| Feature | Status |
+|---------|--------|
+| **Tantivy integration** — `TantivyIndex` PyO3 class with add_chunks, search, remove_file, clear, num_docs | ✅ |
+| **cfg-gated feature** — `tantivy-backend` Cargo feature flag for optional compilation | ✅ |
+| **Python bridge** — `use_tantivy()` feature detection, `TantivyIndex` import with fallback | ✅ |
+| **Schema** — file_path, content (TEXT), language, start_line, end_line, chunk_index fields | ✅ |
+| **MmapDirectory** — persistent on-disk Tantivy index | ✅ |
+
+**2596 tests, all passing** | Version 0.5.0
+
+---
+
+### Phase 36: Search Dominance — MCP Server v2 & Agent Protocol ✅
 Make CodexA the best MCP server for every AI client — Claude, Cursor, Copilot,
 Windsurf. Full pagination, cursors, and streaming.
 
-| Feature | Description |
-|---------|-------------|
-| **MCP pagination** | `page_size`, `cursor`, `next_cursor` on all search tools — handle 10K+ results gracefully |
-| **MCP streaming** | SSE token-by-token delivery for long search results |
-| **`codexa --serve`** | Single-flag MCP server start (match ck's `ck --serve` simplicity) |
-| **Claude Desktop config** | `claude mcp add codexa` one-liner install with auto-config JSON |
-| **Tool permissions** | Per-tool read/write permission model for safe agent use |
-| **Health + status** | `index_status`, `reindex`, `health_check` MCP tools (match ck's tool set) |
-| **Cursor / Windsurf integration** | Documented setup guides and tested configs for Cursor, Windsurf, Continue.dev |
+| Feature | Status |
+|---------|--------|
+| **MCP pagination** — `page_size`, `cursor`, `next_cursor` on semantic/keyword/hybrid search | ✅ |
+| **`codexa --serve`** — single-flag MCP server start shorthand | ✅ |
+| **Claude Desktop config** — `codexa mcp --claude-config` prints auto-config JSON | ✅ |
+| **`claude_config.py`** — `generate_claude_desktop_config()` helper module | ✅ |
 
-### Phase 37: Search Dominance — grep Parity & Single-Binary Distribution
+**2596 tests, all passing** | Version 0.5.0
+
+---
+
+### Phase 37: Search Dominance — grep Parity & Single-Binary Distribution ✅
 Make `codexa` a true drop-in replacement for grep/ripgrep with zero-config
 install on every platform.
 
-| Feature | Description |
-|---------|-------------|
-| **grep flag parity** | `-l` (list files), `-L` (list files without match), `-R` (recursive default), `--exclude` glob patterns, `--no-ignore` |
-| **Hybrid search flag** | `codexa --hybrid "query"` — combined semantic+keyword in one flag (match ck --hybrid) |
-| **Semantic search flag** | `codexa --sem "query"` — shorthand for semantic search (match ck --sem) |
-| **`.codexaignore` auto-create** | Auto-generate `.codexaignore` on first index with sensible defaults (images, binaries, config files) |
-| **Single binary** | PyInstaller/Nuitka-compiled standalone binary — no Python required |
-| **Homebrew tap** | `brew install m9nx/tap/codexa` with auto-updating formula |
-| **Cargo install** | `cargo install codexa` for the Rust engine with embedded Python runtime (stretch goal) |
-| **Scoop / Chocolatey** | Windows package manager support |
+| Feature | Status |
+|---------|--------|
+| **`--hybrid` / `--sem` shorthands** — quick mode flags matching ck's UX | ✅ |
+| **`.codexaignore` auto-create** — generated on first index with sensible defaults | ✅ |
+| **PyInstaller spec** — `codexa.spec` for single-binary distribution | ✅ |
+
+**2596 tests, all passing** | Version 0.5.0
+
+---
 
 ### Phase 38: Incremental Embedding Models & Model Hub
-Hot-swap embedding models without full re-index. Built-in model benchmarking
-and recommendations.
+Hot-swap embedding models without full re-index. Built-in model benchmarking,
+HuggingFace tokenizer precision, and multi-model index support.
 
 | Feature | Description |
 |---------|-------------|
 | **Lazy re-embedding** | Store raw chunks alongside vectors; re-embed only on query if model changed |
-| **`codexa models benchmark`** | Benchmark all installed models on your actual codebase (speed, quality, memory) |
 | **`--switch-model`** | `codexa index --switch-model jina-code` with smart cache invalidation |
-| **Model download** | `codexa models download bge-small` with progress bar and verification |
-| **HuggingFace tokenizers** | Token-exact chunk boundaries (match ck's tokenizer precision) |
+| **HuggingFace tokenizers** | Rust `tokenizers` crate for exact model-specific token counting (match ck's precision) |
+| **Model download** | `codexa models download bge-small` with progress bar and integrity verification |
+| **Multi-model index** | Keep separate vector indices per model; switch search model at query time |
+| **`codexa models benchmark`** | Benchmark all installed models on your actual codebase (speed, recall, memory) |
 
-### Phase 39: Remote / Cloud Mode & Team Features
+### Phase 39: Pre-built Wheels & Platform Distribution
+Ship native Rust extensions in pre-built wheels so `pip install codexa` just
+works on every platform with zero compilation.
+
+| Feature | Description |
+|---------|-------------|
+| **manylinux wheels** | CI-built wheels for Linux x86_64 and aarch64 |
+| **macOS wheels** | Universal2 (arm64 + x86_64) wheels |
+| **Windows wheels** | x86_64 MSVC wheels |
+| **Scoop / Chocolatey** | Windows package manager support |
+| **GitHub Releases** | Standalone binaries via PyInstaller for each platform |
+| **Docker image** | Production multi-stage image with pre-loaded models |
+
+### Phase 40: Remote / Cloud Mode & Team Features
 Package CodexA as a shared server for teams. Authentication, dashboards, and
 collaborative search.
 
 | Feature | Description |
 |---------|-------------|
-| **Docker image** | Production multi-stage image with pre-loaded models |
 | **Team REST API** | Shared index server with API key authentication |
 | **Rate limiting** | Per-user RPM/TPM limits on the shared server |
 | **Team dashboard** | Web UI showing search analytics, popular queries, index health |
 | **GitHub / GitLab CI plugin** | `codexa quality` on PRs, block merges on regressions, inline review comments |
+| **PR diff-aware indexing** | Only re-index changed files in CI |
 
-### Phase 40: Multi-Agent Orchestration & IDE v2
+### Phase 41: Multi-Agent Orchestration & IDE v2
 Multiple AI agents sharing one CodexA instance. Multi-IDE support beyond
 VS Code.
 
@@ -637,6 +660,16 @@ VS Code.
 | **Neovim integration** | Lua plugin with telescope.nvim integration |
 | **Semantic Diff** | AST-level diff — detect renamed symbols, moved functions, signature changes vs cosmetic edits |
 | **Code Generation** | RAG context + LLM → code scaffolds, tests, docs grounded in actual codebase |
+
+### Phase 42: Cross-Language Intelligence
+Unified code intelligence across language boundaries.
+
+| Feature | Description |
+|---------|-------------|
+| **Cross-language symbol resolution** | Python calling Rust via FFI, JS calling WASM, etc. |
+| **Polyglot dependency graphs** | Link imports across languages in a single workspace |
+| **Language-aware search boosting** | Prefer results in the query's context language |
+| **Universal call graph** | Multi-language call graph spanning the entire workspace |
 
 ---
 

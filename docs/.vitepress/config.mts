@@ -42,19 +42,21 @@ export default defineConfig({
       },
       { text: 'API Reference', link: '/reference/cli' },
       {
-        text: 'v0.4.5',
+        text: 'v0.5.0',
         items: [
           {
             text: 'Release Info',
             items: [
               { text: 'Changelog', link: 'https://github.com/M9nx/CodexA/blob/main/CHANGELOG.md' },
               { text: 'Release Notes', link: 'https://github.com/M9nx/CodexA/blob/main/RELEASE_NOTES.md' },
-              { text: 'Upgrade Guide', link: '/guide/roadmap' },
+              { text: 'Upgrade Guide', link: '/guide/upgrade' },
+              { text: 'Roadmap', link: '/guide/roadmap' },
             ],
           },
           {
             text: 'Previous Versions',
             items: [
+              { text: 'v0.4.5', link: 'https://pypi.org/project/codexa/0.4.5/' },
               { text: 'v0.4.4', link: 'https://pypi.org/project/codexa/0.4.4/' },
               { text: 'v0.4.3', link: 'https://pypi.org/project/codexa/0.4.3/' },
               { text: 'v0.4.2', link: 'https://pypi.org/project/codexa/0.4.2/' },
@@ -91,6 +93,7 @@ export default defineConfig({
           items: [
             { text: 'Contributing', link: '/guide/contributing' },
             { text: 'Roadmap', link: '/guide/roadmap' },
+            { text: 'Upgrade Guide', link: '/guide/upgrade' },
           ],
         },
       ],
