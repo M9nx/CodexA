@@ -80,6 +80,18 @@ impl IntoPy<PyObject> for CodeChunkData {
 #[pyclass]
 pub struct RustChunker;
 
+impl RustChunker {
+    /// Public Rust-callable fallback for line-boundary chunking.
+    pub fn chunk_code_fallback(
+        content: &str,
+        file_path: &str,
+        chunk_size: usize,
+        chunk_overlap: usize,
+    ) -> Vec<PyObject> {
+        Self::chunk_code(content, file_path, chunk_size, chunk_overlap)
+    }
+}
+
 #[pymethods]
 impl RustChunker {
     #[new]

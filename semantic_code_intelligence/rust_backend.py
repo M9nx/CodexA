@@ -24,6 +24,9 @@ logger = logging.getLogger("codexa.rust_backend")
 # ---------------------------------------------------------------------------
 
 _RUST_AVAILABLE = False
+_HNSW_AVAILABLE = False
+_AST_CHUNKER_AVAILABLE = False
+_ONNX_AVAILABLE = False
 
 try:
     from codexa_core import (  # type: ignore[import-untyped]
@@ -38,13 +41,59 @@ try:
 
     _RUST_AVAILABLE = True
     logger.debug("Rust backend (codexa_core) loaded successfully.")
+
+    # HNSW (optional — may fail if instant-distance wasn't linked)
+    try:
+        from codexa_core import HnswVectorStore  # type: ignore[import-untyped]
+
+        _HNSW_AVAILABLE = True
+        logger.debug("HNSW vector store available.")
+    except ImportError:
+        HnswVectorStore = None  # type: ignore[assignment,misc]
+
+    # AST chunker (optional — requires tree-sitter grammars)
+    try:
+        from codexa_core import AstChunker  # type: ignore[import-untyped]
+
+        _AST_CHUNKER_AVAILABLE = True
+        logger.debug("AST chunker available.")
+    except ImportError:
+        AstChunker = None  # type: ignore[assignment,misc]
+
+    # ONNX embedder (optional — requires --features onnx)
+    try:
+        from codexa_core import OnnxEmbedder  # type: ignore[import-untyped]
+
+        _ONNX_AVAILABLE = True
+        logger.debug("ONNX embedder available.")
+    except ImportError:
+        OnnxEmbedder = None  # type: ignore[assignment,misc]
+
 except ImportError:
     logger.debug("Rust backend not available — using Python fallback.")
+    HnswVectorStore = None  # type: ignore[assignment,misc]
+    AstChunker = None  # type: ignore[assignment,misc]
+    OnnxEmbedder = None  # type: ignore[assignment,misc]
 
 
 def use_rust() -> bool:
     """Return True if the Rust native backend is available."""
     return _RUST_AVAILABLE
+
+
+def use_hnsw() -> bool:
+    """Return True if the HNSW vector store is available."""
+    return _HNSW_AVAILABLE
+
+
+def use_ast_chunker() -> bool:
+    """Return True if the AST-aware chunker is available."""
+    return _AST_CHUNKER_AVAILABLE
+
+
+def use_onnx() -> bool:
+    """Return True if the ONNX embedder is available."""
+    return _ONNX_AVAILABLE
 
 
 def get_backend_name() -> str:
@@ -58,12 +107,18 @@ def get_backend_name() -> str:
 
 __all__ = [
     "use_rust",
+    "use_hnsw",
+    "use_ast_chunker",
+    "use_onnx",
     "get_backend_name",
     "ChunkMeta",
     "RustBM25Index",
     "RustChunker",
     "RustScanner",
     "RustVectorStore",
+    "HnswVectorStore",
+    "AstChunker",
+    "OnnxEmbedder",
     "ScannedFileResult",
     "reciprocal_rank_fusion_rs",
 ]

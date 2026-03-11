@@ -3,7 +3,9 @@
 //! Drop-in replacement for the Python FAISS-backed VectorStore.
 //! Uses flat inner-product search (matching IndexFlatIP behaviour).
 //! Vectors are stored as a contiguous `Vec<f32>` for cache-friendly access.
+//! Supports memory-mapped loading via `load_mmap` for near-instant startup.
 
+use memmap2::Mmap;
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use pyo3::types::PyType;
@@ -83,6 +85,44 @@ impl ChunkMeta {
 }
 
 // ---------------------------------------------------------------------------
+// VectorStorage — owned or memory-mapped
+// ---------------------------------------------------------------------------
+
+enum FlatVectorStorage {
+    Owned(Vec<f32>),
+    Mmap {
+        _mmap: Mmap,
+        ptr: *const f32,
+        len: usize,
+    },
+}
+
+unsafe impl Send for FlatVectorStorage {}
+unsafe impl Sync for FlatVectorStorage {}
+
+impl FlatVectorStorage {
+    fn as_slice(&self) -> &[f32] {
+        match self {
+            FlatVectorStorage::Owned(v) => v.as_slice(),
+            FlatVectorStorage::Mmap { ptr, len, .. } => unsafe {
+                std::slice::from_raw_parts(*ptr, *len)
+            },
+        }
+    }
+
+    fn to_owned_mut(&mut self) -> &mut Vec<f32> {
+        if let FlatVectorStorage::Mmap { ptr, len, .. } = self {
+            let slice = unsafe { std::slice::from_raw_parts(*ptr, *len) };
+            *self = FlatVectorStorage::Owned(slice.to_vec());
+        }
+        match self {
+            FlatVectorStorage::Owned(v) => v,
+            _ => unreachable!(),
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // VectorStore — flat inner-product search
 // ---------------------------------------------------------------------------
 
@@ -90,7 +130,7 @@ impl ChunkMeta {
 pub struct RustVectorStore {
     dimension: usize,
     /// Flat contiguous storage: vectors[i*dim .. (i+1)*dim]
-    vectors: Vec<f32>,
+    vectors: FlatVectorStorage,
     metadata: Vec<ChunkMeta>,
     /// file_path → set of vector indices
     file_index: HashMap<String, Vec<usize>>,
@@ -102,7 +142,7 @@ impl RustVectorStore {
     fn new(dimension: usize) -> Self {
         Self {
             dimension,
-            vectors: Vec::new(),
+            vectors: FlatVectorStorage::Owned(Vec::new()),
             metadata: Vec::new(),
             file_index: HashMap::new(),
         }
@@ -146,7 +186,8 @@ impl RustVectorStore {
         }
 
         let base_idx = self.metadata.len();
-        self.vectors.reserve(n * dim);
+        let vec_store = self.vectors.to_owned_mut();
+        vec_store.reserve(n * dim);
 
         for i in 0..n {
             let idx = base_idx + i;
@@ -157,7 +198,7 @@ impl RustVectorStore {
 
             // Append vector data (row-major from numpy)
             for j in 0..dim {
-                self.vectors.push(arr[[i, j]]);
+                vec_store.push(arr[[i, j]]);
             }
         }
         self.metadata.extend(metadata_list);
@@ -191,6 +232,7 @@ impl RustVectorStore {
         }
 
         let dim = self.dimension;
+        let data = self.vectors.as_slice();
 
         // Parallel inner-product computation
         let mut scores: Vec<(usize, f32)> = (0..n)
@@ -200,7 +242,7 @@ impl RustVectorStore {
                 let mut dot: f32 = 0.0;
                 // Manual loop for autovectorisation
                 for j in 0..dim {
-                    dot += unsafe { *self.vectors.get_unchecked(offset + j) } * unsafe { *q.get_unchecked(j) };
+                    dot += unsafe { *data.get_unchecked(offset + j) } * unsafe { *q.get_unchecked(j) };
                 }
                 (i, dot)
             })
@@ -233,11 +275,12 @@ impl RustVectorStore {
 
         // --- vectors.bin: [dim:u64][count:u64][f32 × dim × count] ---
         let vec_path = dir.join("vectors.bin");
-        let total_floats = self.vectors.len();
+        let data = self.vectors.as_slice();
+        let total_floats = data.len();
         let mut buf = Vec::with_capacity(16 + total_floats * 4);
         buf.extend_from_slice(&(self.dimension as u64).to_le_bytes());
         buf.extend_from_slice(&(self.metadata.len() as u64).to_le_bytes());
-        for &v in &self.vectors {
+        for &v in data {
             buf.extend_from_slice(&v.to_le_bytes());
         }
         fs::write(&vec_path, &buf)
@@ -253,7 +296,7 @@ impl RustVectorStore {
         Ok(())
     }
 
-    /// Load a vector store from directory.
+    /// Load a vector store from directory (reads file into memory).
     #[classmethod]
     fn load(_cls: &Bound<'_, PyType>, directory: &str) -> PyResult<Self> {
         let dir = Path::new(directory);
@@ -306,7 +349,71 @@ impl RustVectorStore {
 
         Ok(Self {
             dimension,
-            vectors,
+            vectors: FlatVectorStorage::Owned(vectors),
+            metadata,
+            file_index,
+        })
+    }
+
+    /// Load a vector store with memory-mapped I/O for near-instant startup.
+    ///
+    /// The vector data stays on disk and is paged in by the OS on demand.
+    /// Mutations (add / remove) will copy the data to heap first.
+    #[classmethod]
+    fn load_mmap(_cls: &Bound<'_, PyType>, directory: &str) -> PyResult<Self> {
+        let dir = Path::new(directory);
+
+        let vec_path = dir.join("vectors.bin");
+        let file = fs::File::open(&vec_path)
+            .map_err(|e| pyo3::exceptions::PyFileNotFoundError::new_err(e.to_string()))?;
+        let mmap = unsafe { Mmap::map(&file) }
+            .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
+
+        if mmap.len() < 16 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Invalid vectors.bin: file too small",
+            ));
+        }
+
+        let dimension = u64::from_le_bytes(mmap[0..8].try_into().unwrap()) as usize;
+        let count = u64::from_le_bytes(mmap[8..16].try_into().unwrap()) as usize;
+        let expected = count * dimension * 4;
+        if mmap.len() < 16 + expected {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Truncated vectors.bin",
+            ));
+        }
+
+        let float_count = count * dimension;
+        let ptr = mmap[16..].as_ptr() as *const f32;
+
+        // Load metadata.json
+        let meta_path = dir.join("metadata.json");
+        let meta_json = fs::read_to_string(&meta_path)
+            .map_err(|e| pyo3::exceptions::PyFileNotFoundError::new_err(e.to_string()))?;
+        let metadata: Vec<ChunkMeta> = serde_json::from_str(&meta_json)
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+
+        if metadata.len() != count {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "Metadata count ({}) != vector count ({})",
+                metadata.len(),
+                count
+            )));
+        }
+
+        let mut file_index: HashMap<String, Vec<usize>> = HashMap::new();
+        for (i, m) in metadata.iter().enumerate() {
+            file_index.entry(m.file_path.clone()).or_default().push(i);
+        }
+
+        Ok(Self {
+            dimension,
+            vectors: FlatVectorStorage::Mmap {
+                _mmap: mmap,
+                ptr,
+                len: float_count,
+            },
             metadata,
             file_index,
         })
@@ -323,18 +430,19 @@ impl RustVectorStore {
 
         // Single-pass rebuild (no shifting)
         let dim = self.dimension;
-        let mut new_vectors = Vec::with_capacity(self.vectors.len() - count * dim);
+        let data = self.vectors.as_slice();
+        let mut new_vectors = Vec::with_capacity(data.len() - count * dim);
         let mut new_metadata = Vec::with_capacity(self.metadata.len() - count);
 
         for (i, meta) in self.metadata.iter().enumerate() {
             if !remove_set.contains(&i) {
                 new_metadata.push(meta.clone());
                 let start = i * dim;
-                new_vectors.extend_from_slice(&self.vectors[start..start + dim]);
+                new_vectors.extend_from_slice(&data[start..start + dim]);
             }
         }
 
-        self.vectors = new_vectors;
+        self.vectors = FlatVectorStorage::Owned(new_vectors);
         self.metadata = new_metadata;
 
         // Rebuild file index
@@ -357,12 +465,13 @@ impl RustVectorStore {
             None => return Vec::new(),
         };
         let dim = self.dimension;
+        let data = self.vectors.as_slice();
         indices
             .iter()
             .map(|&idx| {
                 let meta = self.metadata[idx].clone();
                 let start = idx * dim;
-                let slice = &self.vectors[start..start + dim];
+                let slice = &data[start..start + dim];
                 let arr = PyArray1::from_slice_bound(py, slice).unbind();
                 (meta, arr)
             })
@@ -371,7 +480,7 @@ impl RustVectorStore {
 
     /// Clear all stored data.
     fn clear(&mut self) {
-        self.vectors.clear();
+        self.vectors = FlatVectorStorage::Owned(Vec::new());
         self.metadata.clear();
         self.file_index.clear();
     }
