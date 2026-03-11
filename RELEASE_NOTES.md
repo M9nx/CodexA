@@ -1,40 +1,71 @@
-# CodexA v0.4.5 — Release Notes
+# CodexA v0.5.0 — Release Notes
 
-> **Released:** 2025 · **License:** MIT · **Docs:** [codex-a.dev](https://codex-a.dev)
+> **Released:** March 2026 · **License:** MIT · **Docs:** [codex-a.dev](https://codex-a.dev)
 
 **CodexA** is a developer intelligence engine for semantic code search, AI-assisted code understanding, and agent tooling.
 
 ---
 
-## What's New in v0.4.5
+## What's New in v0.5.0
 
-This release implements **Phase 31 — RAG Pipeline for LLM Commands**, replacing the old "dump context into prompt" approach with a proper Retrieval-Augmented Generation pipeline.
+The biggest release yet -- 12 phases of development in a single version. CodexA now ships with a Rust-powered search engine, a full RAG pipeline, editor plugins for 9 editors, multi-agent orchestration, and cross-language intelligence.
+
+### Rust Search Engine Core
+- `codexa-core` crate compiled via PyO3/maturin
+- HNSW vector index with `instant-distance` for O(log n) nearest-neighbour search
+- Memory-mapped persistence for near-instant startup
+- AST-aware chunker splitting code at function/class/method boundaries (10 languages)
+- Rust BM25 index, parallel scanner with blake3 hashing, RRF fusion
+- ONNX embedder for ONNX Runtime inference
+- All Rust components optional -- Python fallback when crate is not installed
 
 ### RAG Pipeline
-- **4-stage pipeline**: Retrieve → Deduplicate → Re-rank → Assemble — each stage optimized for precision and token efficiency
-- **Retrieval strategies**: `semantic` (vector), `keyword` (BM25), `hybrid` (RRF merge), `multi` (parallel with diversity)
-- **Cross-encoder re-ranking**: Optional `ms-marco-MiniLM-L-6-v2` model for high-precision re-ranking (set `rag_use_cross_encoder: true`)
-- **Token-aware assembly**: Context is assembled within a configurable token budget (default 3000), preventing prompt overflow
-- **Source citations**: Responses include numbered `[N]` markers citing exact file paths and line ranges
+- 4-stage retrieval: Retrieve, Deduplicate, Re-rank, Assemble with token budget
+- Configurable strategies: `semantic`, `keyword`, `hybrid`, `multi`
+- Cross-encoder re-ranking with `ms-marco-MiniLM-L-6-v2`
+- Source citations with numbered `[N]` markers in LLM responses
 
-### Configuration
-Three new fields in `llm` config (`.codexa/config.json`):
-```json
-{
-  "llm": {
-    "rag_budget_tokens": 3000,
-    "rag_strategy": "hybrid",
-    "rag_use_cross_encoder": false
-  }
-}
+### Search Dominance
+- JSONL streaming, scored output, snippet control
+- Incremental indexing with Ctrl+C partial-save safety
+- Tantivy full-text engine via PyO3
+- MCP Server v2 with cursor-based pagination
+- `.codexaignore` auto-create on first index
+
+### Model Hub and Distribution
+- `--switch-model` for hot-swapping embedding models
+- Model verification with `codexa models download --verify`
+- Pre-built wheels for Linux (x86_64, aarch64), macOS (universal2), Windows (x64)
+- Scoop and Chocolatey manifests, standalone PyInstaller binaries, Docker image
+
+### Editor Plugins
+First-class support for 9 editors:
+VS Code, Zed, JetBrains (IntelliJ/PyCharm/WebStorm), Neovim, Vim, Sublime Text, Emacs, Helix, Eclipse. MCP configs for Cursor and Windsurf.
+
+### Multi-Agent Orchestration
+- Thread-safe concurrent agent sessions with TTL cleanup
+- Shared discovery pool across multiple AI agents
+- Semantic diff: AST-level detection of renames, moves, signature changes
+- RAG-grounded code generation
+- Bridge session endpoints: `/sessions`, `/sessions/create`, `/sessions/close`
+
+### Cross-Language Intelligence
+- FFI pattern detection: Python-Rust, Python-C, JS-WASM, Java-JNI
+- Polyglot dependency graphs for multi-language import tracking
+- Language-aware search boosting with configurable boost factor
+- Universal call graph across languages
+
+### Install
+```bash
+pip install codexa==0.5.0
 ```
 
-### Integration
-- `codexa ask` — RAG-powered context retrieval with citations
-- `codexa chat` — RAG context injection into conversation
-- `codexa suggest` — RAG-enhanced improvement suggestions
-- `codexa investigate` — RAG-powered search actions with citation markers
-- Web UI and REST API — RAG config passed through
+### Stats
+- 2657 tests passing
+- 42 CLI commands
+- 13 built-in AI agent tools
+- 12 language parsers
+- 9 editor plugins
 
 ---
 
