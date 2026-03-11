@@ -162,8 +162,15 @@ def _run_watch_mode(root: Path, force: bool) -> None:
     type=click.Path(exists=True, dir_okay=False),
     help="Show indexing metadata for a specific file.",
 )
+@click.option(
+    "--switch-model",
+    "switch_model",
+    default=None,
+    type=str,
+    help="Switch embedding model and re-index in one step.",
+)
 @click.pass_context
-def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file: str | None, inspect_file: str | None) -> None:
+def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file: str | None, inspect_file: str | None, switch_model: str | None) -> None:
     """Index a codebase for semantic search.
 
     Scans the target directory, extracts code chunks, generates embeddings,
@@ -172,6 +179,7 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
     Use --watch to enable live incremental re-indexing on file changes.
     Use --add to index a single file without a full scan.
     Use --inspect to view indexing metadata for a file.
+    Use --switch-model to change models and re-index in one step.
 
     \b
     Examples:
@@ -180,6 +188,7 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
         codexa index --watch
         codexa index --add src/auth.py
         codexa index --inspect src/auth.py
+        codexa index --switch-model jina-code
     """
     root = Path(path).resolve()
     config_dir = AppConfig.config_dir(root)
@@ -200,6 +209,22 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
     if add_file:
         _add_single_file(root, add_file)
         return
+
+    # --- Switch model inline: update config + force re-index ---
+    if switch_model:
+        from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
+        from semantic_code_intelligence.config.settings import load_config, save_config
+
+        resolved = resolve_model_name(switch_model)
+        config = load_config(root)
+        old_model = config.embedding.model_name
+        if old_model == resolved:
+            print_info(f"Model already set to '{resolved}' — running normal index.")
+        else:
+            config.embedding.model_name = resolved
+            save_config(config, root)
+            print_success(f"Switched model: {old_model} → {resolved}")
+        force = True  # force re-index with new model
 
     # --- Model consistency guard ---
     if not force:

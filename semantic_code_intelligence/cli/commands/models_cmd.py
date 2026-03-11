@@ -111,10 +111,13 @@ def models_info(model_name: str) -> None:
 @models_cmd.command("download")
 @click.argument("model_name")
 @click.option("--backend", type=click.Choice(["auto", "onnx", "torch"]), default="auto")
-def models_download(model_name: str, backend: str) -> None:
+@click.option("--verify", is_flag=True, default=False, help="Verify model integrity after download.")
+def models_download(model_name: str, backend: str, verify: bool) -> None:
     """Pre-download a model so it is cached locally for offline use."""
     resolved = resolve_model_name(model_name)
-    print_info(f"Downloading model: {resolved} (backend={backend}) ...")
+    info = get_model_info(resolved)
+    size_hint = f" (~{info.size_mb} MB)" if info and info.size_mb else ""
+    print_info(f"Downloading model: {resolved}{size_hint} (backend={backend}) ...")
 
     from semantic_code_intelligence.embeddings.generator import get_model
 
@@ -125,6 +128,13 @@ def models_download(model_name: str, backend: str) -> None:
     except Exception as exc:
         print_error(f"Failed to download model: {exc}")
         raise SystemExit(1) from exc
+
+    if verify:
+        from semantic_code_intelligence.embeddings.model_registry import verify_model_integrity
+        if verify_model_integrity(resolved):
+            print_success(f"Integrity check passed for '{resolved}'.")
+        else:
+            print_warning(f"Integrity check: model cache for '{resolved}' may be incomplete.")
 
 
 @models_cmd.command("switch")
@@ -234,7 +244,10 @@ def models_benchmark(path: str, json_mode: bool) -> None:
     results = []
     for model_name, info in AVAILABLE_MODELS.items():
         try:
-            from semantic_code_intelligence.embeddings.generator import get_model, _model_cache
+            from semantic_code_intelligence.embeddings.generator import get_model, _model_cache, _get_available_memory_bytes
+
+            # Snapshot memory before loading
+            mem_before = _get_available_memory_bytes()
 
             # Clear cache for fair timing
             cache_keys = [k for k in _model_cache if k.startswith(model_name)]
@@ -244,6 +257,10 @@ def models_benchmark(path: str, json_mode: bool) -> None:
             t0 = time.perf_counter()
             model = get_model(model_name, backend="auto")
             load_time = time.perf_counter() - t0
+
+            # Snapshot memory after loading
+            mem_after = _get_available_memory_bytes()
+            mem_used_mb = round((mem_before - mem_after) / (1024 * 1024), 1) if mem_before and mem_after else None
 
             t0 = time.perf_counter()
             model.encode(sample_texts, batch_size=32, show_progress_bar=False, normalize_embeddings=True)
@@ -258,9 +275,11 @@ def models_benchmark(path: str, json_mode: bool) -> None:
                 "encode_time_s": round(encode_time, 3),
                 "chunks_per_sec": round(chunks_per_sec, 1),
                 "size_mb": info.size_mb,
+                "mem_used_mb": mem_used_mb,
                 "status": "ok",
             })
-            print_success(f"  {info.display_name}: {chunks_per_sec:.0f} chunks/s, dim={info.dimension}")
+            mem_str = f", mem≈{mem_used_mb}MB" if mem_used_mb else ""
+            print_success(f"  {info.display_name}: {chunks_per_sec:.0f} chunks/s, dim={info.dimension}{mem_str}")
         except Exception as exc:
             results.append({
                 "model": model_name,
@@ -270,6 +289,7 @@ def models_benchmark(path: str, json_mode: bool) -> None:
                 "encode_time_s": 0,
                 "chunks_per_sec": 0,
                 "size_mb": info.size_mb,
+                "mem_used_mb": None,
                 "status": f"error: {exc}",
             })
             print_warning(f"  {info.display_name}: skipped ({exc})")
@@ -287,9 +307,11 @@ def models_benchmark(path: str, json_mode: bool) -> None:
     table.add_column("Load", justify="right")
     table.add_column("Encode", justify="right")
     table.add_column("Speed", justify="right", style="green")
+    table.add_column("RAM", justify="right")
     table.add_column("Status")
 
     for r in results:
+        mem_str = f"{r['mem_used_mb']} MB" if r.get("mem_used_mb") else "—"
         table.add_row(
             r["display_name"],
             str(r["dimension"]),
@@ -297,6 +319,7 @@ def models_benchmark(path: str, json_mode: bool) -> None:
             f"{r['load_time_s']}s",
             f"{r['encode_time_s']}s",
             f"{r['chunks_per_sec']} c/s" if r["status"] == "ok" else "—",
+            mem_str,
             "✓" if r["status"] == "ok" else r["status"],
         )
 

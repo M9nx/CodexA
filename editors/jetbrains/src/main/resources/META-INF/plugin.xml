@@ -1,0 +1,38 @@
+<!-- JetBrains Plugin for CodexA -->
+<idea-plugin>
+  <id>com.codexa.intellij</id>
+  <name>CodexA — Semantic Code Intelligence</name>
+  <version>0.5.0</version>
+  <vendor email="support@codexa.dev" url="https://github.com/m9nx/codexa">M9nx</vendor>
+
+  <description><![CDATA[
+    AI-native semantic code search, MCP tools, and developer intelligence.
+    Works with IntelliJ IDEA, PyCharm, PhpStorm, WebStorm, GoLand, and Rider.
+    Connects to the CodexA bridge server (codexa serve) for all operations.
+  ]]></description>
+
+  <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="CodexA" anchor="right"
+                factoryClass="com.codexa.intellij.CodexaToolWindowFactory"/>
+  </extensions>
+
+  <actions>
+    <group id="CodexA.Menu" text="CodexA" description="CodexA actions">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <action id="CodexA.SemanticSearch"
+              class="com.codexa.intellij.actions.SemanticSearchAction"
+              text="Semantic Search"
+              description="Search codebase using natural language"/>
+      <action id="CodexA.ExplainSymbol"
+              class="com.codexa.intellij.actions.ExplainSymbolAction"
+              text="Explain Symbol"
+              description="Get AI explanation of the symbol at caret"/>
+      <action id="CodexA.Reindex"
+              class="com.codexa.intellij.actions.ReindexAction"
+              text="Re-index Project"
+              description="Trigger a full re-index"/>
+    </group>
+  </actions>
+</idea-plugin>

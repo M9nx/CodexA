@@ -1,0 +1,28 @@
+{
+  "id": "codexa",
+  "name": "CodexA",
+  "version": "0.5.0",
+  "description": "AI-native semantic code search, MCP tools, and developer intelligence for Zed.",
+  "authors": ["M9nx <https://github.com/M9nx>"],
+  "repository": "https://github.com/m9nx/codexa",
+  "schema_version": 1,
+  "language_servers": {
+    "codexa-mcp": {
+      "languages": ["Python", "JavaScript", "TypeScript", "Rust", "Go", "Java", "C++", "C#", "Ruby", "PHP"],
+      "command": {
+        "path": "codexa",
+        "args": ["mcp"]
+      },
+      "initialization_options": {}
+    }
+  },
+  "context_servers": {
+    "codexa": {
+      "command": {
+        "path": "codexa",
+        "args": ["mcp"]
+      },
+      "settings": {}
+    }
+  }
+}

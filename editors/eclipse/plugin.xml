@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.ui.commands">
+      <command
+            id="com.codexa.eclipse.search"
+            name="CodexA Semantic Search"
+            description="Search codebase using natural language via CodexA"/>
+      <command
+            id="com.codexa.eclipse.explain"
+            name="CodexA Explain Symbol"
+            description="Explain the selected symbol via CodexA"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            commandId="com.codexa.eclipse.search"
+            class="com.codexa.eclipse.handlers.CodexaSearchHandler"/>
+      <handler
+            commandId="com.codexa.eclipse.explain"
+            class="com.codexa.eclipse.handlers.CodexaExplainHandler"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="menu:org.eclipse.search.menu">
+         <command commandId="com.codexa.eclipse.search" label="CodexA Search..."/>
+      </menuContribution>
+   </extension>
+</plugin>

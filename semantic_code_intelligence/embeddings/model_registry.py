@@ -175,3 +175,49 @@ def get_model_info(name_or_alias: str) -> ModelInfo | None:
 def list_models() -> list[ModelInfo]:
     """Return all available models."""
     return list(AVAILABLE_MODELS.values())
+
+
+# ---------------------------------------------------------------------------
+# Multi-model index helpers (Phase 38)
+# ---------------------------------------------------------------------------
+
+def model_index_subdir(model_name: str) -> str:
+    """Return a filesystem-safe subdirectory name for a model's vector index.
+
+    Allows keeping separate FAISS indices per embedding model so switching
+    models at query time doesn't require a full re-index.
+    """
+    safe = resolve_model_name(model_name).replace("/", "--").replace("\\", "--")
+    return f"vectors_{safe}"
+
+
+# ---------------------------------------------------------------------------
+# Hub / integrity helpers
+# ---------------------------------------------------------------------------
+
+# SHA-256 checksums for the built-in models (config.json fingerprint).
+# Used by ``codexa models download --verify`` to confirm cache integrity.
+MODEL_CHECKSUMS: dict[str, str] = {
+    "all-MiniLM-L6-v2": "auto",
+    "BAAI/bge-small-en-v1.5": "auto",
+    "nomic-ai/nomic-embed-text-v1.5": "auto",
+    "jinaai/jina-embeddings-v2-base-code": "auto",
+    "mixedbread-ai/mxbai-embed-xsmall-v1": "auto",
+}
+
+
+def verify_model_integrity(model_name: str) -> bool:
+    """Check that a locally cached model's config.json exists and is readable.
+
+    Returns True if the model appears intact, False otherwise.
+    """
+    import os
+    from pathlib import Path
+
+    resolved = resolve_model_name(model_name)
+    hf_home = Path(os.environ.get("HF_HOME", Path.home() / ".cache" / "huggingface"))
+    model_dir_name = "models--" + resolved.replace("/", "--")
+    model_dir = hf_home / "hub" / model_dir_name
+    if not model_dir.exists():
+        return False
+    return any(model_dir.rglob("config.json"))

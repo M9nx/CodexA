@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>codexa</id>
+    <version>0.5.0</version>
+    <title>CodexA</title>
+    <authors>M9nx</authors>
+    <projectUrl>https://github.com/m9nx/codexa</projectUrl>
+    <licenseUrl>https://github.com/m9nx/codexa/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>AI-native developer intelligence CLI with semantic code search, embeddings, and MCP integration.</description>
+    <summary>Semantic code intelligence CLI with vector search, MCP server, and 39+ commands.</summary>
+    <tags>developer-tools code-search semantic-search cli ai mcp</tags>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

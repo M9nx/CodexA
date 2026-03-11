@@ -44,6 +44,7 @@ class _BridgeHandler(BaseHTTPRequestHandler):
     context_provider: ContextProvider
     capabilities: BridgeCapabilities
     tool_executor: ToolExecutor | None = None
+    session_manager: Any = None  # SessionManager (injected)
 
     # Silence default stderr logging — we use our own logger.
     def log_message(self, fmt: str, *args: Any) -> None:  # noqa: D102
@@ -60,6 +61,8 @@ class _BridgeHandler(BaseHTTPRequestHandler):
             self._handle_list_tools()
         elif self.path == "/tools/stream":
             self._handle_tool_stream()
+        elif self.path == "/sessions":
+            self._handle_list_sessions()
         else:
             self._json_response(404, {"error": "Not found"})
 
@@ -68,6 +71,10 @@ class _BridgeHandler(BaseHTTPRequestHandler):
             self._handle_request()
         elif self.path == "/tools/invoke":
             self._handle_tool_invoke()
+        elif self.path == "/sessions/create":
+            self._handle_create_session()
+        elif self.path == "/sessions/close":
+            self._handle_close_session()
         else:
             self._json_response(404, {"error": "Not found"})
 
@@ -160,6 +167,52 @@ class _BridgeHandler(BaseHTTPRequestHandler):
         heartbeat = {"kind": "heartbeat", "content": "", "metadata": {"timestamp": _time.time()}}
         self.wfile.write(f"data: {json.dumps(heartbeat)}\n\n".encode("utf-8"))
         self.wfile.flush()
+
+    # --- session endpoints (Phase 41) ---
+
+    def _handle_list_sessions(self) -> None:
+        """GET /sessions — list active agent sessions."""
+        if self.session_manager is None:
+            self._json_response(503, {"error": "Session manager not initialized"})
+            return
+        sessions = self.session_manager.list_sessions()
+        self._json_response(200, {"sessions": sessions, "count": len(sessions)})
+
+    def _handle_create_session(self) -> None:
+        """POST /sessions/create — create a new agent session."""
+        if self.session_manager is None:
+            self._json_response(503, {"error": "Session manager not initialized"})
+            return
+        content_length = int(self.headers.get("Content-Length", 0))
+        agent_name = "anonymous"
+        if content_length > 0:
+            raw = self.rfile.read(content_length)
+            try:
+                data = json.loads(raw.decode("utf-8"))
+                agent_name = data.get("agent_name", "anonymous")
+            except (json.JSONDecodeError, KeyError):
+                pass
+        session = self.session_manager.create_session(agent_name)
+        self._json_response(201, session.to_dict())
+
+    def _handle_close_session(self) -> None:
+        """POST /sessions/close — close an agent session."""
+        if self.session_manager is None:
+            self._json_response(503, {"error": "Session manager not initialized"})
+            return
+        content_length = int(self.headers.get("Content-Length", 0))
+        if content_length == 0:
+            self._json_response(400, {"error": "Provide session_id"})
+            return
+        raw = self.rfile.read(content_length)
+        try:
+            data = json.loads(raw.decode("utf-8"))
+            session_id = data.get("session_id", "")
+        except (json.JSONDecodeError, KeyError):
+            self._json_response(400, {"error": "Invalid JSON"})
+            return
+        closed = self.session_manager.close_session(session_id)
+        self._json_response(200, {"closed": closed, "session_id": session_id})
 
     # --- helpers ---
 
@@ -265,6 +318,8 @@ def _dispatch(
 class BridgeServer:
     """Lightweight HTTP server that exposes CodexA tools for external agents.
 
+    Supports session-based isolation for concurrent AI agents (Phase 41).
+
     Usage::
 
         server = BridgeServer(Path("."), host="127.0.0.1", port=24842)
@@ -292,6 +347,10 @@ class BridgeServer:
         self._capabilities = BridgeCapabilities()
         self._executor = ToolExecutor(self._root)
 
+        # Session manager for multi-agent orchestration (Phase 41)
+        from semantic_code_intelligence.sessions import SessionManager
+        self._session_manager = SessionManager()
+
         # Populate capabilities with tool schemas
         self._capabilities.tools = self._executor.available_tools
 
@@ -304,6 +363,7 @@ class BridgeServer:
         _BridgeHandler.context_provider = self._provider
         _BridgeHandler.capabilities = self._capabilities
         _BridgeHandler.tool_executor = self._executor
+        _BridgeHandler.session_manager = self._session_manager
         httpd = HTTPServer((self._host, self._port), _BridgeHandler)
         return httpd
 

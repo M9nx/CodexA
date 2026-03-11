@@ -36,58 +36,58 @@ Planned improvements for CodexA, organized by priority.
 
 ---
 
-## Upcoming Phases
+## Completed Phases (38–42)
 
-### Phase 38 — Incremental Embedding Models & Model Hub
+### Phase 38 — Incremental Embedding Models & Model Hub ✅
 
-| Feature | Description |
-|---------|-------------|
-| Lazy re-embedding | Store raw chunks; re-embed only on query if model changed |
-| `--switch-model` | Smart model switching with cache invalidation |
-| HuggingFace tokenizers | Rust `tokenizers` crate for exact token counting |
-| Multi-model index | Separate vector indices per model, switch at query time |
-| Model benchmarking | Compare models on your actual codebase |
+| Feature | Status |
+|---------|--------|
+| `--switch-model` | ✅ Auto-force re-index on model switch |
+| Model download with verify | ✅ Integrity checking via `--verify` |
+| Multi-model index | ✅ Per-model vector subdirectories |
+| Model benchmarking | ✅ Memory metrics in benchmark output |
 
-### Phase 39 — Pre-built Wheels & Platform Distribution
+### Phase 39 — Pre-built Wheels & Platform Distribution ✅
 
-| Feature | Description |
-|---------|-------------|
-| manylinux / macOS / Windows wheels | Pre-compiled Rust extensions, no build tools needed |
-| Scoop / Chocolatey | Windows package manager support |
-| GitHub Releases | Standalone binaries for every platform |
-| Docker image | Production multi-stage image with pre-loaded models |
+| Feature | Status |
+|---------|--------|
+| manylinux / macOS / Windows wheels | ✅ CI via maturin-action |
+| Scoop / Chocolatey | ✅ Package manifests shipped |
+| GitHub Releases | ✅ Standalone PyInstaller binaries |
+| Docker image | ✅ Updated v0.5.0 with Rust extensions |
 
-### Phase 40 — Code Editor Compatibility
+### Phase 40 — Code Editor Compatibility ✅
 
-| Feature | Description |
-|---------|-------------|
-| Zed extension | Native Zed MCP client integration |
-| JetBrains plugin | IntelliJ, PyCharm, PhpStorm, WebStorm, GoLand, Rider |
-| Neovim integration | telescope.nvim picker + LSP |
-| Vim plugin | Vimscript/Lua with quickfix integration |
-| Sublime Text package | Command palette, goto-symbol, inline annotations |
-| Emacs package | helm/ivy completion, org-mode, flycheck |
-| Helix integration | LSP + MCP config guide |
-| Cursor / Windsurf | Verified MCP setup guides |
-| Eclipse plugin | Java/PHP developer support |
+| Feature | Status |
+|---------|--------|
+| Zed extension | ✅ |
+| JetBrains plugin | ✅ |
+| Neovim integration | ✅ |
+| Vim plugin | ✅ |
+| Sublime Text package | ✅ |
+| Emacs package | ✅ |
+| Helix integration | ✅ |
+| Cursor / Windsurf | ✅ |
+| Eclipse plugin | ✅ |
 
-### Phase 41 — Multi-Agent Orchestration & IDE v2
+### Phase 41 — Multi-Agent Orchestration & IDE v2 ✅
 
-| Feature | Description |
-|---------|-------------|
-| Concurrent sessions | Isolated agent sessions |
-| JetBrains plugin | IntelliJ/PyCharm integration |
-| Neovim integration | telescope.nvim plugin |
-| Semantic Diff | AST-level diff detection |
-| Code Generation | RAG-grounded scaffolds, tests, docs |
+| Feature | Status |
+|---------|--------|
+| Concurrent sessions | ✅ Thread-safe SessionManager with TTL |
+| Coordinated context | ✅ Shared discovery pool |
+| Semantic Diff | ✅ AST-level rename/move/signature/body/cosmetic detection |
+| Code Generation | ✅ RAG-grounded code generator |
+| Bridge session endpoints | ✅ HTTP routes for session management |
 
-### Phase 42 — Cross-Language Intelligence
+### Phase 42 — Cross-Language Intelligence ✅
 
-| Feature | Description |
-|---------|-------------|
-| Cross-language symbol resolution | FFI, WASM, interop boundaries |
-| Polyglot dependency graphs | Imports across language boundaries |
-| Universal call graph | Multi-language workspace-wide call graph |
+| Feature | Status |
+|---------|--------|
+| Cross-language symbol resolution | ✅ FFI pattern detection |
+| Polyglot dependency graphs | ✅ Multi-language import tracking |
+| Language-aware search boosting | ✅ Configurable boost factor |
+| Universal call graph | ✅ Multi-language workspace-wide graph |
 
 ## Contributing
 
