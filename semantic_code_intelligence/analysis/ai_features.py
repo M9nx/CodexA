@@ -7,7 +7,7 @@ for feeding into LLMs or other AI systems.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -40,15 +40,7 @@ class LanguageStats:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the language statistics to a plain dictionary."""
-        return {
-            "language": self.language,
-            "file_count": self.file_count,
-            "function_count": self.function_count,
-            "class_count": self.class_count,
-            "method_count": self.method_count,
-            "import_count": self.import_count,
-            "total_lines": self.total_lines,
-        }
+        return asdict(self)
 
 
 @dataclass
@@ -251,13 +243,7 @@ class CodeExplanation:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the code explanation to a plain dictionary."""
-        return {
-            "symbol_name": self.symbol_name,
-            "symbol_kind": self.symbol_kind,
-            "file_path": self.file_path,
-            "summary": self.summary,
-            "details": self.details,
-        }
+        return asdict(self)
 
     def render(self) -> str:
         """Render the explanation as a Markdown-style string."""

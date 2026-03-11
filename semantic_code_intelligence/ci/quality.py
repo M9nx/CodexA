@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import math
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -68,14 +68,7 @@ class ComplexityResult:
     rating: str  # "low", "moderate", "high", "very_high"
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "symbol_name": self.symbol_name,
-            "file_path": self.file_path,
-            "start_line": self.start_line,
-            "end_line": self.end_line,
-            "complexity": self.complexity,
-            "rating": self.rating,
-        }
+        return asdict(self)
 
 
 def _rate_complexity(score: int) -> str:
@@ -181,12 +174,7 @@ class DeadCodeResult:
     start_line: int
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "symbol_name": self.symbol_name,
-            "kind": self.kind,
-            "file_path": self.file_path,
-            "start_line": self.start_line,
-        }
+        return asdict(self)
 
 
 # Names that are conventionally always reachable.
@@ -386,14 +374,7 @@ class BanditIssue:
     line: int
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "test_id": self.test_id,
-            "severity": self.severity,
-            "confidence": self.confidence,
-            "text": self.text,
-            "file_path": self.file_path,
-            "line": self.line,
-        }
+        return asdict(self)
 
 
 def run_bandit_scan(file_paths: list[str]) -> list[BanditIssue]:

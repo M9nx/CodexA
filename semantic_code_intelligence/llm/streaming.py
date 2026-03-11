@@ -9,7 +9,7 @@ Provides:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any, Generator
 
 from semantic_code_intelligence.llm.provider import (
@@ -35,7 +35,7 @@ class StreamEvent:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"kind": self.kind, "content": self.content, "metadata": self.metadata}
+        return asdict(self)
 
     def to_sse(self) -> str:
         """Format as a Server-Sent Event line."""

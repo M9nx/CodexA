@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any
 
@@ -64,12 +64,7 @@ class ToolInvocation:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise the invocation to a plain dictionary."""
-        return {
-            "tool_name": self.tool_name,
-            "arguments": self.arguments,
-            "request_id": self.request_id,
-            "timestamp": self.timestamp,
-        }
+        return asdict(self)
 
     def to_json(self, indent: int | None = None) -> str:
         """Serialise the invocation to a JSON string."""
@@ -113,12 +108,7 @@ class ToolError:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise the error to a plain dictionary."""
-        return {
-            "tool_name": self.tool_name,
-            "error_code": self.error_code,
-            "error_message": self.error_message,
-            "request_id": self.request_id,
-        }
+        return asdict(self)
 
     def to_json(self, indent: int | None = None) -> str:
         """Serialise the error to a JSON string."""

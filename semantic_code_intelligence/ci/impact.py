@@ -8,7 +8,7 @@ map imports, and symbol cross-references.
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -33,13 +33,7 @@ class AffectedSymbol:
     depth: int  # hops from source
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "file_path": self.file_path,
-            "kind": self.kind,
-            "relationship": self.relationship,
-            "depth": self.depth,
-        }
+        return asdict(self)
 
 
 @dataclass
@@ -51,11 +45,7 @@ class AffectedModule:
     depth: int
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "file_path": self.file_path,
-            "relationship": self.relationship,
-            "depth": self.depth,
-        }
+        return asdict(self)
 
 
 @dataclass
@@ -65,7 +55,7 @@ class DependencyChain:
     path: list[str]  # list of file/symbol names forming the chain
 
     def to_dict(self) -> dict[str, Any]:
-        return {"path": self.path}
+        return asdict(self)
 
 
 @dataclass

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -35,13 +35,7 @@ class MemoryEntry:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the memory entry to a plain dictionary."""
-        return {
-            "key": self.key,
-            "content": self.content,
-            "kind": self.kind,
-            "timestamp": self.timestamp,
-            "metadata": self.metadata,
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "MemoryEntry":

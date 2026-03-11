@@ -7,7 +7,7 @@ implement.  Every task targets **≤3 files** and **≤200 lines changed**.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from semantic_code_intelligence.evolution.commit_manager import CommitManager
@@ -43,12 +43,7 @@ class EvolutionTask:
 
     def to_dict(self) -> dict[str, object]:
         """Serialise the task to a plain dictionary."""
-        return {
-            "category": self.category,
-            "description": self.description,
-            "target_files": self.target_files,
-            "context_hint": self.context_hint,
-        }
+        return asdict(self)
 
 
 class TaskSelector:

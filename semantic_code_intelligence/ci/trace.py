@@ -7,7 +7,7 @@ with transitive traversal and cross-file relationship tracking.
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from semantic_code_intelligence.context.engine import CallGraph
@@ -27,12 +27,7 @@ class TraceNode:
     depth: int  # hops from source; negative=upstream, positive=downstream
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "file_path": self.file_path,
-            "kind": self.kind,
-            "depth": self.depth,
-        }
+        return asdict(self)
 
 
 @dataclass
@@ -44,11 +39,7 @@ class TraceEdge:
     file_path: str
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "caller": self.caller,
-            "callee": self.callee,
-            "file_path": self.file_path,
-        }
+        return asdict(self)
 
 
 @dataclass

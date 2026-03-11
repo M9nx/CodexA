@@ -8,7 +8,7 @@ it is a first line of defence within the coding assistant workflow.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from semantic_code_intelligence.utils.logging import get_logger
@@ -55,12 +55,7 @@ class SafetyIssue:
     severity: str = "warning"
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "pattern": self.pattern,
-            "description": self.description,
-            "line_number": self.line_number,
-            "severity": self.severity,
-        }
+        return asdict(self)
 
 
 @dataclass

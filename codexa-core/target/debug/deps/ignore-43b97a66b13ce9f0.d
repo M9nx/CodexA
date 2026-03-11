@@ -1,0 +1,12 @@
+D:\mounir\CodexA\codexa-core\target\debug\deps\ignore-43b97a66b13ce9f0.d: C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\lib.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\default_types.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\dir.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\gitignore.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\overrides.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\pathutil.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\types.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\walk.rs
+
+D:\mounir\CodexA\codexa-core\target\debug\deps\libignore-43b97a66b13ce9f0.rmeta: C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\lib.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\default_types.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\dir.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\gitignore.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\overrides.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\pathutil.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\types.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\walk.rs
+
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\lib.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\default_types.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\dir.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\gitignore.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\overrides.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\pathutil.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\types.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ignore-0.4.25\src\walk.rs:

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
@@ -32,13 +32,7 @@ class RateLimiterStats:
     current_tpm: int = 0
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "total_requests": self.total_requests,
-            "total_tokens": self.total_tokens,
-            "rejected_requests": self.rejected_requests,
-            "current_rpm": self.current_rpm,
-            "current_tpm": self.current_tpm,
-        }
+        return asdict(self)
 
 
 @dataclass

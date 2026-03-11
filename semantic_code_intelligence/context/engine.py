@@ -9,7 +9,7 @@ Provides:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -162,12 +162,7 @@ class CallEdge:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the call edge to a plain dictionary."""
-        return {
-            "caller": self.caller,
-            "callee": self.callee,
-            "file_path": self.file_path,
-            "line": self.line,
-        }
+        return asdict(self)
 
 
 class CallGraph:
@@ -374,11 +369,7 @@ class FileDependency:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the file dependency to a plain dictionary."""
-        return {
-            "source_file": self.source_file,
-            "import_text": self.import_text,
-            "line": self.line,
-        }
+        return asdict(self)
 
 
 class DependencyMap:

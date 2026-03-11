@@ -8,7 +8,7 @@ No git binary is invoked; the caller supplies file lists.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -34,14 +34,7 @@ class FileChange:
     import_changes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "path": self.path,
-            "language": self.language,
-            "symbols_added": self.symbols_added,
-            "symbols_removed": self.symbols_removed,
-            "symbols_modified": self.symbols_modified,
-            "import_changes": self.import_changes,
-        }
+        return asdict(self)
 
 
 @dataclass
@@ -160,12 +153,7 @@ class ImpactResult:
     dependency_changes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "changed_symbols": self.changed_symbols,
-            "affected_files": self.affected_files,
-            "affected_symbols": self.affected_symbols,
-            "dependency_changes": self.dependency_changes,
-        }
+        return asdict(self)
 
 
 def analyze_impact(
@@ -262,11 +250,7 @@ class RiskScore:
     factors: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "score": self.score,
-            "level": self.level,
-            "factors": self.factors,
-        }
+        return asdict(self)
 
 
 def _risk_level(score: int) -> str:

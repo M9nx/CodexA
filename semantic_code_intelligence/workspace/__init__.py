@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -57,13 +57,7 @@ class RepoEntry:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise the repo entry to a plain dictionary."""
-        return {
-            "name": self.name,
-            "path": self.path,
-            "last_indexed": self.last_indexed,
-            "file_count": self.file_count,
-            "vector_count": self.vector_count,
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "RepoEntry":

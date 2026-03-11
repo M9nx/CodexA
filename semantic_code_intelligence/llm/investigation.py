@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -44,13 +44,7 @@ class InvestigationResult:
     total_steps: int = 0
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "question": self.question,
-            "conclusion": self.conclusion,
-            "steps": self.steps,
-            "chain_id": self.chain_id,
-            "total_steps": self.total_steps,
-        }
+        return asdict(self)
 
 
 # ---------------------------------------------------------------------------

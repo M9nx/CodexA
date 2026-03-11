@@ -1,0 +1,8 @@
+D:\mounir\CodexA\codexa-core\target\debug\deps\tree_sitter_java-479317ebe11f93c2.d: C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\lib.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../src/node-types.json C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../queries/highlights.scm C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../queries/tags.scm
+
+D:\mounir\CodexA\codexa-core\target\debug\deps\libtree_sitter_java-479317ebe11f93c2.rmeta: C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\lib.rs C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../src/node-types.json C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../queries/highlights.scm C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../queries/tags.scm
+
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\lib.rs:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../src/node-types.json:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../queries/highlights.scm:
+C:\Users\flowm\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tree-sitter-java-0.23.5\bindings\rust\../../queries/tags.scm:

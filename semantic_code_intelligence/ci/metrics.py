@@ -16,7 +16,7 @@ import json
 import math
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -460,14 +460,7 @@ class QualityPolicy:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise the quality policy to a plain dictionary."""
-        return {
-            "min_maintainability": self.min_maintainability,
-            "max_complexity": self.max_complexity,
-            "max_issues": self.max_issues,
-            "max_dead_code": self.max_dead_code,
-            "max_duplicates": self.max_duplicates,
-            "require_safety_pass": self.require_safety_pass,
-        }
+        return asdict(self)
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> QualityPolicy:
@@ -493,12 +486,7 @@ class GateViolation:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise the gate violation to a plain dictionary."""
-        return {
-            "rule": self.rule,
-            "message": self.message,
-            "actual": self.actual,
-            "threshold": self.threshold,
-        }
+        return asdict(self)
 
 
 @dataclass

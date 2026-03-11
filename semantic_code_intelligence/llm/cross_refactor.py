@@ -11,7 +11,7 @@ gather symbols, then asks the LLM for actionable suggestions.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -39,15 +39,7 @@ class CrossRepoMatch:
     similarity_note: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "repo_a": self.repo_a,
-            "symbol_a": self.symbol_a,
-            "file_a": self.file_a,
-            "repo_b": self.repo_b,
-            "symbol_b": self.symbol_b,
-            "file_b": self.file_b,
-            "similarity_note": self.similarity_note,
-        }
+        return asdict(self)
 
 
 @dataclass

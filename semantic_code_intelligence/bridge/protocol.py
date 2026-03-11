@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any
 
@@ -63,12 +63,7 @@ class AgentRequest:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the request to a plain dictionary."""
-        return {
-            "kind": self.kind,
-            "params": self.params,
-            "request_id": self.request_id,
-            "source": self.source,
-        }
+        return asdict(self)
 
     def to_json(self) -> str:
         """Serialize the request to a JSON string."""
