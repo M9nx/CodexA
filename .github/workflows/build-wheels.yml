@@ -53,13 +53,19 @@ jobs:
           manylinux: auto
           args: --release --out dist -m codexa-core/Cargo.toml
 
+      - name: Set up QEMU
+        if: matrix.target == 'aarch64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
       - name: Build wheel (Linux aarch64)
         if: matrix.os == 'ubuntu-latest' && matrix.target == 'aarch64'
         uses: PyO3/maturin-action@v1
         with:
           target: aarch64-unknown-linux-gnu
           manylinux: auto
-          args: --release --out dist -m codexa-core/Cargo.toml
+          args: --release --out dist -m codexa-core/Cargo.toml -i python3.12
 
       - name: Build wheel (macOS Universal2)
         if: matrix.os == 'macos-latest'
@@ -132,8 +138,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: artifacts/
-        env:
-          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
