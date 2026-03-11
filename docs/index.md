@@ -83,7 +83,7 @@ codexa hotspots
 | **Plugin Hooks** | 22 |
 | **Packages** | 26 |
 | **Parsed Languages** | 12 |
-| **Tests** | 2596+ |
+| **Tests** | 2657+ |
 
 ## Next Steps
 
@@ -91,5 +91,5 @@ codexa hotspots
 - [Quick Start](guide/quickstart) — Index a project and start searching
 - [CLI Reference](reference/cli) — All 39 commands documented
 - [Architecture](reference/architecture) — System design and package map
-- [Plugin System](features/plugin-system) — Extend CodexA with custom hooks
-- [API Reference](reference/api) — REST, Bridge, MCP, and Python APIs
+- [Upgrade Guide](guide/upgrade) -- What's new in v0.5.0
+- [Roadmap](guide/roadmap) -- All completed phases and future direction

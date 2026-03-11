@@ -534,8 +534,7 @@ providing high-performance alternatives to the Python search and indexing stack.
 ---
 
 ### Phase 33: Search Dominance — JSONL Streaming & Output Parity ✅
-Close the output-format gap with ck. Make CodexA the best tool for both humans
-and AI agents to consume search results.
+Make CodexA the best tool for both humans and AI agents to consume search results.
 
 | Feature | Status |
 |---------|--------|
@@ -551,8 +550,7 @@ and AI agents to consume search results.
 ---
 
 ### Phase 34: Search Dominance — Chunk-Level Incremental Indexing ✅
-Eliminate full re-index overhead. Match and exceed ck's delta indexing with
-chunk-level content-addressed caching.
+Eliminate full re-index overhead with chunk-level content-addressed caching.
 
 | Feature | Status |
 |---------|--------|
@@ -602,7 +600,7 @@ install on every platform.
 
 | Feature | Status |
 |---------|--------|
-| **`--hybrid` / `--sem` shorthands** — quick mode flags matching ck's UX | ✅ |
+| **`--hybrid` / `--sem` shorthands** — quick mode flags for search | ✅ |
 | **`.codexaignore` auto-create** — generated on first index with sensible defaults | ✅ |
 | **PyInstaller spec** — `codexa.spec` for single-binary distribution | ✅ |
 

@@ -2,26 +2,80 @@
 
 All notable changes to CodexA are documented in this file.
 
-## [0.5.0] — Rust Search Engine Core (Phase 32)
+## [0.5.0] -- v0.5.0 Release
 
-### New Features
-- **Rust native engine**: `codexa-core` crate compiled via PyO3/maturin — transparent acceleration for search, indexing, and chunking
+### Rust Search Engine Core (Phase 32)
+- **Rust native engine**: `codexa-core` crate compiled via PyO3/maturin
 - **HNSW vector index**: `HnswVectorStore` using `instant-distance` for O(log n) approximate nearest-neighbour search
-- **Memory-mapped persistence**: `RustVectorStore.load_mmap()` and `HnswVectorStore.load()` use `memmap2` for near-instant startup
-- **AST-aware chunker**: `AstChunker` splits code at function/class/method boundaries using tree-sitter grammars for 10 languages (Python, JS, TS, TSX, Rust, Go, Java, C, C++, Ruby)
+- **Memory-mapped persistence**: `RustVectorStore.load_mmap()` and `HnswVectorStore.load()` for near-instant startup
+- **AST-aware chunker**: `AstChunker` splits code at function/class/method boundaries using tree-sitter grammars for 10 languages
 - **Rust BM25 index**: `RustBM25Index` with identical tokenization to the Python implementation
 - **Rust parallel scanner**: `RustScanner` with blake3 hashing and `.codexaignore` support via rayon
 - **Rust RRF fusion**: `reciprocal_rank_fusion_rs` for hybrid search
 - **ONNX embedder**: `OnnxEmbedder` for ONNX Runtime inference (feature-gated behind `onnx`)
-- **Graceful fallback**: All Rust components are optional — Python implementations used when crate is not installed
+- **Graceful fallback**: All Rust components are optional -- Python implementations used when crate is not installed
+
+### RAG Pipeline (Phase 31)
+- **4-stage retrieval**: Retrieve, Deduplicate, Re-rank, Assemble with token budget
+- **Retrieval strategies**: Configurable `semantic`, `keyword`, `hybrid`, and `multi` strategies
+- **Cross-encoder re-ranking**: Optional `ms-marco-MiniLM-L-6-v2` cross-encoder
+- **Source citations**: Numbered `[N]` markers in LLM responses with file path and line references
+
+### Search Dominance (Phases 33-37)
+- **JSONL streaming**: `--jsonl` flag on `search` and `grep`
+- **Scored output**: `--scores` flag with relevance scores
+- **Snippet control**: `--snippet-length N`, `--no-snippet`
+- **Exclude/no-ignore**: `--exclude` glob filtering, `--no-ignore` for gitignored files
+- **Incremental indexing**: `--add <file>`, `--inspect <file>`, model-consistency guard, Ctrl+C partial-save safety
+- **Tantivy full-text engine**: `TantivyIndex` PyO3 class with cfg-gated `tantivy-backend` feature
+- **MCP Server v2**: Cursor-based pagination, `codexa --serve` shorthand, `--claude-config` auto-configuration
+- **Search shorthands**: `--hybrid`/`--sem` mode flags
+- **`.codexaignore` auto-create**: Generated on first index with sensible defaults
+- **PyInstaller spec**: Single-binary distribution support
+
+### Model Hub & Distribution (Phases 38-39)
+- **`--switch-model`**: Hot-swap embedding models with auto-force re-index
+- **Model verification**: `codexa models download --verify` with integrity checking
+- **Multi-model index**: Per-model vector subdirectories
+- **Benchmark memory metrics**: RAM usage reporting in `codexa models benchmark`
+- **Pre-built wheels**: CI-built via maturin-action for Linux (x86_64, aarch64), macOS (universal2), Windows (x64)
+- **Package managers**: Scoop and Chocolatey manifests
+- **Standalone binaries**: PyInstaller builds via GitHub Releases
+- **Docker image**: Updated with Rust extensions
+
+### Code Editor Plugins (Phase 40)
+- **Zed**: Extension with context servers and language servers
+- **JetBrains**: IntelliJ/PyCharm/WebStorm Kotlin plugin with bridge HTTP client
+- **Neovim**: Lua plugin with telescope.nvim picker and floating preview
+- **Vim**: Vimscript plugin with quickfix integration
+- **Sublime Text**: Command palette, quick panel, output panel
+- **Emacs**: helm/ivy completion, grep-mode results
+- **Helix**: Setup guide with languages.toml configuration
+- **Eclipse**: Plugin descriptor and README
+- **Cursor/Windsurf**: Documented MCP setup configs
+
+### Multi-Agent Orchestration (Phase 41)
+- **SessionManager**: Thread-safe concurrent agent sessions with TTL cleanup
+- **Shared discovery pool**: Coordinated context across multiple AI agents
+- **Semantic diff**: AST-level detection of renames, moves, signature changes, body changes, and cosmetic edits
+- **Code generation**: RAG-grounded code generator
+- **Bridge session endpoints**: `/sessions`, `/sessions/create`, `/sessions/close`
+
+### Cross-Language Intelligence (Phase 42)
+- **FFI pattern detection**: Python-Rust, Python-C, JS-WASM, Java-JNI
+- **Polyglot dependency graphs**: Multi-language import tracking
+- **Language-aware search boosting**: Configurable boost factor
+- **Universal call graph**: Multi-language workspace-wide graph
 
 ### Changed
-- `vector_store.py`: Rust search fast path with cached `_rs_store` mirror, dual-format save (`vectors.faiss` + `vectors.bin`)
+- `vector_store.py`: Rust search fast path with cached `_rs_store` mirror
 - `keyword_search.py`: BM25 dispatches to `RustBM25Index` when available
 - `hybrid_search.py`: RRF delegates to Rust when available
-- `search_service.py`: Auto-index detects both index formats
-- Binary formats: `vectors.bin` (flat), `hnsw_vectors.bin` (HNSW with embedded metadata)
-- Version bumped to 0.5.0
+- `bridge/server.py`: Session management endpoints added
+- `index_cmd.py`: `--switch-model` flag added
+- `models_cmd.py`: `--verify` flag, memory metrics in benchmark
+- `model_registry.py`: Multi-model index helpers, integrity verification
+- 2657 tests, all passing
 
 ## [0.4.5] — RAG Pipeline for LLM Commands (Phase 31)
 

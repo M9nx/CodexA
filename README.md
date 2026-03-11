@@ -9,7 +9,7 @@
   <a href="https://pepy.tech/project/codexa"><img src="https://img.shields.io/pepy/dt/codexa?color=blue&label=Downloads" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/version-0.5.0-green" alt="Version">
-  <img src="https://img.shields.io/badge/tests-2596-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-2657-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-79%25-brightgreen" alt="Coverage">
   <img src="https://img.shields.io/badge/mypy-strict-blue" alt="mypy strict">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
@@ -39,6 +39,9 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 | **Streaming Responses** | Token-by-token streaming for chat and investigation commands |
 | **Plugin System** | 22 hooks for extending every layer — from indexing to tool invocation |
 | **VS Code Extension** | 4-panel sidebar (Search, Symbols, Quality, Tools), 8 commands, CodeLens, context menus, status bar |
+| **Editor Plugins** | Zed, JetBrains (IntelliJ/PyCharm), Neovim (telescope.nvim), Vim, Sublime Text, Emacs, Helix, Eclipse -- all sharing the same MCP/bridge protocol |
+| **Cross-Language Intelligence** | FFI pattern detection, polyglot dependency graphs, language-aware search boosting, universal multi-language call graph |
+| **Multi-Agent Sessions** | Concurrent AI agent sessions with shared discovery, semantic diff (rename/move/signature/body detection), RAG code generation |
 
 ---
 
@@ -616,7 +619,7 @@ Browse the docs at **http://localhost:5173** after running `npm run docs:dev`.
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 2595 tests
+# Run all 2657 tests
 pytest
 
 # Run with coverage (gate: 70% minimum)

@@ -1,94 +1,51 @@
 # Roadmap
 
-Planned improvements for CodexA, organized by priority.
+CodexA development roadmap. All phases through v0.5.0 are complete.
 
-## Recently Completed (v0.5.0)
+## v0.5.0 — All Phases Complete
 
-### Search Dominance — Phases 33-37
+CodexA v0.5.0 ships with all planned features implemented across 42 development phases.
 
-> After competitive analysis against [ck](https://github.com/BeaconBay/ck)
-> (Rust-based semantic search, v0.7.4), we redesigned the roadmap around a
-> **Search Dominance** strategy — matching ck's grep UX while keeping CodexA's
-> unique intelligence features.
+### Phases 33–37 — Search Dominance
 
-- **Phase 33 — JSONL Streaming & Output Parity**: `--jsonl`, `--scores`, `--snippet-length`, `--no-snippet`, `--exclude`, `--no-ignore` on search and grep commands
-- **Phase 34 — Chunk-Level Incremental Indexing**: `--add <file>`, `--inspect <file>`, model-consistency guard, Ctrl+C partial-save safety
-- **Phase 35 — Tantivy Full-Text Engine**: `TantivyIndex` PyO3 class in Rust, cfg-gated `tantivy-backend` feature, Python bridge with feature detection
-- **Phase 36 — MCP Server v2**: Cursor-based pagination on semantic/keyword/hybrid search, `codexa --serve` shorthand, `--claude-config` auto-configuration
-- **Phase 37 — grep Parity & Distribution**: `--hybrid`/`--sem` shorthands, `.codexaignore` auto-creation, PyInstaller single-binary spec
+- **Phase 33**: JSONL streaming, scored output, snippet control, exclude/no-ignore flags
+- **Phase 34**: Incremental indexing (`--add`, `--inspect`), model-consistency guard, Ctrl+C safety
+- **Phase 35**: Tantivy full-text engine (Rust-native, cfg-gated)
+- **Phase 36**: MCP Server v2 with cursor-based pagination, `--serve` shorthand, Claude Desktop auto-config
+- **Phase 37**: `--hybrid`/`--sem` shorthands, `.codexaignore` auto-creation, PyInstaller single-binary
 
-### Rust Search Engine Core — Phase 32
+### Phase 32 — Rust Search Engine Core
 
 - Native `codexa-core` Rust crate via PyO3 — HNSW, BM25, tree-sitter chunker (10 languages), parallel scanner, optional ONNX and Tantivy
 
-### RAG Pipeline — Phase 31
+### Phase 31 — RAG Pipeline
 
 - 4-stage Retrieve → Deduplicate → Re-rank → Assemble pipeline
 - Configurable strategies, cross-encoder re-ranking, token-aware budgets, source citations
 
-### Previous (v0.4.x)
+### Phases 38–42 — Platform Expansion
 
-- Model Profiles (fast/balanced/precise), auto-detection from RAM
-- Bundled tree-sitter grammars, exclude_files config
-- ML extras split: `pip install codexa` (lightweight) vs `pip install "codexa[ml]"`
-- 39 CLI commands, 13 AI agent tools, 22 plugin hooks
-- Docker image, Homebrew formula, VS Code extension
+- **Phase 38**: Incremental Embedding Models & Model Hub — `--switch-model`, model verification, multi-model index, benchmark memory metrics
+- **Phase 39**: Pre-built Wheels & Platform Distribution — manylinux/macOS/Windows wheels, Scoop, Chocolatey, PyInstaller binaries
+- **Phase 40**: Code Editor Compatibility — Zed, JetBrains, Neovim, Vim, Sublime Text, Emacs, Helix, Eclipse, Cursor/Windsurf
+- **Phase 41**: Multi-Agent Orchestration — SessionManager, shared discovery, semantic diff, RAG code generation, bridge session endpoints
+- **Phase 42**: Cross-Language Intelligence — FFI pattern detection, polyglot dependency graphs, language-aware search boosting, universal call graph
+
+### Earlier Phases (1–30)
+
+- CLI framework, repository indexing, semantic search, code parsing, context engine, AI features
+- Platform evolution, AI coding assistant platform, external AI cooperation
+- Multi-repo workspaces, multi-language parsing, platform enhancements
+- Open source readiness, web interface, CI/CD pipeline, advanced AI workflows
+- VS Code extension, priority features, power features, UI/UX polish
+- Model profiles, persistent index, LLM caching, mypy strict, deep coverage
+- AI agent tooling protocol, developer workflow intelligence, code quality metrics
+- Self-improving development loop, competitive feature parity & distribution
 
 ---
 
-## Completed Phases (38–42)
+## What's Next?
 
-### Phase 38 — Incremental Embedding Models & Model Hub ✅
+All planned phases are complete. CodexA is now in **community-driven development** mode.
 
-| Feature | Status |
-|---------|--------|
-| `--switch-model` | ✅ Auto-force re-index on model switch |
-| Model download with verify | ✅ Integrity checking via `--verify` |
-| Multi-model index | ✅ Per-model vector subdirectories |
-| Model benchmarking | ✅ Memory metrics in benchmark output |
-
-### Phase 39 — Pre-built Wheels & Platform Distribution ✅
-
-| Feature | Status |
-|---------|--------|
-| manylinux / macOS / Windows wheels | ✅ CI via maturin-action |
-| Scoop / Chocolatey | ✅ Package manifests shipped |
-| GitHub Releases | ✅ Standalone PyInstaller binaries |
-| Docker image | ✅ Updated v0.5.0 with Rust extensions |
-
-### Phase 40 — Code Editor Compatibility ✅
-
-| Feature | Status |
-|---------|--------|
-| Zed extension | ✅ |
-| JetBrains plugin | ✅ |
-| Neovim integration | ✅ |
-| Vim plugin | ✅ |
-| Sublime Text package | ✅ |
-| Emacs package | ✅ |
-| Helix integration | ✅ |
-| Cursor / Windsurf | ✅ |
-| Eclipse plugin | ✅ |
-
-### Phase 41 — Multi-Agent Orchestration & IDE v2 ✅
-
-| Feature | Status |
-|---------|--------|
-| Concurrent sessions | ✅ Thread-safe SessionManager with TTL |
-| Coordinated context | ✅ Shared discovery pool |
-| Semantic Diff | ✅ AST-level rename/move/signature/body/cosmetic detection |
-| Code Generation | ✅ RAG-grounded code generator |
-| Bridge session endpoints | ✅ HTTP routes for session management |
-
-### Phase 42 — Cross-Language Intelligence ✅
-
-| Feature | Status |
-|---------|--------|
-| Cross-language symbol resolution | ✅ FFI pattern detection |
-| Polyglot dependency graphs | ✅ Multi-language import tracking |
-| Language-aware search boosting | ✅ Configurable boost factor |
-| Universal call graph | ✅ Multi-language workspace-wide graph |
-
-## Contributing
-
-Interested in working on any of these? Check the [GitHub issues](https://github.com/M9nx/CodexA/issues) for related discussions.
+If you have ideas for improvements, new features, or integrations, please [open an issue](https://github.com/M9nx/CodexA/issues) on GitHub and tell us what you'd like to see.
