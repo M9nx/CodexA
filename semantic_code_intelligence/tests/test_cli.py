@@ -168,6 +168,19 @@ class TestInitCommand:
         assert result.exit_code != 0
         assert "failed to read existing .codexa/config.json" in result.output.lower()
 
+    def test_init_interactive_config_permission_error(self, runner: CliRunner, tmp_path: Path):
+        runner.invoke(cli, ["init", str(tmp_path)])
+        config_path = tmp_path / ".codexa" / "config.json"
+        config_path.chmod(0o000)
+
+        try:
+            result = runner.invoke(cli, ["init", str(tmp_path), "--interactive"])
+        finally:
+            config_path.chmod(0o644)
+
+        assert result.exit_code != 0
+        assert "failed to read existing .codexa/config.json" in result.output.lower()
+
 
 class TestIndexCommand:
     """Tests for the index command."""
