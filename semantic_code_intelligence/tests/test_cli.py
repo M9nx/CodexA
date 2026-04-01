@@ -110,6 +110,30 @@ class TestInitCommand:
         # Profile for ~3GB RAM should be precise according to registry thresholds
         assert config["embedding"]["model_name"] == "jinaai/jina-embeddings-v2-base-code"
 
+    def test_init_interactive_installer_allows_selection(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Provide stable detection so defaults are deterministic
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_available_memory_bytes",
+            lambda: 5 * BYTES_PER_GB,
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_cpu_count",
+            lambda: 4,
+        )
+
+        result = runner.invoke(
+            cli,
+            ["init", str(tmp_path), "--interactive"],
+            input="fast\n24\n",
+        )
+        assert result.exit_code == 0
+        output = result.output.lower()
+        assert "interactive installer" in output
+
+        config = json.loads((tmp_path / ".codexa" / "config.json").read_text(encoding="utf-8"))
+        assert config["embedding"]["model_name"] == MODEL_PROFILES["fast"].model_name
+        assert config["embedding"]["batch_size"] == 24
+
 
 class TestIndexCommand:
     """Tests for the index command."""
