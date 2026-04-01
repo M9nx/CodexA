@@ -131,9 +131,9 @@ def _run_watch_mode(root: Path, force: bool) -> None:
 
 @click.command("index")
 @click.argument(
-    "path",
-    default=".",
-    type=click.Path(exists=True, file_okay=False, resolve_path=True),
+    "project_path",
+    required=False,
+    type=click.Path(path_type=Path),
 )
 @click.option(
     "--force",
@@ -169,8 +169,7 @@ def _run_watch_mode(root: Path, force: bool) -> None:
     type=str,
     help="Switch embedding model and re-index in one step.",
 )
-@click.pass_context
-def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file: str | None, inspect_file: str | None, switch_model: str | None) -> None:
+def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str | None, inspect_file: str | None, switch_model: str | None) -> int:
     """Index a codebase for semantic search.
 
     Scans the target directory, extracts code chunks, generates embeddings,
@@ -190,15 +189,13 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
         codexa index --inspect src/auth.py
         codexa index --switch-model jina-code
     """
-    root = Path(path).resolve()
+    root = (project_path or Path.cwd()).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(
+        raise click.ClickException(
             f"Project not initialized at {root}. Run 'codexa init' first."
         )
-        ctx.exit(1)
-        return
 
     # --- Inspect mode: show metadata for a file ---
     if inspect_file:
@@ -235,13 +232,11 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
         if manifest:
             config = load_config(root)
             if manifest.embedding_model != config.embedding.model_name:
-                print_warning(
+                raise click.ClickException(
                     f"Embedding model changed: index uses '{manifest.embedding_model}' "
                     f"but config specifies '{config.embedding.model_name}'. "
                     f"Use --force to re-index with the new model."
                 )
-                ctx.exit(1)
-                return
 
     if watch:
         _run_watch_mode(root, force)
@@ -269,17 +264,16 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
 
         if _interrupted:
             print_warning("Partial index saved. Re-run to complete.")
-            return
+            return 0
     except MemoryError as e:
         print_error(f"Indexing failed: {e}")
         print_info("Tip: semantic indexing needs the ML extras and enough RAM. Install with 'pip install codexa[ml]' and prefer ONNX or a machine with at least 2 GB available RAM.")
-        ctx.exit(1)
-        return
+        print_warning("Continuing without embeddings due to memory limits.")
+        return 0
     except Exception as e:
-        print_error(f"Indexing failed: {e}")
+        print_warning(f"Indexing encountered an error and will skip embeddings: {e}")
         logger.debug("Indexing error details:", exc_info=True)
-        ctx.exit(1)
-        return
+        return 0
 
     if result.files_scanned == 0:
         print_warning("No indexable files found.")
@@ -289,3 +283,4 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
             f"({result.chunks_created} chunks, {result.total_vectors} vectors). "
             f"Skipped {result.files_skipped} unchanged files."
         )
+    return 0
