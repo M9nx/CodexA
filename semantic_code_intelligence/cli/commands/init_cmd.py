@@ -129,26 +129,25 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
     """
     root = Path(path).resolve()
 
-    # Check if already initialized
     config_dir = AppConfig.config_dir(root)
-    if config_dir.exists() and not interactive:
-        print_info(f"Project already initialized at {root}")
-        print_info(f"Config directory: {config_dir}")
-        # Still allow --vscode and --index on existing projects
-        if setup_vscode:
-            if _generate_vscode_mcp_config(root):
-                print_success("VS Code MCP config written to .vscode/settings.json")
-            else:
-                print_info("VS Code MCP config already exists")
-        if auto_index:
-            _run_index(root)
-        return
-
     try:
         if config_dir.exists():
+            if not interactive:
+                print_info(f"Project already initialized at {root}")
+                print_info(f"Config directory: {config_dir}")
+                # Still allow --vscode and --index on existing projects
+                if setup_vscode:
+                    if _generate_vscode_mcp_config(root):
+                        print_success("VS Code MCP config written to .vscode/settings.json")
+                    else:
+                        print_info("VS Code MCP config already exists")
+                if auto_index:
+                    _run_index(root)
+                return
+
             config = load_config(root)
             print_info(f"Project already initialized at {root}")
-            print_info(f"Launching interactive installer to update configuration.")
+            print_info("Launching interactive installer to update configuration.")
         else:
             config, config_path = init_project(root)
             print_success(f"Initialized project at {root}")
@@ -292,13 +291,6 @@ def _run_interactive_installer(
         show_choices=False,
     )
     chosen_profile = resolve_profile(chosen_profile_key)
-    if chosen_profile is None:
-        # Defensive guard; click.Choice restricts input to known keys.
-        available = ", ".join(MODEL_PROFILES.keys())
-        raise RuntimeError(
-            f"Failed to resolve embedding profile '{chosen_profile_key}'. "
-            f"Available profiles: {available}. Please report this issue."
-        )
 
     profile_changed = False
     if config.embedding.model_name != chosen_profile.model_name:
