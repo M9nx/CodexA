@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import signal
 import time
@@ -278,13 +279,34 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
         return 0
     except Exception as e:
         message = f"{type(e).__name__}: {e}"
-        network_like = isinstance(e, (ConnectionError, TimeoutError, OSError)) or "request" in str(e).lower()
-        if network_like:
+        msg_lower = str(e).lower()
+        network_errnos = {
+            errno.ENETUNREACH,
+            errno.EHOSTUNREACH,
+            errno.ECONNREFUSED,
+            errno.ECONNRESET,
+            errno.ETIMEDOUT,
+        }
+        network_like = isinstance(e, (ConnectionError, TimeoutError)) or (
+            isinstance(e, OSError) and e.errno in network_errnos
+        )
+        embedding_like = isinstance(e, (ImportError, ValueError, RuntimeError)) and any(
+            key in msg_lower for key in ("embedding", "model", "attn_implementation", "transformer", "tokenizer")
+        )
+        if network_like or "request" in msg_lower:
             print_warning(
-                "Indexing encountered a network/IO issue; embeddings were skipped but the command completed. "
+                "Indexing encountered a network issue while fetching embeddings; "
+                "skipping embeddings and completing with existing index. "
                 f"Details: {message}"
             )
             logger.debug("Indexing error details:", exc_info=True)
+            return 0
+        if embedding_like:
+            print_warning(
+                "Embedding model setup failed; skipping embeddings and completing with existing index. "
+                f"Details: {message}"
+            )
+            logger.debug("Embedding load error details:", exc_info=True)
             return 0
         raise click.ClickException(f"Indexing failed: {message}") from e
 
