@@ -18,6 +18,10 @@ from semantic_code_intelligence.config.settings import (
     load_config,
     save_config,
 )
+from semantic_code_intelligence.embeddings.generator import (
+    BYTES_PER_GB,
+    recommend_batch_size,
+)
 
 
 class TestDefaultConfigs:
@@ -26,6 +30,7 @@ class TestDefaultConfigs:
     def test_embedding_config_defaults(self):
         cfg = EmbeddingConfig()
         assert cfg.model_name == "all-MiniLM-L6-v2"
+        assert cfg.batch_size == 64
         assert cfg.chunk_size == 512
         assert cfg.chunk_overlap == 64
 
@@ -91,6 +96,7 @@ class TestLoadConfig:
         assert cfg.verbose is True
         assert cfg.embedding.model_name == "custom-model"
         assert cfg.embedding.chunk_size == 256
+        assert cfg.embedding.batch_size == 64  # default applied
         assert cfg.search.top_k == 5
         assert cfg.index.use_incremental is False
 
@@ -153,3 +159,19 @@ class TestDefaultIgnoreDirs:
     def test_default_extensions_include_common_languages(self):
         for ext in [".js", ".ts", ".java", ".go", ".rs", ".cpp"]:
             assert ext in DEFAULT_EXTENSIONS
+
+
+class TestResourceRecommendations:
+    """Tests for resource-aware recommendations."""
+
+    def test_recommend_batch_size_low_resources(self):
+        mem_bytes = 500 * 1024 * 1024  # ~0.5 GB
+        assert recommend_batch_size(mem_bytes, cpu_count=2) == 8
+
+    def test_recommend_batch_size_mid_range(self):
+        mem_bytes = 3 * 1024 * 1024 * 1024  # 3 GB
+        assert recommend_batch_size(mem_bytes, cpu_count=8) == 32
+
+    def test_recommend_batch_size_respects_cpu_cap(self):
+        mem_bytes = 6 * BYTES_PER_GB  # would suggest 48 based on RAM
+        assert recommend_batch_size(mem_bytes, cpu_count=2) == 16

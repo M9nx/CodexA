@@ -384,7 +384,11 @@ def _index_repo_into(
         return result
 
     texts = [c.content for c in all_chunks]
-    embeddings = generate_embeddings(texts, model_name=config.embedding.model_name)
+    embeddings = generate_embeddings(
+        texts,
+        model_name=config.embedding.model_name,
+        batch_size=config.embedding.batch_size,
+    )
     dimension = embeddings.shape[1]
 
     if force:

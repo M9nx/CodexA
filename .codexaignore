@@ -1,7 +1,0 @@
-# CodexA ignore patterns (gitignore syntax)
-# Uncomment or add patterns to exclude from indexing
-# node_modules/
-# .venv/
-# dist/
-# build/
-# *.min.js

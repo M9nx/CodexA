@@ -18,6 +18,12 @@ from semantic_code_intelligence.embeddings.model_registry import (
     recommend_profile_for_ram,
     resolve_profile,
 )
+from semantic_code_intelligence.embeddings.generator import (
+    BYTES_PER_GB,
+    _get_available_memory_bytes,
+    _get_cpu_count,
+    recommend_batch_size,
+)
 from semantic_code_intelligence.utils.logging import (
     get_logger,
     print_error,
@@ -135,25 +141,54 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
         ctx.exit(1)
         return
 
+    available_memory = _get_available_memory_bytes()
+    logical_cpu_count = _get_cpu_count()
+    available_gb = (
+        available_memory / BYTES_PER_GB if available_memory is not None else None
+    )
+
     # Apply model profile (explicit or RAM-auto-detected)
     profile = None
     if profile_name:
         profile = resolve_profile(profile_name)
-    else:
-        # Auto-detect RAM and recommend
-        from semantic_code_intelligence.embeddings.generator import _get_available_memory_bytes
-        available = _get_available_memory_bytes()
-        if available is not None:
-            available_gb = available / (1024 ** 3)
-            profile = recommend_profile_for_ram(available_gb)
-            print_info(f"Detected {available_gb:.1f} GB available RAM → using '{profile.name}' profile ({profile.label})")
+    elif available_gb is not None:
+        profile = recommend_profile_for_ram(available_gb)
+        print_info(f"Detected {available_gb:.1f} GB available RAM → using '{profile.name}' profile ({profile.label})")
 
+    profile_changed = False
     if profile:
         config.embedding.model_name = profile.model_name
-        save_config(config, root)
+        profile_changed = True
         print_success(f"Model profile: {profile.label} → {profile.model_name}")
-        info = profile
         print_info(f"  {profile.description}")
+
+    recommended_batch_size = recommend_batch_size(available_memory, logical_cpu_count)
+    batch_changed = recommended_batch_size != config.embedding.batch_size
+    if batch_changed:
+        config.embedding.batch_size = recommended_batch_size
+
+    resource_parts: list[str] = []
+    if available_gb is not None:
+        resource_parts.append(f"{available_gb:.1f} GB RAM")
+    if logical_cpu_count is not None:
+        resource_parts.append(f"{logical_cpu_count} CPU cores")
+
+    batch_message_prefix = (
+        f"Embedding batch size {'updated' if batch_changed else 'kept'} "
+        f"at {config.embedding.batch_size}"
+    )
+    if resource_parts:
+        print_info(
+            f"{batch_message_prefix} (based on {', '.join(resource_parts)})"
+        )
+    else:
+        print_info(
+            f"{batch_message_prefix} (using default recommendation)"
+        )
+
+    should_save = profile_changed or batch_changed
+    if should_save:
+        save_config(config, root)
 
     if setup_vscode:
         if _generate_vscode_mcp_config(root):

@@ -72,6 +72,11 @@ class EmbeddingConfig(BaseModel):
         default="all-MiniLM-L6-v2",
         description="Sentence-transformers model name for embedding generation.",
     )
+    batch_size: int = Field(
+        default=64,
+        description="Batch size to use when generating embeddings.",
+        ge=1,
+    )
     chunk_size: int = Field(
         default=512,
         description="Maximum number of characters per code chunk.",

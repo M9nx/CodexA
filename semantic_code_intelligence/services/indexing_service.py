@@ -295,6 +295,7 @@ def run_indexing(
         new_embeddings = generate_embeddings(
             texts,
             model_name=config.embedding.model_name,
+            batch_size=config.embedding.batch_size,
             show_progress=True,
         )
         logger.info("Embeddings generated. Shape: %s", new_embeddings.shape)
@@ -364,6 +365,7 @@ def run_indexing(
             vec = generate_embeddings(
                 [chunk.content],
                 model_name=config.embedding.model_name,
+                batch_size=config.embedding.batch_size,
                 show_progress=False,
             )
             all_embeddings_list.append(vec[0])
@@ -562,6 +564,7 @@ def run_incremental_indexing(
         embeddings = generate_embeddings(
             texts,
             model_name=config.embedding.model_name,
+            batch_size=config.embedding.batch_size,
             show_progress=False,
         )
 
