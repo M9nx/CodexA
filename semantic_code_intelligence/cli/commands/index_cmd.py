@@ -10,7 +10,7 @@ from pathlib import Path
 
 import click
 
-from semantic_code_intelligence.config.settings import AppConfig
+from semantic_code_intelligence.config.settings import AppConfig, load_config, save_config
 from semantic_code_intelligence.services.indexing_service import run_indexing
 from semantic_code_intelligence.utils.logging import (
     get_logger,
@@ -201,7 +201,14 @@ def _run_watch_mode(root: Path, force: bool) -> None:
     type=str,
     help="Switch embedding model and re-index in one step.",
 )
-def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str | None, inspect_file: str | None, switch_model: str | None) -> int:
+@click.option(
+    "--batch-size",
+    "batch_size",
+    type=click.IntRange(1, None),
+    default=None,
+    help="Embedding batch size for chunk processing (overrides config).",
+)
+def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str | None, inspect_file: str | None, switch_model: str | None, batch_size: int | None) -> int:
     """Index a codebase for semantic search.
 
     Scans the target directory, extracts code chunks, generates embeddings,
@@ -229,6 +236,8 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
             f"Project not initialized at {root}. Run 'codexa init' first."
         )
 
+    config: AppConfig | None = None
+
     # --- Inspect mode: show metadata for a file ---
     if inspect_file:
         _inspect_file_index(root, inspect_file)
@@ -242,10 +251,9 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
     # --- Switch model inline: update config + force re-index ---
     if switch_model:
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
-        from semantic_code_intelligence.config.settings import load_config, save_config
 
         resolved = resolve_model_name(switch_model)
-        config = load_config(root)
+        config = config if config is not None else load_config(root)
         old_model = config.embedding.model_name
         if old_model == resolved:
             print_info(f"Model already set to '{resolved}' — running normal index.")
@@ -255,10 +263,23 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
             print_success(f"Switched model: {old_model} → {resolved}")
         force = True  # force re-index with new model
 
+    # --- Optional batch size override (only when indexing will run) ---
+    if batch_size is not None:
+        config = config if config is not None else load_config(root)
+        prev_batch = config.embedding.batch_size
+        if prev_batch != batch_size:
+            config.embedding.batch_size = batch_size
+            save_config(config, root)
+            print_info(
+                f"Embedding batch size updated: {prev_batch} → {batch_size} "
+                "(applies to this and future indexing runs)."
+            )
+        else:
+            print_info(f"Embedding batch size already set to {batch_size}.")
+
     # --- Model consistency guard ---
     if not force:
         from semantic_code_intelligence.storage.index_manifest import IndexManifest
-        from semantic_code_intelligence.config.settings import load_config
         index_dir = AppConfig.index_dir(root)
         manifest = IndexManifest.load(index_dir)
         if manifest:
