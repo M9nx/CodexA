@@ -170,7 +170,7 @@ def recommend_batch_size(
         elif cpu_count <= 4:
             cpu_cap = min(cpu_cap, 32)
 
-    return max(4, min(memory_recommendation, cpu_cap))
+    return max(4, cpu_cap)
 
 
 def _check_memory_requirements(use_onnx: bool) -> None:
