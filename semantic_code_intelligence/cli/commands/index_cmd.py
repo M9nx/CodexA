@@ -133,7 +133,12 @@ def _run_watch_mode(root: Path, force: bool) -> None:
 @click.argument(
     "project_path",
     required=False,
-    type=click.Path(path_type=Path),
+    type=click.Path(
+        path_type=Path,
+        exists=True,
+        file_okay=False,
+        resolve_path=True,
+    ),
 )
 @click.option(
     "--force",
@@ -266,14 +271,22 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
             print_warning("Partial index saved. Re-run to complete.")
             return 0
     except MemoryError as e:
-        print_error(f"Indexing failed: {e}")
-        print_info("Tip: semantic indexing needs the ML extras and enough RAM. Install with 'pip install codexa[ml]' and prefer ONNX or a machine with at least 2 GB available RAM.")
-        print_warning("Continuing without embeddings due to memory limits.")
+        print_warning(
+            "Indexing skipped embedding generation due to insufficient memory. "
+            "Try a smaller profile (e.g., --profile fast) or reduce embedding.batch_size."
+        )
         return 0
     except Exception as e:
-        print_warning(f"Indexing encountered an error and will skip embeddings: {e}")
-        logger.debug("Indexing error details:", exc_info=True)
-        return 0
+        message = f"{type(e).__name__}: {e}"
+        network_like = isinstance(e, (ConnectionError, TimeoutError, OSError)) or "request" in str(e).lower()
+        if network_like:
+            print_warning(
+                "Indexing encountered a network/IO issue; embeddings were skipped but the command completed. "
+                f"Details: {message}"
+            )
+            logger.debug("Indexing error details:", exc_info=True)
+            return 0
+        raise click.ClickException(f"Indexing failed: {message}") from e
 
     if result.files_scanned == 0:
         print_warning("No indexable files found.")
