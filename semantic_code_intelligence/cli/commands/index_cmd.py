@@ -30,7 +30,15 @@ NETWORK_ERRNOS = {
     errno.ETIMEDOUT,
 }
 
-EMBEDDING_ERROR_KEYWORDS = frozenset({"embedding", "attn_implementation", "tokenizer"})
+EMBEDDING_ERROR_KEYWORDS = frozenset(
+    {
+        # Common substrings from transformer/embedding load failures that indicate
+        # the error occurred while preparing the embedding model.
+        "embedding",
+        "attn_implementation",
+        "tokenizer",
+    }
+)
 
 
 def _inspect_file_index(root: Path, file_path: str) -> None:
@@ -294,7 +302,8 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
         network_like = isinstance(e, (ConnectionError, TimeoutError)) or (
             isinstance(e, OSError) and err_no in NETWORK_ERRNOS
         )
-        err_module = e.__class__.__module__ or ""  # __module__ may be None for builtins
+        # __module__ may be None; fall back to "" so startswith checks are safe.
+        err_module = e.__class__.__module__ or ""
         embedding_like = isinstance(e, (ImportError, ValueError, RuntimeError)) and (
             err_module.startswith(("transformers", "sentence_transformers"))
             or any(key in msg_lower for key in EMBEDDING_ERROR_KEYWORDS)
