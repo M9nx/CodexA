@@ -148,7 +148,7 @@ def recommend_batch_size(
         cpu_count: Logical CPU cores, or None if undetectable.
 
     Returns:
-        Recommended batch size (minimum of 4 to avoid extremely small batches that
+        Recommended batch size (minimum of 8 to avoid extremely small batches that
         underutilize vectorized encoders even on constrained machines).
     """
     memory_recommendation = 64
