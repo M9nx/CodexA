@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+from semantic_code_intelligence.config.settings import load_config
 
 from semantic_code_intelligence.cli.main import cli
 from semantic_code_intelligence.embeddings.generator import BYTES_PER_GB
@@ -133,18 +134,36 @@ class TestIndexCommand:
         result = runner.invoke(cli, ["index", str(tmp_path), "--force"])
         assert result.exit_code == 0
 
-    def test_index_batch_size_override(self, runner: CliRunner, tmp_path: Path):
+    def test_index_batch_size_override(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         project = tmp_path
         (project / "sample.py").write_text("def foo():\n    return 1\n", encoding="utf-8")
+
+        captured: dict[str, int] = {}
+
+        class DummyResult:
+            files_scanned = 1
+            files_indexed = 1
+            files_skipped = 0
+            chunks_created = 1
+            total_vectors = 1
+
+        def fake_run_indexing(project_root, force=False):
+            cfg = load_config(project_root)
+            captured["batch_size"] = cfg.embedding.batch_size
+            return DummyResult()
+
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.index_cmd.run_indexing",
+            fake_run_indexing,
+        )
 
         runner.invoke(cli, ["init", str(project)])
         result = runner.invoke(cli, ["index", str(project), "--batch-size", "8"])
         assert result.exit_code == 0
 
-        config = json.loads(
-            (project / ".codexa" / "config.json").read_text(encoding="utf-8")
-        )
+        config = json.loads((project / ".codexa" / "config.json").read_text(encoding="utf-8"))
         assert config["embedding"]["batch_size"] == 8
+        assert captured["batch_size"] == 8
 
     def test_index_network_oserror_is_nonfatal(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         runner.invoke(cli, ["init", str(tmp_path)])

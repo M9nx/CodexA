@@ -266,7 +266,7 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
 
         resolved = resolve_model_name(switch_model)
-        config = config or load_config(root)
+        config = config if config is not None else load_config(root)
         old_model = config.embedding.model_name
         if old_model == resolved:
             print_info(f"Model already set to '{resolved}' — running normal index.")
