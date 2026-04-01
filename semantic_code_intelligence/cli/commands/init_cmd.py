@@ -300,8 +300,8 @@ def _run_interactive_installer(
     chosen_profile = resolve_profile(chosen_profile_key)
     if chosen_profile is None:
         raise click.ClickException(
-            f"Selected profile '{chosen_profile_key}' could not be resolved. "
-            f"Choose one of: {', '.join(CLI_PROFILE_CHOICES)}."
+            f"Profile '{chosen_profile_key}' could not be resolved. "
+            f"Valid profiles are: {', '.join(CLI_PROFILE_CHOICES)}."
         )
 
     profile_changed = False
