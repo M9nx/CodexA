@@ -15,6 +15,7 @@ from semantic_code_intelligence.config.settings import (
 )
 from semantic_code_intelligence.embeddings.model_registry import (
     CLI_PROFILE_CHOICES,
+    CORE_PROFILES,
     MODEL_PROFILES,
     ModelProfile,
     recommend_profile_for_ram,
@@ -145,7 +146,13 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
                     _run_index(root)
                 return
 
-            config = load_config(root)
+            try:
+                config = load_config(root)
+            except (json.JSONDecodeError, ValueError) as e:
+                print_error("Failed to read existing .codexa/config.json. Please fix or delete it and rerun 'codexa init'.")
+                print_error(f"Details: {e}")
+                ctx.exit(1)
+                return
             print_info(f"Project already initialized at {root}")
             print_info("Launching interactive installer to update configuration.")
         else:
@@ -273,7 +280,7 @@ def _run_interactive_installer(
     table.add_column("Model")
     table.add_column("Description")
     table.add_column("Min RAM (GB)", justify="right")
-    for key in ["fast", "balanced", "precise"]:
+    for key in CORE_PROFILES:
         profile = MODEL_PROFILES[key]
         table.add_row(
             profile.name,
@@ -286,7 +293,7 @@ def _run_interactive_installer(
 
     chosen_profile_key = click.prompt(
         "Select embedding profile",
-        type=click.Choice(["fast", "balanced", "precise"], case_sensitive=False),
+        type=click.Choice(CLI_PROFILE_CHOICES, case_sensitive=False),
         default=default_profile.name,
         show_choices=False,
     )

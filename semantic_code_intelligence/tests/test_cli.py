@@ -134,6 +134,30 @@ class TestInitCommand:
         assert config["embedding"]["model_name"] == MODEL_PROFILES["fast"].model_name
         assert config["embedding"]["batch_size"] == 24
 
+    def test_init_interactive_updates_existing_project(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Initial setup with defaults
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_available_memory_bytes",
+            lambda: 2 * BYTES_PER_GB,
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_cpu_count",
+            lambda: 2,
+        )
+        runner.invoke(cli, ["init", str(tmp_path)])
+
+        # Run interactive to change profile/batch
+        result = runner.invoke(
+            cli,
+            ["init", str(tmp_path), "--interactive"],
+            input="precise\n16\n",
+        )
+        assert result.exit_code == 0
+
+        config = json.loads((tmp_path / ".codexa" / "config.json").read_text(encoding="utf-8"))
+        assert config["embedding"]["model_name"] == MODEL_PROFILES["precise"].model_name
+        assert config["embedding"]["batch_size"] == 16
+
 
 class TestIndexCommand:
     """Tests for the index command."""
