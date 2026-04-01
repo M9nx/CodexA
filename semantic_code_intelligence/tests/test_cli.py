@@ -168,15 +168,18 @@ class TestInitCommand:
         assert result.exit_code != 0
         assert "failed to read existing .codexa/config.json" in result.output.lower()
 
-    def test_init_interactive_config_permission_error(self, runner: CliRunner, tmp_path: Path):
+    def test_init_interactive_config_permission_error(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         runner.invoke(cli, ["init", str(tmp_path)])
-        config_path = tmp_path / ".codexa" / "config.json"
-        config_path.chmod(0o000)
 
-        try:
-            result = runner.invoke(cli, ["init", str(tmp_path), "--interactive"])
-        finally:
-            config_path.chmod(0o644)
+        def raise_permission_error(*args, **kwargs):
+            raise OSError(errno.EACCES, "permission denied")
+
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd.load_config",
+            raise_permission_error,
+        )
+
+        result = runner.invoke(cli, ["init", str(tmp_path), "--interactive"])
 
         assert result.exit_code != 0
         assert "failed to read existing .codexa/config.json" in result.output.lower()
