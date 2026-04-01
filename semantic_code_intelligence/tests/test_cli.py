@@ -133,6 +133,19 @@ class TestIndexCommand:
         result = runner.invoke(cli, ["index", str(tmp_path), "--force"])
         assert result.exit_code == 0
 
+    def test_index_batch_size_override(self, runner: CliRunner, tmp_path: Path):
+        project = tmp_path
+        (project / "sample.py").write_text("def foo():\n    return 1\n", encoding="utf-8")
+
+        runner.invoke(cli, ["init", str(project)])
+        result = runner.invoke(cli, ["index", str(project), "--batch-size", "8"])
+        assert result.exit_code == 0
+
+        config = json.loads(
+            (project / ".codexa" / "config.json").read_text(encoding="utf-8")
+        )
+        assert config["embedding"]["batch_size"] == 8
+
     def test_index_network_oserror_is_nonfatal(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         runner.invoke(cli, ["init", str(tmp_path)])
 
