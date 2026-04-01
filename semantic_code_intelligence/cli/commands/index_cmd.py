@@ -10,7 +10,7 @@ from pathlib import Path
 
 import click
 
-from semantic_code_intelligence.config.settings import AppConfig
+from semantic_code_intelligence.config.settings import AppConfig, load_config, save_config
 from semantic_code_intelligence.services.indexing_service import run_indexing
 from semantic_code_intelligence.utils.logging import (
     get_logger,
@@ -239,8 +239,6 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
     # --- Optional batch size override ---
     config: AppConfig | None = None
     if batch_size is not None:
-        from semantic_code_intelligence.config.settings import load_config, save_config
-
         config = load_config(root)
         prev_batch = config.embedding.batch_size
         if prev_batch != batch_size:
@@ -266,7 +264,6 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
     # --- Switch model inline: update config + force re-index ---
     if switch_model:
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
-        from semantic_code_intelligence.config.settings import load_config, save_config
 
         resolved = resolve_model_name(switch_model)
         config = config or load_config(root)
@@ -282,7 +279,6 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
     # --- Model consistency guard ---
     if not force:
         from semantic_code_intelligence.storage.index_manifest import IndexManifest
-        from semantic_code_intelligence.config.settings import load_config
         index_dir = AppConfig.index_dir(root)
         manifest = IndexManifest.load(index_dir)
         if manifest:
