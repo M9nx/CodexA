@@ -291,7 +291,7 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
         network_like = isinstance(e, (ConnectionError, TimeoutError)) or (
             isinstance(e, OSError) and err_no in network_errnos
         )
-        embedding_module = e.__class__.__module__
+        embedding_module = e.__class__.__module__ or ""
         embedding_like = isinstance(e, (ImportError, ValueError, RuntimeError)) and (
             embedding_module.startswith(("transformers", "sentence_transformers"))
             or any(

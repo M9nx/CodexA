@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 from pathlib import Path
 
@@ -131,6 +132,27 @@ class TestIndexCommand:
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(cli, ["index", str(tmp_path), "--force"])
         assert result.exit_code == 0
+
+    def test_index_network_oserror_is_nonfatal(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        runner.invoke(cli, ["init", str(tmp_path)])
+
+        def raise_network(*args, **kwargs):
+            raise OSError(errno.ENETUNREACH, "network unreachable")
+
+        monkeypatch.setattr("semantic_code_intelligence.cli.commands.index_cmd.run_indexing", raise_network)
+        result = runner.invoke(cli, ["index", str(tmp_path)])
+        assert result.exit_code == 0
+        assert "network issue" in result.output.lower()
+
+    def test_index_non_network_oserror_fails(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        runner.invoke(cli, ["init", str(tmp_path)])
+
+        def raise_perm(*args, **kwargs):
+            raise OSError(errno.EPERM, "permission denied")
+
+        monkeypatch.setattr("semantic_code_intelligence.cli.commands.index_cmd.run_indexing", raise_perm)
+        result = runner.invoke(cli, ["index", str(tmp_path)])
+        assert result.exit_code != 0
 
 
 class TestSearchCommand:
