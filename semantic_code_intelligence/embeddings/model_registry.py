@@ -134,9 +134,11 @@ MODEL_PROFILES: dict[str, ModelProfile] = {
 
 PROFILE_ALIASES: dict[str, str] = {
     "small": "fast",
+    "base": "balanced",
     "default": "balanced",
     "quality": "precise",
     "code": "precise",
+    "large": "precise",
 }
 
 

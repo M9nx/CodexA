@@ -26,6 +26,8 @@ codexa init --profile balanced   # Default, ~2 GB RAM
 codexa init --profile precise    # Best quality, ~4 GB RAM
 ```
 
+Aliases: `small` → `fast`, `base` → `balanced`, `large` → `precise`.
+
 Compare models on your codebase: `codexa models benchmark`
 :::
 

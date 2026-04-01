@@ -12,6 +12,7 @@ from semantic_code_intelligence.config.settings import load_config
 
 from semantic_code_intelligence.cli.main import cli
 from semantic_code_intelligence.embeddings.generator import BYTES_PER_GB
+from semantic_code_intelligence.embeddings.model_registry import MODEL_PROFILES
 
 
 @pytest.fixture
@@ -71,6 +72,28 @@ class TestInitCommand:
             result = runner.invoke(cli, ["init"])
             assert result.exit_code == 0
             assert Path(td, ".codexa").is_dir()
+
+    def test_init_profile_aliases(self, runner: CliRunner, tmp_path: Path):
+        proj_small = tmp_path / "small"
+        proj_small.mkdir()
+        result_small = runner.invoke(cli, ["init", str(proj_small), "--profile", "small"])
+        assert result_small.exit_code == 0
+        cfg_small = load_config(proj_small)
+        assert cfg_small.embedding.model_name == MODEL_PROFILES["fast"].model_name
+
+        proj_base = tmp_path / "base"
+        proj_base.mkdir()
+        result_base = runner.invoke(cli, ["init", str(proj_base), "--profile", "base"])
+        assert result_base.exit_code == 0
+        cfg_base = load_config(proj_base)
+        assert cfg_base.embedding.model_name == MODEL_PROFILES["balanced"].model_name
+
+        proj_large = tmp_path / "large"
+        proj_large.mkdir()
+        result_large = runner.invoke(cli, ["init", str(proj_large), "--profile", "large"])
+        assert result_large.exit_code == 0
+        cfg_large = load_config(proj_large)
+        assert cfg_large.embedding.model_name == MODEL_PROFILES["precise"].model_name
 
     def test_init_saves_recommended_batch_size(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Force deterministic resource detection so recommendations are stable in tests

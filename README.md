@@ -88,7 +88,7 @@ codexa init
 ```
 
 CodexA auto-detects your available RAM and picks the best embedding model.
-Or choose a model profile explicitly:
+Or choose a model profile explicitly (aliases: small → fast, base → balanced, large → precise):
 
 ```bash
 codexa init --profile fast       # mxbai-embed-xsmall — low RAM (<1 GB)

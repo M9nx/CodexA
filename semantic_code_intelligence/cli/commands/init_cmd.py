@@ -94,9 +94,12 @@ def _generate_vscode_mcp_config(root: Path) -> bool:
 @click.option(
     "--profile",
     "profile_name",
-    type=click.Choice(["fast", "balanced", "precise"], case_sensitive=False),
+    type=click.Choice(
+        ["fast", "balanced", "precise", "small", "base", "large"],
+        case_sensitive=False,
+    ),
     default=None,
-    help="Embedding model profile: fast (tiny, low RAM), balanced (default), precise (code-optimised).",
+    help="Embedding model profile: fast/small (tiny, low RAM), balanced/base (default), precise/large (code-optimised).",
 )
 @click.pass_context
 def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool, profile_name: str | None) -> None:
