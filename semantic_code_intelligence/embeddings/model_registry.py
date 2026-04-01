@@ -142,11 +142,11 @@ PROFILE_ALIASES: dict[str, str] = {
 }
 
 CORE_PROFILES: list[str] = ["fast", "balanced", "precise"]
-ALL_PROFILE_NAMES_SET = set(PROFILE_ALIASES.keys()) | set(MODEL_PROFILES.keys())
+ALL_PROFILE_NAMES = set(PROFILE_ALIASES.keys()) | set(MODEL_PROFILES.keys())
 CLI_PROFILE_CHOICES: list[str] = [
     *CORE_PROFILES,
     # Union keeps choices unique even when aliases overlap with canonical names
-    *sorted(set(ALL_PROFILE_NAMES_SET) - set(CORE_PROFILES)),
+    *sorted(set(ALL_PROFILE_NAMES) - set(CORE_PROFILES)),
 ]
 
 
