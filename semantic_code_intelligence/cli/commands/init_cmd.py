@@ -10,11 +10,9 @@ import click
 from semantic_code_intelligence.config.settings import (
     AppConfig,
     init_project,
-    load_config,
     save_config,
 )
 from semantic_code_intelligence.embeddings.model_registry import (
-    MODEL_PROFILES,
     recommend_profile_for_ram,
     resolve_profile,
 )
@@ -157,8 +155,9 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
 
     profile_changed = False
     if profile:
-        config.embedding.model_name = profile.model_name
-        profile_changed = True
+        if config.embedding.model_name != profile.model_name:
+            config.embedding.model_name = profile.model_name
+            profile_changed = True
         print_success(f"Model profile: {profile.label} → {profile.model_name}")
         print_info(f"  {profile.description}")
 
