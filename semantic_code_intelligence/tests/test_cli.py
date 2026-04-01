@@ -158,6 +158,16 @@ class TestInitCommand:
         assert config["embedding"]["model_name"] == MODEL_PROFILES["precise"].model_name
         assert config["embedding"]["batch_size"] == 16
 
+    def test_init_interactive_invalid_config(self, runner: CliRunner, tmp_path: Path):
+        runner.invoke(cli, ["init", str(tmp_path)])
+        config_path = tmp_path / ".codexa" / "config.json"
+        config_path.write_text("{ invalid json", encoding="utf-8")
+
+        result = runner.invoke(cli, ["init", str(tmp_path), "--interactive"])
+
+        assert result.exit_code != 0
+        assert "failed to read existing .codexa/config.json" in result.output.lower()
+
 
 class TestIndexCommand:
     """Tests for the index command."""

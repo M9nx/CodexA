@@ -148,7 +148,7 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
 
             try:
                 config = load_config(root)
-            except (json.JSONDecodeError, ValueError) as e:
+            except (json.JSONDecodeError, ValueError, OSError) as e:
                 print_error("Failed to read existing .codexa/config.json. Please fix or delete it and rerun 'codexa init'.")
                 print_error(f"Details: {e}")
                 ctx.exit(1)
