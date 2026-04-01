@@ -26,7 +26,8 @@ logger = get_logger("embeddings")
 
 # Module-level cache for loaded model instances
 _model_cache: dict[str, "SentenceTransformer"] = {}
-_MIN_TORCH_RAM_BYTES = 2 * 1024 * 1024 * 1024
+BYTES_PER_GB = 1024 ** 3
+_MIN_TORCH_RAM_BYTES = 2 * BYTES_PER_GB
 
 
 def _configure_hf_token() -> None:
@@ -116,6 +117,62 @@ def _get_available_memory_bytes() -> int | None:
     return None
 
 
+def _get_cpu_count() -> int | None:
+    """Return the number of logical CPU cores, if detectable."""
+    return os.cpu_count()
+
+
+def recommend_batch_size(
+    available_memory_bytes: int | None,
+    cpu_count: int | None,
+) -> int:
+    """Recommend a safe embedding batch size based on system resources.
+
+    The heuristic prefers memory headroom first and then caps the value
+    based on CPU availability to avoid oversaturating limited cores.
+
+    Memory tiers (GB) → batch size:
+      < 1 GB  → 8
+      < 2 GB  → 16
+      < 4 GB  → 32
+      < 8 GB  → 48
+      >= 8 GB → 64 (default)
+
+    CPU caps:
+      <= 2 cores → max 16
+      <= 4 cores → max 32
+      otherwise  → no additional cap
+
+    Args:
+        available_memory_bytes: Detectable available RAM in bytes, or None.
+        cpu_count: Logical CPU cores, or None if undetectable.
+
+    Returns:
+        Recommended batch size (minimum of 8 to avoid extremely small batches that
+        underutilize vectorized encoders even on constrained machines).
+    """
+    memory_recommendation = 64
+    if available_memory_bytes is not None:
+        available_gb = available_memory_bytes / BYTES_PER_GB
+        if available_gb < 1:
+            memory_recommendation = 8
+        elif available_gb < 2:
+            memory_recommendation = 16
+        elif available_gb < 4:
+            memory_recommendation = 32
+        elif available_gb < 8:
+            memory_recommendation = 48
+
+    cpu_cap = memory_recommendation
+    if cpu_count is not None:
+        if cpu_count <= 2:
+            cpu_cap = min(cpu_cap, 16)
+        elif cpu_count <= 4:
+            cpu_cap = min(cpu_cap, 32)
+
+    return max(8, cpu_cap)
+
+
 def _check_memory_requirements(use_onnx: bool) -> None:
     """Warn on low-memory systems when using the torch backend."""
     if use_onnx:
@@ -125,8 +182,8 @@ def _check_memory_requirements(use_onnx: bool) -> None:
     if available_memory is None or available_memory >= _MIN_TORCH_RAM_BYTES:
         return
 
-    available_gb = available_memory / (1024 * 1024 * 1024)
-    required_gb = _MIN_TORCH_RAM_BYTES / (1024 * 1024 * 1024)
+    available_gb = available_memory / BYTES_PER_GB
+    required_gb = _MIN_TORCH_RAM_BYTES / BYTES_PER_GB
     logger.warning(
         "Low available RAM detected for the PyTorch embedding backend "
         "(%.1f GB available, about %.0f GB recommended). If indexing fails, "

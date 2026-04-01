@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 from pathlib import Path
 
@@ -9,6 +10,7 @@ import pytest
 from click.testing import CliRunner
 
 from semantic_code_intelligence.cli.main import cli
+from semantic_code_intelligence.embeddings.generator import BYTES_PER_GB
 
 
 @pytest.fixture
@@ -69,6 +71,25 @@ class TestInitCommand:
             assert result.exit_code == 0
             assert Path(td, ".codexa").is_dir()
 
+    def test_init_saves_recommended_batch_size(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Force deterministic resource detection so recommendations are stable in tests
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_available_memory_bytes",
+            lambda: 3 * BYTES_PER_GB,
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_cpu_count",
+            lambda: 8,
+        )
+
+        result = runner.invoke(cli, ["init", str(tmp_path)])
+        assert result.exit_code == 0
+
+        config = json.loads((tmp_path / ".codexa" / "config.json").read_text(encoding="utf-8"))
+        assert config["embedding"]["batch_size"] == 32
+        # Profile for ~3GB RAM should be precise according to registry thresholds
+        assert config["embedding"]["model_name"] == "jinaai/jina-embeddings-v2-base-code"
+
 
 class TestIndexCommand:
     """Tests for the index command."""
@@ -111,6 +132,27 @@ class TestIndexCommand:
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(cli, ["index", str(tmp_path), "--force"])
         assert result.exit_code == 0
+
+    def test_index_network_oserror_is_nonfatal(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        runner.invoke(cli, ["init", str(tmp_path)])
+
+        def raise_network(*args, **kwargs):
+            raise OSError(errno.ENETUNREACH, "network unreachable")
+
+        monkeypatch.setattr("semantic_code_intelligence.cli.commands.index_cmd.run_indexing", raise_network)
+        result = runner.invoke(cli, ["index", str(tmp_path)])
+        assert result.exit_code == 0
+        assert "network issue" in result.output.lower()
+
+    def test_index_non_network_oserror_fails(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        runner.invoke(cli, ["init", str(tmp_path)])
+
+        def raise_perm(*args, **kwargs):
+            raise OSError(errno.EPERM, "permission denied")
+
+        monkeypatch.setattr("semantic_code_intelligence.cli.commands.index_cmd.run_indexing", raise_perm)
+        result = runner.invoke(cli, ["index", str(tmp_path)])
+        assert result.exit_code != 0
 
 
 class TestSearchCommand:
@@ -186,4 +228,3 @@ class TestCommandRouting:
     def test_unknown_command_fails(self, runner: CliRunner):
         result = runner.invoke(cli, ["nonexistent"])
         assert result.exit_code != 0
-

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import signal
 import time
@@ -20,6 +21,32 @@ from semantic_code_intelligence.utils.logging import (
 )
 
 logger = get_logger("cli.index")
+
+NETWORK_ERRNO_SET = {
+    errno.ENETUNREACH,
+    errno.EHOSTUNREACH,
+    errno.ECONNREFUSED,
+    errno.ECONNRESET,
+    errno.ETIMEDOUT,
+}
+
+EMBEDDING_ERROR_KEYWORDS = frozenset(
+    {
+        # Common substrings from transformer/embedding load failures that indicate
+        # the error occurred while preparing the embedding model.
+        "embedding",
+        "attn_implementation",
+        "tokenizer",
+    }
+)
+
+
+def _is_embedding_error(exc: Exception, msg_lower: str, err_module: str) -> bool:
+    """Return True if the exception likely stems from embedding model setup."""
+    return isinstance(exc, (ImportError, ValueError, RuntimeError)) and (
+        err_module.startswith(("transformers", "sentence_transformers"))
+        or any(key in msg_lower for key in EMBEDDING_ERROR_KEYWORDS)
+    )
 
 
 def _inspect_file_index(root: Path, file_path: str) -> None:
@@ -131,9 +158,14 @@ def _run_watch_mode(root: Path, force: bool) -> None:
 
 @click.command("index")
 @click.argument(
-    "path",
-    default=".",
-    type=click.Path(exists=True, file_okay=False, resolve_path=True),
+    "project_path",
+    required=False,
+    type=click.Path(
+        path_type=Path,
+        exists=True,
+        file_okay=False,
+        resolve_path=True,
+    ),
 )
 @click.option(
     "--force",
@@ -169,8 +201,7 @@ def _run_watch_mode(root: Path, force: bool) -> None:
     type=str,
     help="Switch embedding model and re-index in one step.",
 )
-@click.pass_context
-def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file: str | None, inspect_file: str | None, switch_model: str | None) -> None:
+def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str | None, inspect_file: str | None, switch_model: str | None) -> int:
     """Index a codebase for semantic search.
 
     Scans the target directory, extracts code chunks, generates embeddings,
@@ -190,15 +221,13 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
         codexa index --inspect src/auth.py
         codexa index --switch-model jina-code
     """
-    root = Path(path).resolve()
+    root = (project_path or Path.cwd()).resolve()
     config_dir = AppConfig.config_dir(root)
 
     if not config_dir.exists():
-        print_error(
+        raise click.ClickException(
             f"Project not initialized at {root}. Run 'codexa init' first."
         )
-        ctx.exit(1)
-        return
 
     # --- Inspect mode: show metadata for a file ---
     if inspect_file:
@@ -235,13 +264,11 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
         if manifest:
             config = load_config(root)
             if manifest.embedding_model != config.embedding.model_name:
-                print_warning(
+                raise click.ClickException(
                     f"Embedding model changed: index uses '{manifest.embedding_model}' "
                     f"but config specifies '{config.embedding.model_name}'. "
                     f"Use --force to re-index with the new model."
                 )
-                ctx.exit(1)
-                return
 
     if watch:
         _run_watch_mode(root, force)
@@ -269,17 +296,42 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
 
         if _interrupted:
             print_warning("Partial index saved. Re-run to complete.")
-            return
+            return 0
     except MemoryError as e:
-        print_error(f"Indexing failed: {e}")
-        print_info("Tip: semantic indexing needs the ML extras and enough RAM. Install with 'pip install codexa[ml]' and prefer ONNX or a machine with at least 2 GB available RAM.")
-        ctx.exit(1)
-        return
+        print_warning(
+            "Indexing skipped embedding generation due to insufficient memory. "
+            "Try a smaller profile (e.g., --profile fast) or reduce embedding.batch_size. "
+            "Indexed files were not updated."
+        )
+        return 0
     except Exception as e:
-        print_error(f"Indexing failed: {e}")
-        logger.debug("Indexing error details:", exc_info=True)
-        ctx.exit(1)
-        return
+        message = f"{type(e).__name__}: {e}"
+        msg_lower = str(e).lower()
+        err_no = getattr(e, "errno", None)
+        network_like = isinstance(e, (ConnectionError, TimeoutError)) or (
+            isinstance(e, OSError) and err_no is not None and err_no in NETWORK_ERRNO_SET
+        )
+        # __module__ may be None; fall back to "" so startswith checks are safe.
+        err_module = e.__class__.__module__ or ""
+        embedding_like = _is_embedding_error(e, msg_lower, err_module)
+        if network_like or "request" in msg_lower:
+            print_warning(
+                "Indexing encountered a network issue while fetching embeddings; "
+                "skipping embeddings and completing with existing index. "
+                "Indexed files may be unchanged. "
+                f"Details: {message}"
+            )
+            logger.debug("Indexing error details:", exc_info=True)
+            return 0
+        if embedding_like:
+            print_warning(
+                "Embedding model setup failed; skipping embeddings and completing with existing index. "
+                "Indexed files were not updated. "
+                f"Details: {message}"
+            )
+            logger.debug("Embedding load error details:", exc_info=True)
+            return 0
+        raise click.ClickException(f"Indexing failed: {message}") from e
 
     if result.files_scanned == 0:
         print_warning("No indexable files found.")
@@ -289,3 +341,4 @@ def index_cmd(ctx: click.Context, path: str, force: bool, watch: bool, add_file:
             f"({result.chunks_created} chunks, {result.total_vectors} vectors). "
             f"Skipped {result.files_skipped} unchanged files."
         )
+    return 0
