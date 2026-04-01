@@ -300,7 +300,8 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
     except MemoryError as e:
         print_warning(
             "Indexing skipped embedding generation due to insufficient memory. "
-            "Try a smaller profile (e.g., --profile fast) or reduce embedding.batch_size."
+            "Try a smaller profile (e.g., --profile fast) or reduce embedding.batch_size. "
+            "Indexed files were not updated."
         )
         return 0
     except Exception as e:
@@ -317,6 +318,7 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
             print_warning(
                 "Indexing encountered a network issue while fetching embeddings; "
                 "skipping embeddings and completing with existing index. "
+                "Indexed files may be unchanged. "
                 f"Details: {message}"
             )
             logger.debug("Indexing error details:", exc_info=True)
@@ -324,6 +326,7 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
         if embedding_like:
             print_warning(
                 "Embedding model setup failed; skipping embeddings and completing with existing index. "
+                "Indexed files were not updated. "
                 f"Details: {message}"
             )
             logger.debug("Embedding load error details:", exc_info=True)
