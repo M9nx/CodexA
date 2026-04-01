@@ -86,7 +86,7 @@ class TestInitCommand:
         result_base = runner.invoke(cli, ["init", str(proj_base), "--profile", "base"])
         assert result_base.exit_code == 0
         assert "Model profile" in result_base.output
-        assert "base" in result_base.output
+        assert MODEL_PROFILES["balanced"].label in result_base.output
         cfg_base = load_config(proj_base)
         assert cfg_base.embedding.model_name == MODEL_PROFILES["balanced"].model_name
 
