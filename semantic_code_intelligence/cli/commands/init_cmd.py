@@ -13,6 +13,7 @@ from semantic_code_intelligence.config.settings import (
     save_config,
 )
 from semantic_code_intelligence.embeddings.model_registry import (
+    CLI_PROFILE_CHOICES,
     recommend_profile_for_ram,
     resolve_profile,
 )
@@ -94,12 +95,9 @@ def _generate_vscode_mcp_config(root: Path) -> bool:
 @click.option(
     "--profile",
     "profile_name",
-    type=click.Choice(
-        ["fast", "balanced", "precise", "small", "base", "large"],
-        case_sensitive=False,
-    ),
+    type=click.Choice(CLI_PROFILE_CHOICES, case_sensitive=False),
     default=None,
-    help="Embedding model profile: fast/small (tiny, low RAM), balanced/base (default), precise/large (code-optimised).",
+    help="Embedding model profile (aliases supported): fast/small, balanced/base/default, precise/large/quality/code.",
 )
 @click.pass_context
 def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool, profile_name: str | None) -> None:

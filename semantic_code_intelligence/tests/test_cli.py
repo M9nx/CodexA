@@ -74,32 +74,22 @@ class TestInitCommand:
             assert Path(td, ".codexa").is_dir()
 
     def test_init_profile_aliases(self, runner: CliRunner, tmp_path: Path):
-        proj_small = tmp_path / "small"
-        proj_small.mkdir()
-        result_small = runner.invoke(cli, ["init", str(proj_small), "--profile", "small"])
-        assert result_small.exit_code == 0
-        assert "Model profile" in result_small.output
-        assert MODEL_PROFILES["fast"].label in result_small.output
-        cfg_small = load_config(proj_small)
-        assert cfg_small.embedding.model_name == MODEL_PROFILES["fast"].model_name
+        cases = [
+            ("small", "fast"),
+            ("base", "balanced"),
+            ("large", "precise"),
+        ]
 
-        proj_base = tmp_path / "base"
-        proj_base.mkdir()
-        result_base = runner.invoke(cli, ["init", str(proj_base), "--profile", "base"])
-        assert result_base.exit_code == 0
-        assert "Model profile" in result_base.output
-        assert MODEL_PROFILES["balanced"].label in result_base.output
-        cfg_base = load_config(proj_base)
-        assert cfg_base.embedding.model_name == MODEL_PROFILES["balanced"].model_name
+        for alias, expected_profile in cases:
+            proj = tmp_path / alias
+            proj.mkdir()
+            result = runner.invoke(cli, ["init", str(proj), "--profile", alias])
+            assert result.exit_code == 0
+            assert "Model profile" in result.output
+            assert MODEL_PROFILES[expected_profile].label in result.output
 
-        proj_large = tmp_path / "large"
-        proj_large.mkdir()
-        result_large = runner.invoke(cli, ["init", str(proj_large), "--profile", "large"])
-        assert result_large.exit_code == 0
-        assert "Model profile" in result_large.output
-        assert MODEL_PROFILES["precise"].label in result_large.output
-        cfg_large = load_config(proj_large)
-        assert cfg_large.embedding.model_name == MODEL_PROFILES["precise"].model_name
+            cfg = load_config(proj)
+            assert cfg.embedding.model_name == MODEL_PROFILES[expected_profile].model_name
 
     def test_init_saves_recommended_batch_size(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Force deterministic resource detection so recommendations are stable in tests

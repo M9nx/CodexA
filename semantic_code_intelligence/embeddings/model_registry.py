@@ -141,6 +141,13 @@ PROFILE_ALIASES: dict[str, str] = {
     "large": "precise",
 }
 
+CLI_PROFILE_CHOICES: list[str] = [
+    "fast",
+    "balanced",
+    "precise",
+    *sorted({*PROFILE_ALIASES.keys(), *MODEL_PROFILES.keys()} - {"fast", "balanced", "precise"}),
+]
+
 
 def resolve_profile(name: str) -> ModelProfile | None:
     """Resolve a profile name or alias to a ModelProfile."""
