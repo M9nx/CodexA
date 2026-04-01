@@ -12,6 +12,7 @@ from semantic_code_intelligence.config.settings import load_config
 
 from semantic_code_intelligence.cli.main import cli
 from semantic_code_intelligence.embeddings.generator import BYTES_PER_GB
+from semantic_code_intelligence.embeddings.model_registry import MODEL_PROFILES
 
 
 @pytest.fixture
@@ -71,6 +72,24 @@ class TestInitCommand:
             result = runner.invoke(cli, ["init"])
             assert result.exit_code == 0
             assert Path(td, ".codexa").is_dir()
+
+    def test_init_profile_aliases(self, runner: CliRunner, tmp_path: Path):
+        cases = [
+            ("small", "fast"),
+            ("base", "balanced"),
+            ("large", "precise"),
+        ]
+
+        for alias, expected_profile in cases:
+            proj = tmp_path / alias
+            proj.mkdir()
+            result = runner.invoke(cli, ["init", str(proj), "--profile", alias])
+            assert result.exit_code == 0
+            assert "Model profile" in result.output
+            assert MODEL_PROFILES[expected_profile].label in result.output
+
+            cfg = load_config(proj)
+            assert cfg.embedding.model_name == MODEL_PROFILES[expected_profile].model_name
 
     def test_init_saves_recommended_batch_size(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Force deterministic resource detection so recommendations are stable in tests

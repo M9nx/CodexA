@@ -10,6 +10,7 @@ import click
 from semantic_code_intelligence.config.settings import AppConfig, load_config, save_config
 from semantic_code_intelligence.embeddings.model_registry import (
     AVAILABLE_MODELS,
+    CLI_PROFILE_CHOICES,
     DEFAULT_MODEL,
     MODEL_ALIASES,
     MODEL_PROFILES,
@@ -216,7 +217,23 @@ def models_profiles(json_mode: bool) -> None:
     console.print(table)
     if available_gb:
         print_info(f"Detected RAM: {available_gb:.1f} GB — recommended profile marked with ⭐")
-    print_info("Use: codexa init --profile <fast|balanced|precise>")
+
+    canonical_names = sorted(MODEL_PROFILES.keys())
+    print_info(f"Use: codexa init --profile <{'|'.join(canonical_names)}>")
+
+    alias_map: dict[str, set[str]] = {}
+    for choice in CLI_PROFILE_CHOICES:
+        profile = resolve_profile(choice)
+        if profile is None or choice == profile.name:
+            continue
+        alias_map.setdefault(profile.name, set()).add(choice)
+
+    if alias_map:
+        alias_parts = []
+        for name in sorted(alias_map.keys()):
+            aliases = "/".join(sorted(alias_map[name]))
+            alias_parts.append(f"{name} ({aliases})")
+        print_info(f"Aliases also supported: {', '.join(alias_parts)}")
 
 
 @models_cmd.command("benchmark")

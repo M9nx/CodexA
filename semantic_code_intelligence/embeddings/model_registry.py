@@ -134,10 +134,20 @@ MODEL_PROFILES: dict[str, ModelProfile] = {
 
 PROFILE_ALIASES: dict[str, str] = {
     "small": "fast",
+    "base": "balanced",
     "default": "balanced",
     "quality": "precise",
     "code": "precise",
+    "large": "precise",
 }
+
+CORE_PROFILES: list[str] = ["fast", "balanced", "precise"]
+ALL_PROFILE_NAMES = set(PROFILE_ALIASES.keys()) | set(MODEL_PROFILES.keys())
+CLI_PROFILE_CHOICES: list[str] = [
+    *CORE_PROFILES,
+    # Aliases can overlap canonical names; set operations ensure each appears once in the final list
+    *sorted(set(ALL_PROFILE_NAMES) - set(CORE_PROFILES)),
+]
 
 
 def resolve_profile(name: str) -> ModelProfile | None:
