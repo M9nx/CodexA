@@ -293,7 +293,8 @@ def _run_interactive_installer(
     )
     chosen_profile = resolve_profile(chosen_profile_key)
     if chosen_profile is None:
-        raise ValueError(f"Unknown profile key: {chosen_profile_key}")
+        # Defensive guard; click.Choice restricts input to known keys.
+        raise RuntimeError(f"Unexpected missing profile for key: {chosen_profile_key}")
 
     profile_changed = False
     if config.embedding.model_name != chosen_profile.model_name:
@@ -312,7 +313,7 @@ def _run_interactive_installer(
     batch_input = click.prompt(
         "Embedding batch size",
         default=recommended_batch_size,
-        type=click.IntRange(1, None),
+        type=click.IntRange(1, 1024),
         show_default=True,
     )
     batch_changed = batch_input != config.embedding.batch_size
