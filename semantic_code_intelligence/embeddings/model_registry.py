@@ -141,11 +141,10 @@ PROFILE_ALIASES: dict[str, str] = {
     "large": "precise",
 }
 
+CORE_PROFILES: list[str] = ["fast", "balanced", "precise"]
 CLI_PROFILE_CHOICES: list[str] = [
-    "fast",
-    "balanced",
-    "precise",
-    *sorted({*PROFILE_ALIASES.keys(), *MODEL_PROFILES.keys()} - {"fast", "balanced", "precise"}),
+    *CORE_PROFILES,
+    *sorted({*PROFILE_ALIASES.keys(), *MODEL_PROFILES.keys()} - set(CORE_PROFILES)),
 ]
 
 
