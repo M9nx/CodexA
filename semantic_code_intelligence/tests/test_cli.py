@@ -110,6 +110,80 @@ class TestInitCommand:
         # Profile for ~3GB RAM should be precise according to registry thresholds
         assert config["embedding"]["model_name"] == "jinaai/jina-embeddings-v2-base-code"
 
+    def test_init_interactive_applies_selections(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Provide stable detection so defaults are deterministic
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_available_memory_bytes",
+            lambda: 5 * BYTES_PER_GB,
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_cpu_count",
+            lambda: 4,
+        )
+
+        result = runner.invoke(
+            cli,
+            ["init", str(tmp_path), "--interactive"],
+            input="fast\n24\n",
+        )
+        assert result.exit_code == 0
+        output = result.output.lower()
+        assert "interactive installer" in output
+
+        config = json.loads((tmp_path / ".codexa" / "config.json").read_text(encoding="utf-8"))
+        assert config["embedding"]["model_name"] == MODEL_PROFILES["fast"].model_name
+        assert config["embedding"]["batch_size"] == 24
+
+    def test_init_interactive_updates_existing_project(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Initial setup with defaults
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_available_memory_bytes",
+            lambda: 2 * BYTES_PER_GB,
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd._get_cpu_count",
+            lambda: 2,
+        )
+        runner.invoke(cli, ["init", str(tmp_path)])
+
+        # Run interactive to change profile/batch
+        result = runner.invoke(
+            cli,
+            ["init", str(tmp_path), "--interactive"],
+            input="precise\n16\n",
+        )
+        assert result.exit_code == 0
+
+        config = json.loads((tmp_path / ".codexa" / "config.json").read_text(encoding="utf-8"))
+        assert config["embedding"]["model_name"] == MODEL_PROFILES["precise"].model_name
+        assert config["embedding"]["batch_size"] == 16
+
+    def test_init_interactive_invalid_config(self, runner: CliRunner, tmp_path: Path):
+        runner.invoke(cli, ["init", str(tmp_path)])
+        config_path = tmp_path / ".codexa" / "config.json"
+        config_path.write_text("{ invalid json", encoding="utf-8")
+
+        result = runner.invoke(cli, ["init", str(tmp_path), "--interactive"])
+
+        assert result.exit_code != 0
+        assert "failed to read existing .codexa/config.json" in result.output.lower()
+
+    def test_init_interactive_config_permission_error(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        runner.invoke(cli, ["init", str(tmp_path)])
+
+        def raise_permission_error(*args, **kwargs):
+            raise OSError(errno.EACCES, "permission denied")
+
+        monkeypatch.setattr(
+            "semantic_code_intelligence.cli.commands.init_cmd.load_config",
+            raise_permission_error,
+        )
+
+        result = runner.invoke(cli, ["init", str(tmp_path), "--interactive"])
+
+        assert result.exit_code != 0
+        assert "failed to read existing .codexa/config.json" in result.output.lower()
+
 
 class TestIndexCommand:
     """Tests for the index command."""
