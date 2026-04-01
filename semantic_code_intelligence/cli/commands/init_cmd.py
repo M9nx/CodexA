@@ -298,6 +298,11 @@ def _run_interactive_installer(
         show_choices=False,
     )
     chosen_profile = resolve_profile(chosen_profile_key)
+    if chosen_profile is None:
+        raise click.ClickException(
+            f"Selected profile '{chosen_profile_key}' could not be resolved. "
+            f"Choose one of: {', '.join(CLI_PROFILE_CHOICES)}."
+        )
 
     profile_changed = False
     if config.embedding.model_name != chosen_profile.model_name:
