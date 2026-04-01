@@ -22,6 +22,16 @@ from semantic_code_intelligence.utils.logging import (
 
 logger = get_logger("cli.index")
 
+NETWORK_ERRNOS = {
+    errno.ENETUNREACH,
+    errno.EHOSTUNREACH,
+    errno.ECONNREFUSED,
+    errno.ECONNRESET,
+    errno.ETIMEDOUT,
+}
+
+EMBEDDING_ERROR_KEYWORDS = ("embedding", "attn_implementation", "tokenizer")
+
 
 def _inspect_file_index(root: Path, file_path: str) -> None:
     """Show indexing metadata for a specific file."""
@@ -280,21 +290,14 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
     except Exception as e:
         message = f"{type(e).__name__}: {e}"
         msg_lower = str(e).lower()
-        network_errnos = {
-            errno.ENETUNREACH,
-            errno.EHOSTUNREACH,
-            errno.ECONNREFUSED,
-            errno.ECONNRESET,
-            errno.ETIMEDOUT,
-        }
         err_no = getattr(e, "errno", None)
         network_like = isinstance(e, (ConnectionError, TimeoutError)) or (
-            isinstance(e, OSError) and err_no in network_errnos
+            isinstance(e, OSError) and err_no is not None and err_no in NETWORK_ERRNOS
         )
         err_module = e.__class__.__module__ or ""
         embedding_like = isinstance(e, (ImportError, ValueError, RuntimeError)) and (
             err_module.startswith(("transformers", "sentence_transformers"))
-            or any(key in msg_lower for key in ("embedding", "attn_implementation", "tokenizer"))
+            or any(key in msg_lower for key in EMBEDDING_ERROR_KEYWORDS)
         )
         if network_like or "request" in msg_lower:
             print_warning(
