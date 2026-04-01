@@ -218,7 +218,7 @@ def models_profiles(json_mode: bool) -> None:
     if available_gb:
         print_info(f"Detected RAM: {available_gb:.1f} GB — recommended profile marked with ⭐")
 
-    canonical_names = sorted({p.name for p in MODEL_PROFILES.values()})
+    canonical_names = sorted(MODEL_PROFILES.keys())
     print_info(f"Use: codexa init --profile <{'|'.join(canonical_names)}>")
 
     alias_map: dict[str, set[str]] = {}
