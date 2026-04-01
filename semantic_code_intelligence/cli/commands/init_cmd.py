@@ -18,6 +18,7 @@ from semantic_code_intelligence.embeddings.model_registry import (
     CORE_PROFILES,
     MODEL_PROFILES,
     ModelProfile,
+    PROFILE_ALIASES,
     recommend_profile_for_ram,
     resolve_profile,
 )
@@ -299,9 +300,10 @@ def _run_interactive_installer(
     )
     chosen_profile = resolve_profile(chosen_profile_key)
     if chosen_profile is None:
+        valid_profiles = sorted(set(MODEL_PROFILES.keys()) | set(PROFILE_ALIASES.keys()))
         raise click.ClickException(
             f"Profile '{chosen_profile_key}' could not be resolved. "
-            f"Valid profiles are: {', '.join(CLI_PROFILE_CHOICES)}."
+            f"Valid profiles are: {', '.join(valid_profiles)}."
         )
 
     profile_changed = False
