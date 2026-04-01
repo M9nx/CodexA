@@ -170,7 +170,8 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
     if available_gb is not None:
         resource_parts.append(f"{available_gb:.1f} GB RAM")
     if logical_cpu_count is not None:
-        resource_parts.append(f"{logical_cpu_count} CPU cores")
+        core_label = "CPU core" if logical_cpu_count == 1 else "CPU cores"
+        resource_parts.append(f"{logical_cpu_count} {core_label}")
 
     batch_message_prefix = (
         f"Embedding batch size {'updated' if batch_changed else 'kept'} "
