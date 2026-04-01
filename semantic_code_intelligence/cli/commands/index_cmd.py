@@ -236,20 +236,7 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
             f"Project not initialized at {root}. Run 'codexa init' first."
         )
 
-    # --- Optional batch size override ---
     config: AppConfig | None = None
-    if batch_size is not None:
-        config = load_config(root)
-        prev_batch = config.embedding.batch_size
-        if prev_batch != batch_size:
-            config.embedding.batch_size = batch_size
-            save_config(config, root)
-            print_info(
-                f"Embedding batch size updated: {prev_batch} → {batch_size} "
-                "(applies to this and future indexing runs)."
-            )
-        else:
-            print_info(f"Embedding batch size already set to {batch_size}.")
 
     # --- Inspect mode: show metadata for a file ---
     if inspect_file:
@@ -275,6 +262,20 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
             save_config(config, root)
             print_success(f"Switched model: {old_model} → {resolved}")
         force = True  # force re-index with new model
+
+    # --- Optional batch size override (only when indexing will run) ---
+    if batch_size is not None:
+        config = config if config is not None else load_config(root)
+        prev_batch = config.embedding.batch_size
+        if prev_batch != batch_size:
+            config.embedding.batch_size = batch_size
+            save_config(config, root)
+            print_info(
+                f"Embedding batch size updated: {prev_batch} → {batch_size} "
+                "(applies to this and future indexing runs)."
+            )
+        else:
+            print_info(f"Embedding batch size already set to {batch_size}.")
 
     # --- Model consistency guard ---
     if not force:
