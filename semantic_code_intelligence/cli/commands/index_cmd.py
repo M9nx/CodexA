@@ -22,7 +22,7 @@ from semantic_code_intelligence.utils.logging import (
 
 logger = get_logger("cli.index")
 
-NETWORK_ERRNOS = {
+NETWORK_ERRNO_SET = {
     errno.ENETUNREACH,
     errno.EHOSTUNREACH,
     errno.ECONNREFUSED,
@@ -39,6 +39,14 @@ EMBEDDING_ERROR_KEYWORDS = frozenset(
         "tokenizer",
     }
 )
+
+
+def _is_embedding_error(exc: Exception, msg_lower: str, err_module: str) -> bool:
+    """Return True if the exception likely stems from embedding model setup."""
+    return isinstance(exc, (ImportError, ValueError, RuntimeError)) and (
+        err_module.startswith(("transformers", "sentence_transformers"))
+        or any(key in msg_lower for key in EMBEDDING_ERROR_KEYWORDS)
+    )
 
 
 def _inspect_file_index(root: Path, file_path: str) -> None:
@@ -300,14 +308,11 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
         msg_lower = str(e).lower()
         err_no = getattr(e, "errno", None)
         network_like = isinstance(e, (ConnectionError, TimeoutError)) or (
-            isinstance(e, OSError) and err_no in NETWORK_ERRNOS
+            isinstance(e, OSError) and err_no is not None and err_no in NETWORK_ERRNO_SET
         )
         # __module__ may be None; fall back to "" so startswith checks are safe.
         err_module = e.__class__.__module__ or ""
-        embedding_like = isinstance(e, (ImportError, ValueError, RuntimeError)) and (
-            err_module.startswith(("transformers", "sentence_transformers"))
-            or any(key in msg_lower for key in EMBEDDING_ERROR_KEYWORDS)
-        )
+        embedding_like = _is_embedding_error(e, msg_lower, err_module)
         if network_like or "request" in msg_lower:
             print_warning(
                 "Indexing encountered a network issue while fetching embeddings; "
