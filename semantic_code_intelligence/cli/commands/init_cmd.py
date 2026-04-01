@@ -97,7 +97,10 @@ def _generate_vscode_mcp_config(root: Path) -> bool:
     "profile_name",
     type=click.Choice(CLI_PROFILE_CHOICES, case_sensitive=False),
     default=None,
-    help="Embedding model profile: fast (low RAM), balanced (default), or precise (code-optimized). Size aliases (small/base/large) are supported.",
+    help=(
+        "Embedding model profile: fast (low RAM), balanced (default), or precise (code-optimized). "
+        "Size aliases (small/base/large) and named aliases (default/quality/code) are supported."
+    ),
 )
 @click.pass_context
 def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool, profile_name: str | None) -> None:
