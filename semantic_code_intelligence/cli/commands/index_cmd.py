@@ -287,11 +287,17 @@ def index_cmd(project_path: Path | None, force: bool, watch: bool, add_file: str
             errno.ECONNRESET,
             errno.ETIMEDOUT,
         }
+        err_no = getattr(e, "errno", None)
         network_like = isinstance(e, (ConnectionError, TimeoutError)) or (
-            isinstance(e, OSError) and e.errno in network_errnos
+            isinstance(e, OSError) and err_no in network_errnos
         )
-        embedding_like = isinstance(e, (ImportError, ValueError, RuntimeError)) and any(
-            key in msg_lower for key in ("embedding", "model", "attn_implementation", "transformer", "tokenizer")
+        embedding_module = e.__class__.__module__
+        embedding_like = isinstance(e, (ImportError, ValueError, RuntimeError)) and (
+            embedding_module.startswith(("transformers", "sentence_transformers"))
+            or any(
+                key in msg_lower
+                for key in ("embedding", "attn_implementation", "tokenizer")
+            )
         )
         if network_like or "request" in msg_lower:
             print_warning(
