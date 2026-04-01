@@ -131,7 +131,6 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
 
     # Check if already initialized
     config_dir = AppConfig.config_dir(root)
-    config_path = AppConfig.config_path(root)
     if config_dir.exists() and not interactive:
         print_info(f"Project already initialized at {root}")
         print_info(f"Config directory: {config_dir}")
@@ -294,8 +293,7 @@ def _run_interactive_installer(
     )
     chosen_profile = resolve_profile(chosen_profile_key)
     if chosen_profile is None:
-        # Should not happen due to click.Choice guard, but keep a safe fallback.
-        chosen_profile = default_profile
+        raise ValueError(f"Unknown profile key: {chosen_profile_key}")
 
     profile_changed = False
     if config.embedding.model_name != chosen_profile.model_name:

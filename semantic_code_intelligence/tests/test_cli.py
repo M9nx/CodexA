@@ -110,7 +110,7 @@ class TestInitCommand:
         # Profile for ~3GB RAM should be precise according to registry thresholds
         assert config["embedding"]["model_name"] == "jinaai/jina-embeddings-v2-base-code"
 
-    def test_init_interactive_installer_applies_user_selections(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    def test_init_interactive_applies_selections(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Provide stable detection so defaults are deterministic
         monkeypatch.setattr(
             "semantic_code_intelligence.cli.commands.init_cmd._get_available_memory_bytes",
