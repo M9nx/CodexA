@@ -292,7 +292,10 @@ def _run_interactive_installer(
         default=default_profile.name,
         show_choices=False,
     )
-    chosen_profile = resolve_profile(chosen_profile_key) or default_profile
+    chosen_profile = resolve_profile(chosen_profile_key)
+    if chosen_profile is None:
+        # Should not happen due to click.Choice guard, but keep a safe fallback.
+        chosen_profile = default_profile
 
     profile_changed = False
     if config.embedding.model_name != chosen_profile.model_name:
@@ -311,11 +314,9 @@ def _run_interactive_installer(
     batch_input = click.prompt(
         "Embedding batch size",
         default=recommended_batch_size,
-        type=int,
+        type=click.IntRange(1, None),
         show_default=True,
     )
-    if batch_input < 1:
-        batch_input = 1
     batch_changed = batch_input != config.embedding.batch_size
     config.embedding.batch_size = batch_input
 
