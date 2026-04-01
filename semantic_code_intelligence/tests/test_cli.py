@@ -78,6 +78,7 @@ class TestInitCommand:
         proj_small.mkdir()
         result_small = runner.invoke(cli, ["init", str(proj_small), "--profile", "small"])
         assert result_small.exit_code == 0
+        assert MODEL_PROFILES["fast"].label in result_small.output
         cfg_small = load_config(proj_small)
         assert cfg_small.embedding.model_name == MODEL_PROFILES["fast"].model_name
 
@@ -94,6 +95,7 @@ class TestInitCommand:
         proj_large.mkdir()
         result_large = runner.invoke(cli, ["init", str(proj_large), "--profile", "large"])
         assert result_large.exit_code == 0
+        assert MODEL_PROFILES["precise"].label in result_large.output
         cfg_large = load_config(proj_large)
         assert cfg_large.embedding.model_name == MODEL_PROFILES["precise"].model_name
 
