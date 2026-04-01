@@ -131,6 +131,7 @@ def init_cmd(ctx: click.Context, path: str, auto_index: bool, setup_vscode: bool
 
     # Check if already initialized
     config_dir = AppConfig.config_dir(root)
+    config_path: Path | None = None
     if config_dir.exists() and not interactive:
         print_info(f"Project already initialized at {root}")
         print_info(f"Config directory: {config_dir}")
