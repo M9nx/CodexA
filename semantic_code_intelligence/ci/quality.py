@@ -367,6 +367,7 @@ class _SuppressSarifFilter(_logging.Filter):
 
 
 def _logger_ancestry(logger_obj: _logging.Logger) -> list[_logging.Logger]:
+    """Return logger ancestry following propagation to root or stop logger."""
     ancestry: list[_logging.Logger] = []
     current: _logging.Logger | None = logger_obj
     while current is not None:
@@ -382,6 +383,7 @@ def _add_filter_to_handlers(
     logger_obj: _logging.Logger,
     log_filter: _logging.Filter,
 ) -> list[_logging.Handler]:
+    """Add *log_filter* to handlers in logger ancestry, deduplicating handlers."""
     filtered_handlers: list[_logging.Handler] = []
     seen_handlers: set[int] = set()
     for current_logger in _logger_ancestry(logger_obj):
@@ -399,6 +401,7 @@ def _remove_filter_from_handlers(
     handlers: list[_logging.Handler],
     log_filter: _logging.Filter,
 ) -> None:
+    """Remove *log_filter* from each handler in *handlers*."""
     for handler in handlers:
         handler.removeFilter(log_filter)
 
