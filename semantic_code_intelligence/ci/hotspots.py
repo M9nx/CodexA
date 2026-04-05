@@ -172,7 +172,16 @@ def analyze_hotspots(
         w_fan_out += extra
         w_churn = 0.0
 
-    callable_symbols = [s for s in symbols if s.kind in ("function", "method")]
+    # Deduplicate by (file_path, name) so that re-indexed or multiply-parsed
+    # symbols don't appear as separate hotspot entries with identical scores.
+    _seen: set[tuple[str, str]] = set()
+    callable_symbols = []
+    for s in symbols:
+        if s.kind in ("function", "method"):
+            key = (s.file_path, s.name)
+            if key not in _seen:
+                _seen.add(key)
+                callable_symbols.append(s)
 
     # ── Per-symbol raw metrics ───────────────────────────────────
     # Complexity

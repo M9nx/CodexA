@@ -354,8 +354,26 @@ def detect_duplicates(
 # ── Bandit security linting (optional) ───────────────────────────────
 
 try:
-    from bandit.core import manager as _bandit_manager
-    from bandit.core import config as _bandit_config
+    import logging as _logging
+
+    # Bandit eagerly loads all its formatters at import time, including a
+    # SARIF formatter that requires the optional `sarif_om` package.  When
+    # `sarif_om` is absent bandit logs an ERROR that appears on every run
+    # even when SARIF output was never requested.  Suppress that specific
+    # message during the import so users only see errors that are relevant
+    # to them.
+    class _SuppressSarifFilter(_logging.Filter):
+        def filter(self, record: _logging.LogRecord) -> bool:
+            return "Could not load 'sarif'" not in record.getMessage()
+
+    _bandit_root = _logging.getLogger("bandit")
+    _sarif_filter = _SuppressSarifFilter()
+    _bandit_root.addFilter(_sarif_filter)
+    try:
+        from bandit.core import manager as _bandit_manager
+        from bandit.core import config as _bandit_config
+    finally:
+        _bandit_root.removeFilter(_sarif_filter)
 
     _HAS_BANDIT = True
 except ImportError:  # pragma: no cover

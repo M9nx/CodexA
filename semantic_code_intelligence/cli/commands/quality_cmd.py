@@ -112,12 +112,18 @@ def _output_report_rich(report: "QualityReport", root: Path) -> None:
 
 
 @click.command("quality")
+@click.argument(
+    "directory",
+    default=None,
+    required=False,
+    type=click.Path(exists=True, file_okay=False, resolve_path=True),
+)
 @click.option(
     "--path",
     "-p",
     default=".",
     type=click.Path(exists=True, file_okay=False, resolve_path=True),
-    help="Project root path.",
+    help="Project root path (alternative to the positional argument).",
 )
 @click.option(
     "--json-output",
@@ -148,6 +154,7 @@ def _output_report_rich(report: "QualityReport", root: Path) -> None:
 @click.pass_context
 def quality_cmd(
     ctx: click.Context,
+    directory: str | None,
     path: str,
     json_mode: bool,
     complexity_threshold: int,
@@ -163,6 +170,8 @@ def quality_cmd(
 
         codexa quality
 
+        codexa quality .
+
         codexa quality --json
 
         codexa quality --safety-only --pipe
@@ -172,7 +181,7 @@ def quality_cmd(
     from semantic_code_intelligence.ci.quality import analyze_project, QualityReport
     from semantic_code_intelligence.llm.safety import SafetyValidator
 
-    root = Path(path).resolve()
+    root = Path(directory or path).resolve()
 
     if safety_only:
         # Fast path: only safety scan
