@@ -172,24 +172,37 @@ def analyze_hotspots(
         w_fan_out += extra
         w_churn = 0.0
 
-    callable_symbols = [s for s in symbols if s.kind in ("function", "method")]
+    def _symbol_key(sym: Symbol) -> tuple[str, str, str, str | None, int]:
+        return (sym.file_path, sym.name, sym.kind, sym.parent, sym.start_line)
+
+    callable_symbols: list[Symbol] = []
+    seen_symbols: set[tuple[str, str, str, str | None, int]] = set()
+    for s in symbols:
+        if s.kind not in ("function", "method"):
+            continue
+        sk = _symbol_key(s)
+        if sk in seen_symbols:
+            continue
+        seen_symbols.add(sk)
+        callable_symbols.append(s)
 
     # ── Per-symbol raw metrics ───────────────────────────────────
     # Complexity
-    sym_complexity: dict[str, int] = {}
+    sym_complexity: dict[tuple[str, str, str, str | None, int], int] = {}
     for s in callable_symbols:
         cr = compute_complexity(s)
-        sym_complexity[f"{s.file_path}:{s.name}"] = cr.complexity
+        sym_complexity[_symbol_key(s)] = cr.complexity
 
     max_complexity = max(sym_complexity.values(), default=1)
 
     # Fan-in / fan-out
-    sym_fan_in: dict[str, int] = {}
-    sym_fan_out: dict[str, int] = {}
+    sym_fan_in: dict[tuple[str, str, str, str | None, int], int] = {}
+    sym_fan_out: dict[tuple[str, str, str, str | None, int], int] = {}
     for s in callable_symbols:
-        key = f"{s.file_path}:{s.name}"
+        key = _symbol_key(s)
+        graph_key = f"{s.file_path}:{s.name}"
         sym_fan_in[key] = len(call_graph.callers_of(s.name))
-        sym_fan_out[key] = len(call_graph.callees_of(key))
+        sym_fan_out[key] = len(call_graph.callees_of(graph_key))
 
     max_fan_in = max(sym_fan_in.values(), default=1)
     max_fan_out = max(sym_fan_out.values(), default=1)
@@ -219,7 +232,7 @@ def analyze_hotspots(
 
     for s in callable_symbols:
         unique_files.add(s.file_path)
-        key = f"{s.file_path}:{s.name}"
+        key = _symbol_key(s)
 
         cc = sym_complexity.get(key, 1)
         fi = sym_fan_in.get(key, 0)

@@ -554,6 +554,23 @@ class TestQualityCLI:
         data = json.loads(result.output)
         assert "files_analyzed" in data
 
+    def test_positional_directory(self, runner, tmp_path):
+        from semantic_code_intelligence.cli.commands.quality_cmd import quality_cmd
+
+        result = runner.invoke(quality_cmd, ["--json", str(tmp_path)])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert "files_analyzed" in data
+
+    def test_rejects_directory_and_path_together(self, runner, tmp_path):
+        from semantic_code_intelligence.cli.commands.quality_cmd import quality_cmd
+
+        other = tmp_path / "other"
+        other.mkdir()
+        result = runner.invoke(quality_cmd, [str(tmp_path), "--path", str(other)])
+        assert result.exit_code != 0
+        assert "Provide either the positional 'directory' argument or '--path'" in result.output
+
     def test_safety_only_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.quality_cmd import quality_cmd
 
@@ -812,4 +829,3 @@ class TestBackwardCompatibility:
         validator = SafetyValidator()
         report = validator.validate("x = 1\n")
         assert report.safe is True
-

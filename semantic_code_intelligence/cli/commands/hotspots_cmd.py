@@ -18,6 +18,11 @@ logger = get_logger("cli.hotspots")
 
 
 @click.command("hotspots")
+@click.argument(
+    "directory",
+    required=False,
+    type=click.Path(exists=True, file_okay=False, resolve_path=True),
+)
 @click.option(
     "--path", "-p",
     default=".",
@@ -47,6 +52,7 @@ logger = get_logger("cli.hotspots")
 @click.pass_context
 def hotspots_cmd(
     ctx: click.Context,
+    directory: str | None,
     path: str,
     json_mode: bool,
     pipe: bool,
@@ -69,7 +75,12 @@ def hotspots_cmd(
     from semantic_code_intelligence.ci.hotspots import analyze_hotspots
     from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder, DependencyMap
 
-    root = Path(path).resolve()
+    if directory is not None and ctx.get_parameter_source("path") == click.core.ParameterSource.COMMANDLINE:
+        raise click.UsageError(
+            "Provide either the positional 'directory' argument or '--path', not both.",
+        )
+
+    root = Path(directory).resolve() if directory is not None else Path(path).resolve()
     builder = ContextBuilder()
     dep_map = DependencyMap()
 

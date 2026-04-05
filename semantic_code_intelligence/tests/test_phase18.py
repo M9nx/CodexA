@@ -231,6 +231,24 @@ class TestAnalyzeHotspots:
         loaded = json.loads(s)
         assert loaded["files_analyzed"] == report.files_analyzed
 
+    def test_deduplicates_exact_duplicate_symbol_records(self, tmp_path):
+        from semantic_code_intelligence.ci.hotspots import analyze_hotspots
+
+        _write_sample_project(tmp_path)
+        symbols, cg, dep_map = _build_context(tmp_path)
+        symbol = symbols[0]
+        symbols_with_dupe = [*symbols, symbol]
+
+        report = analyze_hotspots(
+            symbols_with_dupe, cg, dep_map, tmp_path, include_git=False,
+        )
+        unique = {
+            (s.file_path, s.name, s.kind, s.parent, s.start_line)
+            for s in symbols
+            if s.kind in ("function", "method")
+        }
+        assert report.symbols_analyzed == len(unique)
+
 
 # =========================================================================
 # AffectedSymbol / AffectedModule / ImpactReport dataclass tests
@@ -571,6 +589,27 @@ class TestHotspotsCLI:
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert "hotspots" in data
+
+    def test_hotspots_json_positional_directory(self, tmp_path):
+        from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
+
+        _write_sample_project(tmp_path)
+        runner = CliRunner()
+        result = runner.invoke(hotspots_cmd, [str(tmp_path), "--json", "--no-git"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert "hotspots" in data
+
+    def test_hotspots_rejects_directory_and_path_together(self, tmp_path):
+        from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
+
+        _write_sample_project(tmp_path)
+        other = tmp_path / "other"
+        other.mkdir()
+        runner = CliRunner()
+        result = runner.invoke(hotspots_cmd, [str(tmp_path), "--path", str(other)])
+        assert result.exit_code != 0
+        assert "Provide either the positional 'directory' argument or '--path'" in result.output
 
     def test_hotspots_pipe(self, tmp_path):
         from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
@@ -932,4 +971,3 @@ class TestModuleStructure:
         assert "hotspots" in ci_mod.__doc__
         assert "impact" in ci_mod.__doc__
         assert "trace" in ci_mod.__doc__
-
