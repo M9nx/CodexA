@@ -181,8 +181,15 @@ def quality_cmd(
     from semantic_code_intelligence.ci.quality import analyze_project, QualityReport
     from semantic_code_intelligence.llm.safety import SafetyValidator
 
-    root = Path(directory or path).resolve()
+    directory_path = Path(directory).resolve() if directory else None
+    option_path = Path(path).resolve()
 
+    if directory_path is not None and directory_path != option_path:
+        raise click.UsageError(
+            "Cannot use both the positional 'directory' argument and '--path' with different values."
+        )
+
+    root = directory_path or option_path
     if safety_only:
         # Fast path: only safety scan
         from semantic_code_intelligence.parsing.parser import EXTENSION_TO_LANGUAGE
