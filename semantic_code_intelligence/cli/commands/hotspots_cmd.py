@@ -78,6 +78,10 @@ def hotspots_cmd(
     from semantic_code_intelligence.ci.hotspots import analyze_hotspots
     from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder, DependencyMap
 
+    if directory is not None and ctx.get_parameter_source("path") == click.core.ParameterSource.COMMANDLINE:
+        raise click.UsageError(
+            "Provide either the positional 'directory' argument or '--path', not both."
+        )
     root = Path(directory or path).resolve()
     builder = ContextBuilder()
     dep_map = DependencyMap()
