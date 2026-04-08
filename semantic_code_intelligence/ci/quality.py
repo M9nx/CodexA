@@ -354,8 +354,62 @@ def detect_duplicates(
 # ── Bandit security linting (optional) ───────────────────────────────
 
 try:
-    from bandit.core import manager as _bandit_manager
-    from bandit.core import config as _bandit_config
+    import logging as _logging
+
+    # Bandit eagerly loads all its formatters at import time, including a
+    # SARIF formatter that requires the optional `sarif_om` package.  When
+    # `sarif_om` is absent bandit logs an ERROR that appears on every run
+    # even when SARIF output was never requested.  Suppress that specific
+    # message during the import so users only see errors that are relevant
+    # to them.
+    class _SuppressSarifFilter(_logging.Filter):
+        def filter(self, record: _logging.LogRecord) -> bool:
+            return "Could not load 'sarif'" not in record.getMessage()
+
+    def _logger_ancestry(logger: _logging.Logger) -> list[_logging.Logger]:
+        ancestry: list[_logging.Logger] = []
+        current: _logging.Logger | None = logger
+        while current is not None:
+            ancestry.append(current)
+            if not current.propagate:
+                break
+            parent = current.parent
+            current = parent if isinstance(parent, _logging.Logger) else None
+        return ancestry
+
+    def _add_filter_to_handlers(
+        logger: _logging.Logger,
+        log_filter: _logging.Filter,
+    ) -> list[_logging.Handler]:
+        filtered_handlers: list[_logging.Handler] = []
+        seen_handlers: set[int] = set()
+        for current_logger in _logger_ancestry(logger):
+            for handler in current_logger.handlers:
+                handler_id = id(handler)
+                if handler_id in seen_handlers:
+                    continue
+                handler.addFilter(log_filter)
+                filtered_handlers.append(handler)
+                seen_handlers.add(handler_id)
+        return filtered_handlers
+
+    def _remove_filter_from_handlers(
+        handlers: list[_logging.Handler],
+        log_filter: _logging.Filter,
+    ) -> None:
+        for handler in handlers:
+            handler.removeFilter(log_filter)
+
+    _bandit_root = _logging.getLogger("bandit")
+    _sarif_filter = _SuppressSarifFilter()
+    _filtered_handlers = _add_filter_to_handlers(_bandit_root, _sarif_filter)
+    _bandit_root.addFilter(_sarif_filter)
+    try:
+        from bandit.core import manager as _bandit_manager
+        from bandit.core import config as _bandit_config
+    finally:
+        _bandit_root.removeFilter(_sarif_filter)
+        _remove_filter_from_handlers(_filtered_handlers, _sarif_filter)
 
     _HAS_BANDIT = True
 except ImportError:  # pragma: no cover
