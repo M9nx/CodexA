@@ -1,0 +1,8 @@
+Command: pip-audit --requirement requirements.txt
+Timestamp: 2026-07-22T05:36 UTC
+Exit code: 0
+Result: No known vulnerabilities found
+
+Scope: requirements.txt (production dependencies only — does not include dev extras)
+Note: pyproject.toml dev/ml/tui extras were NOT audited by this command.
+      uv.lock is not committed, preventing full lockfile-based audit.

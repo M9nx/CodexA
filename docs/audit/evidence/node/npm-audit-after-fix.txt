@@ -1,0 +1,42 @@
+﻿Command: npm audit (run in vscode-extension/)
+Commit: 555506632fa76662318dacfa07d6f6c068393758
+Timestamp: 2026-07-22T05:21 UTC
+Exit code: 1
+Working directory: D:\CodexA\vscode-extension\
+Session note: npm audit fix was run immediately before this capture
+
+=== AFTER npm audit fix (safe/non-breaking) ===
+Remaining: 6 high severity vulnerabilities (all dev-only)
+
+minimatch  9.0.0 - 9.0.6      [HIGH - ReDoS]
+  - GHSA-3ppc-4f35-3m26 / GHSA-7r86-cg39-jmmj / GHSA-23c5-xmqv-rm74
+  - CWE-1333, CWE-407
+  - Effects: @typescript-eslint/typescript-estree 6.16.0 - 7.5.0
+  - Fix available: requires upgrading @typescript-eslint to v8 + ESLint v9 (breaking)
+
+Dependency chain for minimatch:
+  minimatch (9.0.0-9.0.6)
+  => @typescript-eslint/typescript-estree (6.16.0-7.5.0)
+     => @typescript-eslint/parser (6.16.0-7.5.0) [devDependency]
+     => @typescript-eslint/type-utils (6.16.0-7.5.0)
+        => @typescript-eslint/eslint-plugin (6.16.0-7.5.0) [devDependency]
+     => @typescript-eslint/utils (6.16.0-7.5.0)
+
+Packages from prior fix (now resolved):
+  - brace-expansion: fixed
+  - flatted: fixed
+  - js-yaml: fixed
+  - picomatch: fixed
+
+Total after fix: 6 high (all dev-only)
+Production (--omit=dev): 0 vulnerabilities
+
+Reachability assessment:
+  - minimatch is used only by @typescript-eslint/typescript-estree during ESLint analysis
+  - ESLint is invoked only during 
+pm run lint (developer/CI workflow)
+  - minimatch is NOT included in the built extension package (out/extension.js)
+  - End users of the extension are not exposed to these vulnerabilities
+
+Fix path: Upgrade @typescript-eslint to v8 + ESLint to v9 (coordinated major upgrade, not a patch fix)
+Accepted risk rationale: Dev-only; not reachable in built extension; fix requires coordinated major upgrade
