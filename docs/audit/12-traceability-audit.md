@@ -47,7 +47,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-32 | Rust parity tests | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-33 | evolution/ coverage | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-34 | VS Code tests | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
-| F-35 | requirements.txt | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
+| F-35 | requirements.txt | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-36 | Regex DoS limit | ✅ P2 | ✅ SEC-04 | ✅ R2 | N/A | Traceable |
 | F-37 | API key in config | ✅ P2 | ✅ SEC-12 | ✅ R2 | N/A | Traceable |
 | F-38 | web server performance | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |

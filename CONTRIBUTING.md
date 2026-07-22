@@ -16,7 +16,7 @@ source .venv/bin/activate # macOS/Linux
 
 # Install in development mode
 pip install -e ".[dev]"
-pip install -r requirements.txt
+
 
 # Run the test suite
 pytest
@@ -56,7 +56,6 @@ CodexA/
 │   └── tests/                      # All test files (2596+ tests)
 ├── vscode-extension/               # VS Code sidebar extension
 ├── pyproject.toml
-├── requirements.txt
 ├── ROADMAP.md
 └── CHANGELOG.md
 ```

@@ -83,7 +83,7 @@
 | F-32 | P3 | — | Architecture | Blocked | Rust parity untestable | Behavior divergence | Reliability | L | None | R3 | Open |
 | F-33 | P3 | — | Python | Unit-tested | `evolution/` — 67% coverage | Evolution loop silent fails | Reliability | M | None | R3 | Open |
 | F-34 | P3 | — | VS Code Ext | Source-confirmed | 0 extension tests | Extension regressions silent | Reliability | L | None | R3 | Open |
-| F-35 | P1 | — | Docs | Source-confirmed | `requirements.txt` mirrors pyproject | Confusing; CI drift risk | Maint. | XS | None | R1 | Open |
+| F-35 | P1 | — | Docs | Source-confirmed | `requirements.txt` mirrors pyproject | Confusing; CI drift risk | Maint. | XS | None | R1 | Completed |
 | F-36 | P2 | Low | Python | Source-confirmed | Regex DoS limit missing | ReDoS via backtracking | Security | S | None | R2 | Open |
 | F-37 | P2 | Low | Python | Source-confirmed | API keys plain text in config | Credential exposure | Security | S | None | R2 | Open |
 | F-38 | P3 | — | Architecture | Source-confirmed | `http.server` single-threaded | Performance degradation | Scale | M | None | R3 | Open |
