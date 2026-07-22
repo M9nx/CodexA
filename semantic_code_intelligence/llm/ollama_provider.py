@@ -47,7 +47,7 @@ class OllamaProvider(LLMProvider):
         data = json.dumps(payload).encode("utf-8")
         req = Request(url, data=data, headers={"Content-Type": "application/json"})
 
-        with urlopen(req, timeout=120) as resp:  # noqa: S310 — localhost only
+        with urlopen(req, timeout=120) as resp:  # nosec B310 — localhost only; See docs/audit/13-security-waivers.md
             result: dict[str, Any] = json.loads(resp.read().decode("utf-8"))
             return result
 
@@ -115,7 +115,7 @@ class OllamaProvider(LLMProvider):
         try:
             url = f"{self._base_url}/api/tags"
             req = Request(url)
-            with urlopen(req, timeout=5) as resp:  # noqa: S310 — localhost only
+            with urlopen(req, timeout=5) as resp:  # nosec B310 — localhost only; See docs/audit/13-security-waivers.md
                 ok: bool = resp.status == 200
                 return ok
         except (URLError, OSError):
