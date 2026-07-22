@@ -110,3 +110,8 @@ omit = ["semantic_code_intelligence/tests/*"]
 fail_under = 70
 show_missing = true
 skip_covered = true
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.0",
+]
