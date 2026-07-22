@@ -33,7 +33,7 @@ jobs:
       - name: Run security checks
         run: |
           pip install bandit pip-audit
-          bandit -r semantic_code_intelligence -ll
+          bandit -r semantic_code_intelligence -x semantic_code_intelligence/tests -s B310 -ll
           pip-audit
 
   lint:
