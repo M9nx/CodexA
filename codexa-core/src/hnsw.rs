@@ -251,9 +251,7 @@ impl HnswVectorStore {
             .collect();
 
         // Ensure sorted by score descending (HNSW returns sorted by distance ascending)
-        out.sort_unstable_by(|a, b| {
-            b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-        });
+        out.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
         Ok(out)
     }
@@ -263,8 +261,7 @@ impl HnswVectorStore {
     /// Writes `hnsw_vectors.bin` (mmap-ready) and reuses `metadata.json`.
     fn save(&self, directory: &str) -> PyResult<()> {
         let dir = Path::new(directory);
-        fs::create_dir_all(dir)
-            .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
+        fs::create_dir_all(dir).map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
 
         let count = self.metadata.len();
         let dim = self.dimension;
@@ -427,7 +424,10 @@ impl HnswVectorStore {
 
         self.file_index.clear();
         for (i, m) in self.metadata.iter().enumerate() {
-            self.file_index.entry(m.file_path.clone()).or_default().push(i);
+            self.file_index
+                .entry(m.file_path.clone())
+                .or_default()
+                .push(i);
         }
 
         self.dirty = true;

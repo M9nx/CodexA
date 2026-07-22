@@ -242,7 +242,8 @@ impl RustVectorStore {
                 let mut dot: f32 = 0.0;
                 // Manual loop for autovectorisation
                 for j in 0..dim {
-                    dot += unsafe { *data.get_unchecked(offset + j) } * unsafe { *q.get_unchecked(j) };
+                    dot +=
+                        unsafe { *data.get_unchecked(offset + j) } * unsafe { *q.get_unchecked(j) };
                 }
                 (i, dot)
             })
@@ -254,9 +255,7 @@ impl RustVectorStore {
             b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
         });
         scores.truncate(k);
-        scores.sort_unstable_by(|a, b| {
-            b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-        });
+        scores.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
         Ok(scores
             .into_iter()
@@ -270,8 +269,7 @@ impl RustVectorStore {
     /// with the Python VectorStore format).
     fn save(&self, directory: &str) -> PyResult<()> {
         let dir = Path::new(directory);
-        fs::create_dir_all(dir)
-            .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
+        fs::create_dir_all(dir).map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
 
         // --- vectors.bin: [dim:u64][count:u64][f32 × dim × count] ---
         let vec_path = dir.join("vectors.bin");
@@ -448,7 +446,10 @@ impl RustVectorStore {
         // Rebuild file index
         self.file_index.clear();
         for (i, m) in self.metadata.iter().enumerate() {
-            self.file_index.entry(m.file_path.clone()).or_default().push(i);
+            self.file_index
+                .entry(m.file_path.clone())
+                .or_default()
+                .push(i);
         }
 
         count

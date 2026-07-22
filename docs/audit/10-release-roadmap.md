@@ -28,8 +28,8 @@
 | Establish mypy baseline | F-41A | Python | P1 | M | F-03A | Baseline recorded in docs | Open |
 | Upgrade CI: pytest + coverage gate + bandit + pip-audit | F-04, F-05 | CI | P1 | S | None | `ci.yml` runs all checks; coverage gate ≥ 70% | Open |
 | Create `.eslintrc.js` | F-06 | Extension | P1 | XS | None | `npm run lint` exits 0 | Completed |
-| Run `cargo fmt` and apply to all files | F-07 | Rust | P1 | XS | None | `cargo fmt --check` exits 0 | Open |
-| Add `cargo clippy -D warnings` to CI | F-07 | Rust | P1 | XS | None | Clippy step in `ci.yml` fails on warnings | Open |
+| Run `cargo fmt` and apply to all files | F-07 | Rust | P1 | XS | None | `cargo fmt --check` exits 0 | Completed |
+| Add `cargo clippy -D warnings` to CI | F-07 | Rust | P1 | XS | None | Clippy step in `ci.yml` fails on warnings | Completed |
 | Add `cargo audit` step to CI | F-28A / SEC-11 | Rust / CI | P1 | S | None | CI runs `cargo audit` | Open |
 | Document Windows Rust build workaround | F-08A | Rust / Docs | P1 | S | None | `CONTRIBUTING.md` has Windows Rust dev instructions | Open |
 | Add tests for `mcp/claude_config.py` | F-09 | Python | P1 | M | None | `mcp/claude_config.py` ≥ 80% coverage | Completed |

@@ -4,6 +4,7 @@
 //! code chunker, file scanner, hybrid RRF fusion, HNSW ANN index,
 //! AST-aware chunker, and optional ONNX embedding inference.
 
+#![allow(clippy::useless_conversion)]
 use pyo3::prelude::*;
 
 mod ann;

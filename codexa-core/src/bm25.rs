@@ -126,9 +126,7 @@ impl RustBM25Index {
         }
 
         let mut ranked: Vec<(usize, f64)> = scores.into_iter().collect();
-        ranked.sort_unstable_by(|a, b| {
-            b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-        });
+        ranked.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         ranked.truncate(top_k);
         ranked
     }
@@ -136,8 +134,7 @@ impl RustBM25Index {
     /// Persist the BM25 index to `bm25_index.json` (Python-compatible format).
     fn save(&self, directory: &str) -> PyResult<()> {
         let dir = Path::new(directory);
-        fs::create_dir_all(dir)
-            .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
+        fs::create_dir_all(dir).map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
 
         let path = dir.join("bm25_index.json");
 
@@ -161,8 +158,7 @@ impl RustBM25Index {
 
         let json = serde_json::to_string(&data)
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-        fs::write(&path, json)
-            .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
+        fs::write(&path, json).map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
 
         Ok(())
     }

@@ -42,3 +42,16 @@ jobs:
 
       - name: Check syntax
         run: python -m py_compile semantic_code_intelligence/__init__.py
+
+  rust-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check formatting
+        working-directory: codexa-core
+        run: cargo fmt --check
+
+      - name: Run Clippy
+        working-directory: codexa-core
+        run: cargo clippy -- -D warnings

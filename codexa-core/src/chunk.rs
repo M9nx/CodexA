@@ -48,9 +48,7 @@ fn detect_language(file_path: &str) -> String {
         .unwrap_or_default();
 
     let map = extension_to_language();
-    map.get(ext.as_str())
-        .unwrap_or(&"unknown")
-        .to_string()
+    map.get(ext.as_str()).unwrap_or(&"unknown").to_string()
 }
 
 /// A single code chunk (returned to Python as a dict for compatibility).
@@ -204,6 +202,11 @@ impl RustChunker {
     ) -> PyResult<Vec<PyObject>> {
         let content = std::fs::read_to_string(file_path)
             .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
-        Ok(Self::chunk_code(&content, file_path, chunk_size, chunk_overlap))
+        Ok(Self::chunk_code(
+            &content,
+            file_path,
+            chunk_size,
+            chunk_overlap,
+        ))
     }
 }

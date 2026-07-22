@@ -75,8 +75,12 @@ mod inner {
             }
 
             // Build ONNX runtime input tensors
-            let ids_cow = CowArray::from(ids.into_owned()).into_dimensionality::<Ix2>().unwrap();
-            let mask_cow = CowArray::from(mask.into_owned()).into_dimensionality::<Ix2>().unwrap();
+            let ids_cow = CowArray::from(ids.into_owned())
+                .into_dimensionality::<Ix2>()
+                .unwrap();
+            let mask_cow = CowArray::from(mask.into_owned())
+                .into_dimensionality::<Ix2>()
+                .unwrap();
 
             let ids_value = Value::from_array(&ids_cow)
                 .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
@@ -85,9 +89,10 @@ mod inner {
 
             let outputs = self
                 .session
-                .run(ort::inputs![ids_value, mask_value].map_err(|e| {
-                    pyo3::exceptions::PyRuntimeError::new_err(e.to_string())
-                })?)
+                .run(
+                    ort::inputs![ids_value, mask_value]
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                )
                 .map_err(|e| {
                     pyo3::exceptions::PyRuntimeError::new_err(format!(
                         "ONNX inference failed: {}",
