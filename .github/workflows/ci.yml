@@ -27,8 +27,14 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -e ".[dev]"
 
-      - name: Run tests
-        run: pytest --tb=short -q
+      - name: Run tests with coverage
+        run: pytest --cov=semantic_code_intelligence --cov-fail-under=70
+
+      - name: Run security checks
+        run: |
+          pip install bandit pip-audit
+          bandit -r semantic_code_intelligence -ll
+          pip-audit
 
   lint:
     runs-on: ubuntu-latest

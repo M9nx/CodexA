@@ -49,8 +49,8 @@
 | F-02 | P1 | Low | VS Code Ext | Source-confirmed | 4 webviews use `enableScripts: true` with no CSP `<meta>` | XSS via bypassed escaping | Security | S | None | R1 | Completed |
 | F-03A | P1 | — | Python | Source-confirmed | `mypy` not in `pyproject.toml` | Type regressions undetected | DX / quality | XS | None | R1 | Completed during audit |
 | F-03B | P2 | — | Python | Source-confirmed | `mypy` enforcement missing in CI | Type regressions undetected | DX / quality | S | F-03A | R2 | Open |
-| F-04 | P1 | — | CI/CD | Source-confirmed | `ci.yml` lacks coverage gate | CI doesn't enforce quality | CI | S | None | R1 | Open |
-| F-05 | P1 | — | CI/CD | Source-confirmed | CI installs `requirements.txt` not `pyproject.toml` extras | Different test environment | CI | S | None | R1 | Open |
+| F-04 | P1 | — | CI/CD | Source-confirmed | `ci.yml` lacks coverage gate | CI doesn't enforce quality | CI | S | None | R1 | Completed |
+| F-05 | P1 | — | CI/CD | Source-confirmed | CI installs `requirements.txt` not `pyproject.toml` extras | Different test environment | CI | S | None | R1 | Completed |
 | F-06 | P1 | — | VS Code Ext | Command-confirmed | `npm run lint` missing `.eslintrc.*` | Extension linting non-functional | DX | XS | None | R1 | Completed |
 | F-07 | P1 | — | Rust | Command-confirmed | `cargo fmt --check` diffs | Formatting not enforced | Quality | XS | None | R1 | Open |
 | F-08A | P1 | — | Rust | Command-confirmed | `cargo test` Windows MSVC CI fix | No CI Rust tests | DX | M | None | R1 | Completed |
