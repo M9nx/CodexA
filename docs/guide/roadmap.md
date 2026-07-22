@@ -7,21 +7,15 @@
 ## Current stable release
 
 ::: info Current stable release
-CodexA v0.5.1 remains the current stable release.
+CodexA v0.5.0 remains the current stable release.
 :::
 
-## Completed Through v0.5.1
+## Completed Through v0.5.0
 
-CodexA completed its initial feature-development phases through v0.5.0, followed by a stabilization and trustworthiness cycle in v0.5.1.
+CodexA completed its initial feature-development phases through v0.5.0.
 These phases established indexing, semantic and hybrid search, AI-agent
 interfaces, the optional Rust backend, quality tooling, plugins, MCP support,
-and the VS Code extension, along with security and CI hardening.
-
-### Phase 43 — v0.5.1 Stabilization and Trustworthy Gates (Completed)
-- VS Code Workspace Trust protection and Webview CSP
-- Functional lint, format, security, and coverage gates
-- Rust CI validation on supported toolchains
-- Improved audit evidence and documentation accuracy
+and the VS Code extension.
 
 ### Phases 33–37 — Search Dominance (Completed)
 - JSONL streaming, scored output, snippet control, exclude/no-ignore flags
@@ -47,6 +41,15 @@ and the VS Code extension, along with security and CI hardening.
 ---
 
 ## Planned Releases
+
+### v0.5.1 — Stabilization and Trustworthy Gates (Pending Merge)
+- VS Code Workspace Trust protection
+- Webview Content Security Policy
+- Functional lint, format, security, and coverage gates
+- Rust CI validation on supported toolchains
+- Improved audit evidence and documentation accuracy
+- Tests for critical configuration-writing paths
+- No new product features
 
 ### v0.6.0 — Critical Reliability and Contracts
 - Higher coverage for HTTP, MCP, grep, streaming, and backend-selection paths

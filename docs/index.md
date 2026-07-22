@@ -77,7 +77,7 @@ codexa hotspots
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.5.1 |
+| **Version** | 0.5.0 |
 | **CLI Commands** | 39 |
 | **AI Agent Tools** | 13 (+ plugin-registered) |
 | **Plugin Hooks** | 22 |
@@ -91,6 +91,6 @@ codexa hotspots
 - [Quick Start](guide/quickstart) — Index a project and start searching
 - [CLI Reference](reference/cli) — All 39 commands documented
 - [Architecture](reference/architecture) — System design and package map
-- [Upgrade Guide](guide/upgrade) -- What's new in v0.5.1
+- [Upgrade Guide](guide/upgrade) -- What's new in v0.5.0
 - [Roadmap](guide/roadmap) -- Historical phases and planned direction
 - [Upcoming Changes](guide/upcoming-changes) -- Next releases in detail
