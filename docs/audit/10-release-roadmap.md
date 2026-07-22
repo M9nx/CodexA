@@ -32,7 +32,7 @@
 | Add `cargo clippy -D warnings` to CI | F-07 | Rust | P1 | XS | None | Clippy step in `ci.yml` fails on warnings | Open |
 | Add `cargo audit` step to CI | F-28A / SEC-11 | Rust / CI | P1 | S | None | CI runs `cargo audit` | Open |
 | Document Windows Rust build workaround | F-08A | Rust / Docs | P1 | S | None | `CONTRIBUTING.md` has Windows Rust dev instructions | Open |
-| Add tests for `mcp/claude_config.py` | F-09 | Python | P1 | M | None | `mcp/claude_config.py` ≥ 80% coverage | Open |
+| Add tests for `mcp/claude_config.py` | F-09 | Python | P1 | M | None | `mcp/claude_config.py` ≥ 80% coverage | Completed |
 | Replace production `assert` with guard | F-18 / SEC-06 | Python | P1 | XS | None | Uses `if query_embedding is None: raise ValueError(...)` | Completed |
 | Remove CodeLens claim from README | F-19 | Docs | P1 | XS | None | README does not claim CodeLens | Open |
 | Remove unsupported editor plugin claims | F-20 | Docs | P1 | XS | None | README only lists VS Code | Open |
