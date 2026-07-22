@@ -49,22 +49,26 @@ jobs:
       - name: Check syntax
         run: python -m py_compile semantic_code_intelligence/__init__.py
 
-  rust-lint:
+  rust-stable:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check formatting
+        run: cargo fmt --check --manifest-path codexa-core/Cargo.toml
+      - name: Run Clippy
+        run: cargo clippy --manifest-path codexa-core/Cargo.toml --all-targets -- -D warnings
+      - name: Run tests
+        run: cargo test --manifest-path codexa-core/Cargo.toml
+
+  cargo-audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Check formatting
-        working-directory: codexa-core
-        run: cargo fmt --check
-
-      - name: Run Clippy
-        working-directory: codexa-core
-        run: cargo clippy -- -D warnings
-
       - name: Install cargo-audit
-        run: cargo install cargo-audit
-
+        run: cargo install cargo-audit --locked
       - name: Run cargo audit
         working-directory: codexa-core
         run: cargo audit
