@@ -3,7 +3,6 @@
 //! Replaces the Python `scan_repository` and `compute_file_hash` functions.
 //! Uses `rayon` for parallel file hashing and `blake3` (3× faster than SHA-256).
 
-
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use std::collections::HashSet;
