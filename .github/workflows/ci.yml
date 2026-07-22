@@ -55,3 +55,10 @@ jobs:
       - name: Run Clippy
         working-directory: codexa-core
         run: cargo clippy -- -D warnings
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: Run cargo audit
+        working-directory: codexa-core
+        run: cargo audit

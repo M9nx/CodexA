@@ -38,7 +38,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-25 | web/api.py coverage | ✅ P2 | N/A | ✅ R2 | ✅ Phase 6 | Traceable |
 | F-26 | rust_backend.py coverage | ✅ P2 | N/A | ✅ R2 | N/A | Traceable |
 | F-27 | uv.lock committed | ✅ P2 | ✅ SEC-09 | ✅ R2 | ✅ Phase 8 | Traceable |
-| F-28A | cargo audit CI step | ✅ P1 | ✅ SEC-11 | ✅ R1 | ✅ Phase 1 | Traceable |
+| F-28A | cargo audit CI step | ✅ P1 | ✅ SEC-11 | ✅ R1 | ✅ Completed | Traceable |
 | F-28B | cargo audit remediation | ✅ P2 | N/A | ✅ R2 | N/A | Traceable |
 | F-29 | tui/__init__.py coverage | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-30 | urlopen scheme validation | ✅ P2 | ✅ SEC-05 | ✅ R2 | ✅ Phase 8 | Traceable |

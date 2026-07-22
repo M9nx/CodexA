@@ -74,7 +74,7 @@
 | F-25 | P2 | — | Python | Unit-tested | `web/api.py` — 20% coverage | REST API regressions silent | Reliability | L | None | R2 | Open |
 | F-26 | P2 | — | Python | Unit-tested | `rust_backend.py` — 44% coverage | Rust fallback paths untested | Reliability | M | None | R2 | Open |
 | F-27 | P2 | Info | Python | Source-confirmed | No `uv.lock` committed | CI builds use diff versions | Reprod. | S | None | R2 | Open |
-| F-28A | P1 | Unknown| Rust | Blocked | `cargo-audit` CI step | Rust crate CVEs undetected | Security | S | None | R1 | Open |
+| F-28A | P1 | Unknown| Rust | Blocked | `cargo-audit` CI step | Rust crate CVEs undetected | Security | S | None | R1 | Completed |
 | F-28B | P2 | Unknown| Rust | Blocked | `cargo-audit` local/remediation | CVE fixes | Security | M | F-28A | R2 | Open |
 | F-29 | P3 | — | Python | Unit-tested | `tui/__init__.py` — 21% coverage | TUI fallback regressions silent | Reliability | M | None | R3 | Open |
 | F-30 | P2 | Low | Python | Source-confirmed | `urlopen` called without scheme check | SSRF if URL source is controlled | Security | XS | None | R2 | Open |
