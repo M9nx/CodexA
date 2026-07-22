@@ -92,4 +92,5 @@ codexa hotspots
 - [CLI Reference](reference/cli) — All 39 commands documented
 - [Architecture](reference/architecture) — System design and package map
 - [Upgrade Guide](guide/upgrade) -- What's new in v0.5.0
-- [Roadmap](guide/roadmap) -- All completed phases and future direction
+- [Roadmap](guide/roadmap) -- Historical phases and planned direction
+- [Upcoming Changes](guide/upcoming-changes) -- Next releases in detail
