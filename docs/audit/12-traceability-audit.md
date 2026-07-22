@@ -14,7 +14,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-03B | mypy CI enforcement | ✅ P2 | N/A | ✅ R2 | N/A | Traceable |
 | F-04 | CI lacks coverage gate | ✅ P1 | N/A | ✅ R1 | ✅ Phase 1 | Traceable |
 | F-05 | CI requirements mismatch | ✅ P1 | N/A | ✅ R1 | ✅ Phase 1 | Traceable |
-| F-06 | ESLint missing | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
+| F-06 | ESLint missing | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-07 | Cargo fmt diffs | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
 | F-08A | Rust Windows CI block | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
 | F-08B | Rust Windows local block | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |

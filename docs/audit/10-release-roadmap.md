@@ -27,7 +27,7 @@
 | Add `mypy` to `pyproject.toml` dev deps | F-03A | Python | P1 | XS | None | `uv run mypy` resolves | Completed during audit |
 | Establish mypy baseline | F-41A | Python | P1 | M | F-03A | Baseline recorded in docs | Open |
 | Upgrade CI: pytest + coverage gate + bandit + pip-audit | F-04, F-05 | CI | P1 | S | None | `ci.yml` runs all checks; coverage gate ≥ 70% | Open |
-| Create `.eslintrc.js` | F-06 | Extension | P1 | XS | None | `npm run lint` exits 0 | Open |
+| Create `.eslintrc.js` | F-06 | Extension | P1 | XS | None | `npm run lint` exits 0 | Completed |
 | Run `cargo fmt` and apply to all files | F-07 | Rust | P1 | XS | None | `cargo fmt --check` exits 0 | Open |
 | Add `cargo clippy -D warnings` to CI | F-07 | Rust | P1 | XS | None | Clippy step in `ci.yml` fails on warnings | Open |
 | Add `cargo audit` step to CI | F-28A / SEC-11 | Rust / CI | P1 | S | None | CI runs `cargo audit` | Open |
