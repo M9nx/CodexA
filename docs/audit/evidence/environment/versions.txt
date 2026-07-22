@@ -1,0 +1,10 @@
+﻿Timestamp: 2026-07-22T05:19 UTC
+Commit: 555506632fa76662318dacfa07d6f6c068393758
+Branch: main
+
+Python: Python 3.13.9
+uv: uv 0.10.9 (f675560f3 2026-03-06)
+Cargo: cargo 1.94.0 (85eff7c80 2026-01-15)
+rustup: rustup 1.28.2 (e4f3ad6f8 2025-04-28) info: This is the version for the rustup toolchain manager, not the rustc compiler. info: The currently active `rustc` version is `rustc 1.94.0 (4a4ef493e 2026-03-02)`
+Node: v24.5.0
+npm: 11.10.0

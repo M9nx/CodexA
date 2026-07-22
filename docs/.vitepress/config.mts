@@ -49,8 +49,9 @@ export default defineConfig({
             items: [
               { text: 'Changelog', link: 'https://github.com/M9nx/CodexA/blob/main/CHANGELOG.md' },
               { text: 'Release Notes', link: 'https://github.com/M9nx/CodexA/blob/main/RELEASE_NOTES.md' },
-              { text: 'Upgrade Guide', link: '/guide/upgrade' },
               { text: 'Roadmap', link: '/guide/roadmap' },
+              { text: 'Upcoming Changes', link: '/guide/upcoming-changes' },
+              { text: 'Upgrade Guide', link: '/guide/upgrade' },
             ],
           },
           {
@@ -93,6 +94,7 @@ export default defineConfig({
           items: [
             { text: 'Contributing', link: '/guide/contributing' },
             { text: 'Roadmap', link: '/guide/roadmap' },
+            { text: 'Upcoming Changes', link: '/guide/upcoming-changes' },
             { text: 'Upgrade Guide', link: '/guide/upgrade' },
           ],
         },

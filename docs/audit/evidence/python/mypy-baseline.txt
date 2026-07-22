@@ -1,0 +1,32 @@
+﻿Command: uv run mypy semantic_code_intelligence --ignore-missing-imports
+Commit: 555506632fa76662318dacfa07d6f6c068393758
+Timestamp: 2026-07-22T05:21 UTC
+Exit code: 1
+Mypy version: 2.3.0 (installed this session via uv add --dev mypy)
+Working directory: D:\CodexA
+
+Total errors: 99 errors in 30 files (checked 145 source files)
+
+Errors by subpackage:
+  cli:           44 errors
+  rust_backend:  13 errors
+  mcp:           10 errors
+  storage:       10 errors
+  ci:             8 errors
+  web:            5 errors
+  llm:            3 errors
+  lsp:            2 errors
+  tui:            1 error
+  search:         1 error
+  workspace:      1 error
+  analysis:       1 error
+
+Sample errors (from last 5 lines of output):
+  web/server.py:162:  Incompatible types in assignment [assignment]
+  web/server.py:221:  Incompatible types in assignment [assignment]
+  web/server.py:227:  Unused type: ignore comment [unused-ignore]
+  web/server.py:287:  Incompatible types in assignment [assignment]
+  cli/main.py:9:      Module does not explicitly export attribute __version__ [attr-defined]
+
+Note: --ignore-missing-imports was used; errors from missing stub files are suppressed.
+      Without this flag, error count would be significantly higher.

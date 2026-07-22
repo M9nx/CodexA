@@ -2,7 +2,7 @@
 
 ## Upgrading to v0.5.0
 
-v0.5.0 is a major release spanning **12 phases** (31-42) that brings a native Rust search engine, RAG pipeline, advanced search features, multi-editor support, cross-language intelligence, and multi-agent orchestration.
+v0.5.0 is a major release spanning **12 phases** (31-42) that brings an optional native Rust search engine, RAG pipeline, advanced search features, planned multi-editor support, cross-language intelligence, and multi-agent orchestration.
 
 ### Install
 
@@ -15,9 +15,9 @@ pip install --upgrade "codexa[ml]"
 
 ### What's New
 
-#### Rust Search Engine Core (Phase 32)
+#### Rust Search Engine Core (Phase 32) (Environment-Dependent)
 
-- Native `codexa-core` Rust crate via PyO3 for transparent acceleration
+- *(Optional/Environment-Dependent)* Native `codexa-core` Rust crate via PyO3 for transparent acceleration
 - HNSW approximate nearest-neighbour search with memory-mapped persistence
 - AST-aware chunker splitting code at function/class boundaries (10 languages)
 - BM25 keyword index, parallel file scanner, optional ONNX embedding inference
@@ -63,7 +63,7 @@ codexa index --inspect src/auth.py
 - **Model-consistency guard**: Detects if the embedding model changed since last index and warns before corrupting vectors
 - **Ctrl+C safety**: Partial index is saved on interrupt; next run resumes
 
-#### Tantivy Full-Text Engine (Phase 35)
+#### Tantivy Full-Text Engine (Phase 35) (Experimental)
 
 Optional Rust-native [Tantivy](https://github.com/quickwit-oss/tantivy) full-text search engine. Requires building `codexa-core` with the `tantivy-backend` feature:
 
@@ -123,21 +123,22 @@ codexa models benchmark
 - Standalone PyInstaller binaries via GitHub Releases
 - Updated Docker image with Rust extensions
 
-#### Code Editor Plugins (Phase 40)
+#### Code Editor Plugins (Phase 40) (Planned/Experimental)
 
-First-class integration for 9 editors, all sharing the same MCP/bridge protocol:
+Planned integrations for editors via shared protocol:
 
-- **Zed** -- extension with context servers and language servers
-- **JetBrains** -- IntelliJ/PyCharm/WebStorm plugin with bridge HTTP client
-- **Neovim** -- Lua plugin with telescope.nvim picker and floating preview
-- **Vim** -- Vimscript plugin with quickfix integration
-- **Sublime Text** -- command palette, quick panel, output panel
-- **Emacs** -- helm/ivy completion, grep-mode results
-- **Helix** -- languages.toml configuration guide
-- **Eclipse** -- plugin descriptor and setup guide
-- **Cursor/Windsurf** -- documented MCP setup configs
+- **VS Code** -- extension (Available)
+- **Zed** -- extension with context servers and language servers (Planned)
+- **JetBrains** -- IntelliJ/PyCharm/WebStorm plugin with bridge HTTP client (Planned)
+- **Neovim** -- Lua plugin with telescope.nvim picker and floating preview (Planned)
+- **Vim** -- Vimscript plugin with quickfix integration (Planned)
+- **Sublime Text** -- command palette, quick panel, output panel (Planned)
+- **Emacs** -- helm/ivy completion, grep-mode results (Planned)
+- **Helix** -- languages.toml configuration guide (Planned)
+- **Eclipse** -- plugin descriptor and setup guide (Planned)
+- **Cursor/Windsurf** -- documented MCP setup configs (Available)
 
-#### Multi-Agent Orchestration (Phase 41)
+#### Multi-Agent Orchestration (Phase 41) (Source Available)
 
 - Thread-safe `SessionManager` for concurrent AI agent sessions with TTL cleanup
 - Shared discovery pool for coordinated context across agents
@@ -163,6 +164,8 @@ None. All new flags and features are additive. Existing CLI invocations work unc
 3. (Optional) Build with Tantivy: `maturin develop --release --features tantivy-backend`
 4. (Optional) Set up Claude Desktop: `codexa mcp --claude-config`
 5. (Optional) Try model switching: `codexa index --switch-model jina-code`
+
+For future engineering plans, see [Upcoming Changes](upcoming-changes).
 
 ---
 
