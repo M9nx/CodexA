@@ -10,8 +10,14 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import * as path from "path";
 import * as fs from "fs";
+import * as crypto from "crypto";
 
 const execFileAsync = promisify(execFile);
+
+function getNonce(): string {
+  return crypto.randomBytes(16).toString("hex");
+}
+
 let outputChannel: vscode.OutputChannel;
 let statusBarItem: vscode.StatusBarItem;
 
@@ -202,7 +208,7 @@ class SearchViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(wv: vscode.WebviewView): void {
     wv.webview.options = { enableScripts: true };
-    wv.webview.html = this._html();
+    wv.webview.html = this._html(wv.webview);
     wv.webview.onDidReceiveMessage(async (msg) => {
       if (msg.type === "search") {
         try {
@@ -225,8 +231,10 @@ class SearchViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private _html(): string {
+  private _html(webview: vscode.Webview): string {
+    const nonce = getNonce();
     return /* html */ `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
 <style>${SHARED_CSS}</style></head><body>
   <div class="row">
     <input id="q" class="grow" placeholder="Search codebase… (Enter)" />
@@ -247,7 +255,7 @@ class SearchViewProvider implements vscode.WebviewViewProvider {
   </div>
   <div id="status" class="status"></div>
   <div id="results"></div>
-  <script>${SHARED_JS}
+  <script nonce="${nonce}">${SHARED_JS}
     const q = document.getElementById('q');
     const mode = document.getElementById('mode');
     const topk = document.getElementById('topk');
@@ -299,7 +307,7 @@ class SymbolsViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(wv: vscode.WebviewView): void {
     wv.webview.options = { enableScripts: true };
-    wv.webview.html = this._html();
+    wv.webview.html = this._html(wv.webview);
     wv.webview.onDidReceiveMessage(async (msg) => {
       if (msg.type === "explain") {
         try {
@@ -340,8 +348,10 @@ class SymbolsViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private _html(): string {
+  private _html(webview: vscode.Webview): string {
+    const nonce = getNonce();
     return /* html */ `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
 <style>${SHARED_CSS}
   .tool-row { display: flex; gap: 4px; margin-bottom: 8px; }
   .tool-row input { flex: 1; }
@@ -369,7 +379,7 @@ class SymbolsViewProvider implements vscode.WebviewViewProvider {
   </div>
   <div id="status" class="status"></div>
   <div id="output" class="result-box"></div>
-  <script>${SHARED_JS}
+  <script nonce="${nonce}">${SHARED_JS}
     const outputEl = document.getElementById('output');
     const statusEl = document.getElementById('status');
 
@@ -453,7 +463,7 @@ class QualityViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(wv: vscode.WebviewView): void {
     wv.webview.options = { enableScripts: true };
-    wv.webview.html = this._html();
+    wv.webview.html = this._html(wv.webview);
     wv.webview.onDidReceiveMessage(async (msg) => {
       if (msg.type === "quality") {
         try {
@@ -488,8 +498,10 @@ class QualityViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private _html(): string {
+  private _html(webview: vscode.Webview): string {
+    const nonce = getNonce();
     return /* html */ `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
 <style>${SHARED_CSS}
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
   .stat-card { padding: 8px; border-radius: var(--radius);
@@ -504,7 +516,7 @@ class QualityViewProvider implements vscode.WebviewViewProvider {
   </div>
   <div id="status" class="status"></div>
   <div id="output"></div>
-  <script>${SHARED_JS}
+  <script nonce="${nonce}">${SHARED_JS}
     const outputEl = document.getElementById('output');
     const statusEl = document.getElementById('status');
 
@@ -597,7 +609,7 @@ class ToolsViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(wv: vscode.WebviewView): void {
     wv.webview.options = { enableScripts: true };
-    wv.webview.html = this._html();
+    wv.webview.html = this._html(wv.webview);
     wv.webview.onDidReceiveMessage(async (msg) => {
       if (msg.type === "doctor") {
         try {
@@ -667,8 +679,10 @@ class ToolsViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private _html(): string {
+  private _html(webview: vscode.Webview): string {
+    const nonce = getNonce();
     return /* html */ `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
 <style>${SHARED_CSS}
   .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 8px; }
   .btn-grid button { font-size: 11px; padding: 6px; }
@@ -706,7 +720,7 @@ class ToolsViewProvider implements vscode.WebviewViewProvider {
   </div>
   <div id="status" class="status"></div>
   <div id="output" style="max-height:400px; overflow:auto;"></div>
-  <script>${SHARED_JS}
+  <script nonce="${nonce}">${SHARED_JS}
     const outputEl = document.getElementById('output');
     const statusEl = document.getElementById('status');
 

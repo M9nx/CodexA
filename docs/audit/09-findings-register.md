@@ -46,7 +46,7 @@
 | ID | Priority | Security | Component | Evidence Type | Evidence Summary | User Impact | Eng Impact | Effort | Deps | Release | Status |
 |----|----------|----------|-----------|---------------|------------------|-------------|------------|--------|------|---------|--------|
 | F-01 | P1 | Medium | VS Code Ext | Source-confirmed | `codexBin()` resolves without checking `vscode.workspace.isTrusted` | Code execution (attacker binary) | Security | XS | None | R1 | Completed |
-| F-02 | P1 | Low | VS Code Ext | Source-confirmed | 4 webviews use `enableScripts: true` with no CSP `<meta>` | XSS via bypassed escaping | Security | S | None | R1 | Open |
+| F-02 | P1 | Low | VS Code Ext | Source-confirmed | 4 webviews use `enableScripts: true` with no CSP `<meta>` | XSS via bypassed escaping | Security | S | None | R1 | Completed |
 | F-03A | P1 | — | Python | Source-confirmed | `mypy` not in `pyproject.toml` | Type regressions undetected | DX / quality | XS | None | R1 | Completed during audit |
 | F-03B | P2 | — | Python | Source-confirmed | `mypy` enforcement missing in CI | Type regressions undetected | DX / quality | S | F-03A | R2 | Open |
 | F-04 | P1 | — | CI/CD | Source-confirmed | `ci.yml` lacks coverage gate | CI doesn't enforce quality | CI | S | None | R1 | Open |
