@@ -16,7 +16,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-05 | CI requirements mismatch | ✅ P1 | N/A | ✅ R1 | ✅ Phase 1 | Traceable |
 | F-06 | ESLint missing | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-07 | Cargo fmt diffs | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
-| F-08A | Rust Windows CI block | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
+| F-08A | Rust Windows CI block | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-08B | Rust Windows local block | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-09 | claude_config.py coverage | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-10 | web/server.py coverage | ✅ P2 | N/A | ✅ R2 | ✅ Phase 6 | Traceable |

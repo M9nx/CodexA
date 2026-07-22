@@ -93,6 +93,19 @@ CodexA/
 - Import from `semantic_code_intelligence.utils.logging` for consistent output
 - Keep modules focused — one responsibility per file
 
+### Rust Core Development
+
+The `codexa-core` native extension requires Rust and Cargo.
+When developing on Windows, the `pyo3-build-config` crate may fail to find your Python interpreter if you are using a virtual environment. To work around this, explicitly set the `PYO3_PYTHON` environment variable:
+
+```powershell
+# Windows PowerShell
+$env:PYO3_PYTHON = "..\.venv\Scripts\python.exe"
+cd codexa-core
+cargo clippy -- -D warnings
+cargo test
+```
+
 ## Plugin Development
 
 CodexA has a plugin system with 22 hook points. See `codexa docs --section plugins` for the full reference, or check the [Plugin SDK](semantic_code_intelligence/plugins/__init__.py).

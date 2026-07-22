@@ -53,7 +53,7 @@
 | F-05 | P1 | — | CI/CD | Source-confirmed | CI installs `requirements.txt` not `pyproject.toml` extras | Different test environment | CI | S | None | R1 | Open |
 | F-06 | P1 | — | VS Code Ext | Command-confirmed | `npm run lint` missing `.eslintrc.*` | Extension linting non-functional | DX | XS | None | R1 | Completed |
 | F-07 | P1 | — | Rust | Command-confirmed | `cargo fmt --check` diffs | Formatting not enforced | Quality | XS | None | R1 | Open |
-| F-08A | P1 | — | Rust | Command-confirmed | `cargo test` Windows MSVC CI fix | No CI Rust tests | DX | M | None | R1 | Open |
+| F-08A | P1 | — | Rust | Command-confirmed | `cargo test` Windows MSVC CI fix | No CI Rust tests | DX | M | None | R1 | Completed |
 | F-08B | P3 | — | Rust | Command-confirmed | Windows MinGW block (local dev) | Local dev blocked | DX | S | None | R3 | Blocked |
 | F-09 | P1 | — | Python | Source-confirmed | `mcp/claude_config.py` — 0% coverage | Regressions are silent | Reliability | M | None | R1 | Completed |
 | F-10 | P2 | — | Python | Unit-tested | `web/server.py` — 16% coverage | HTTP bridge regressions silent | Reliability | L | None | R2 | Open |
