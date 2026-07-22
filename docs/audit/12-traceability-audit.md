@@ -27,7 +27,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-15 | JSON output contract | ✅ P2 | N/A | ✅ R2 | ✅ Phase 7 | Traceable |
 | F-16 | Rust backend logging | ✅ P2 | N/A | ✅ R2 | ✅ Phase 7 | Traceable |
 | F-17 | Schema versioning | ✅ P2 | N/A | ✅ R2 | ✅ Phase 7 | Traceable |
-| F-18 | assert in production | ✅ P1 | ✅ SEC-06 | ✅ R1 | ✅ Phase 2 | Traceable |
+| F-18 | assert in production | ✅ P1 | ✅ SEC-06 | ✅ R1 | ✅ Completed | Traceable |
 | F-19 | CodeLens doc claim | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
 | F-20 | Editor plugins claim | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
 | F-21 | CLI arg injection | ❌ Removed | ❌ SEC-03 | ❌ Removed | ❌ Removed | False Positive |
