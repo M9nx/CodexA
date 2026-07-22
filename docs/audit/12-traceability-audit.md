@@ -31,7 +31,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-19 | CodeLens doc claim | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
 | F-20 | Editor plugins claim | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
 | F-21 | CLI arg injection | ❌ Removed | ❌ SEC-03 | ❌ Removed | ❌ Removed | False Positive |
-| F-22 | Disposables leak | ✅ P1 | N/A | ✅ R1 | ✅ Phase 2 | Traceable |
+| F-22 | Disposables leak | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-23A | ONNX checksum config | ✅ P2 | ✅ SEC-07 | ✅ R2 | N/A | Traceable |
 | F-23B | ONNX integration tests | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-24 | GH Actions pinned | ✅ P2 | ✅ SEC-08 | ✅ R2 | ✅ Phase 8 | Traceable |

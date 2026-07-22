@@ -36,7 +36,7 @@
 | Replace production `assert` with guard | F-18 / SEC-06 | Python | P1 | XS | None | Uses `if query_embedding is None: raise ValueError(...)` | Open |
 | Remove CodeLens claim from README | F-19 | Docs | P1 | XS | None | README does not claim CodeLens | Open |
 | Remove unsupported editor plugin claims | F-20 | Docs | P1 | XS | None | README only lists VS Code | Open |
-| Add disposables to `context.subscriptions` | F-22 | Extension | P1 | XS | None | Resources properly disposed | Open |
+| Add disposables to `context.subscriptions` | F-22 | Extension | P1 | XS | None | Resources properly disposed | Completed |
 | Remove `requirements.txt` entirely | F-35 | Python | P1 | XS | None | `requirements.txt` removed; install direct from `pyproject.toml` | Open |
 | Apply `npm audit fix` | SEC-10 | Extension | P1 | XS | None | Safe audit fix: **completed during audit**. Remaining major toolchain upgrade: deferred to R2 | Completed during audit |
 

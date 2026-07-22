@@ -67,7 +67,7 @@
 | F-18 | P1 | Low | Python | Source-confirmed | `assert query_embedding` in prod path | Assertion removed in `-O` mode | Quality | XS | None | R1 | Open |
 | F-19 | P1 | — | Docs | Source-confirmed | README asserts CodeLens support | Misleading | Docs | S | None | R1 | Open |
 | F-20 | P1 | — | Docs | Source-confirmed | README lists missing editor plugins | Misleading | Docs | S | None | R1 | Open |
-| F-22 | P1 | — | VS Code Ext | Source-confirmed | Disposables leak on deactivation | Memory leak | Reliability | XS | None | R1 | Open |
+| F-22 | P1 | — | VS Code Ext | Source-confirmed | Disposables leak on deactivation | Memory leak | Reliability | XS | None | R1 | Completed |
 | F-23A | P2 | Low | Rust | Source-confirmed | `ort` downloads ONNX via build script | Supply-chain injection risk | Security | M | None | R2 | Open |
 | F-23B | P3 | Low | Rust | Source-confirmed | ONNX integration tests | Parity untested | Quality | L | None | R3 | Open |
 | F-24 | P2 | Info | Supply chain | Source-confirmed | GH Actions unpinned | Supply-chain injection | Security | S | None | R2 | Open |

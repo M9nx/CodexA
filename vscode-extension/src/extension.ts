@@ -954,6 +954,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // ── Sidebar panels ────────────────────────────────────────────────
   context.subscriptions.push(
+    highComplexityDecoration,
     vscode.window.registerWebviewViewProvider(SearchViewProvider.viewType, new SearchViewProvider(context.extensionUri)),
     vscode.window.registerWebviewViewProvider(SymbolsViewProvider.viewType, new SymbolsViewProvider(context.extensionUri)),
     vscode.window.registerWebviewViewProvider(QualityViewProvider.viewType, new QualityViewProvider(context.extensionUri)),
@@ -1148,6 +1149,4 @@ class CodexACodeLensProvider implements vscode.CodeLensProvider {
 }
 
 export function deactivate(): void {
-  statusBarItem?.dispose();
-  outputChannel?.dispose();
 }
