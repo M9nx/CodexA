@@ -92,7 +92,7 @@ include = ["semantic_code_intelligence*"]
 [tool.pytest.ini_options]
 testpaths = ["semantic_code_intelligence/tests"]
 pythonpath = ["."]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short -p no:faulthandler"
 
 [tool.mypy]
 strict = true
