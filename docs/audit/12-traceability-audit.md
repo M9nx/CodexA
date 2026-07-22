@@ -8,7 +8,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 
 | ID | Description | Register (09) | Sec Audit (06) | Roadmap (10) | Seq (11) | Status |
 |----|-------------|---------------|----------------|--------------|----------|--------|
-| F-01 | Workspace trust check | ✅ P1 | ✅ SEC-02 | ✅ R1 | ✅ Phase 2 | Traceable |
+| F-01 | Workspace trust check | ✅ P1 | ✅ SEC-02 | ✅ R1 | ✅ Completed | Traceable |
 | F-02 | CSP missing | ✅ P1 | ✅ SEC-01 | ✅ R1 | ✅ Phase 2 | Traceable |
 | F-03A | mypy config install | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
 | F-03B | mypy CI enforcement | ✅ P2 | N/A | ✅ R2 | N/A | Traceable |

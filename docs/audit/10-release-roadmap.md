@@ -22,7 +22,7 @@
 
 | Work Item | Finding IDs | Component | Priority | Effort | Dependencies | Acceptance Criteria | Status |
 |-----------|-------------|-----------|----------|--------|--------------|---------------------|--------|
-| Add workspace trust check to `codexBin()` | F-01 / SEC-02 | Extension | P1 | XS | None | `vscode.workspace.isTrusted` checked; error surfaced | Open |
+| Add workspace trust check to `codexBin()` | F-01 / SEC-02 | Extension | P1 | XS | None | `vscode.workspace.isTrusted` checked; error surfaced | Completed |
 | Add CSP `<meta>` to all 4 webviews | F-02 / SEC-01 | Extension | P1 | S | None | Each webview HTML has nonce-based CSP | Open |
 | Add `mypy` to `pyproject.toml` dev deps | F-03A | Python | P1 | XS | None | `uv run mypy` resolves | Completed during audit |
 | Establish mypy baseline | F-41A | Python | P1 | M | F-03A | Baseline recorded in docs | Open |

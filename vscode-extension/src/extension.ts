@@ -16,19 +16,38 @@ let outputChannel: vscode.OutputChannel;
 let statusBarItem: vscode.StatusBarItem;
 
 // ── Binary resolution ────────────────────────────────────────────────
+export function resolveCodexBin(
+  isTrusted: boolean,
+  cfgPath: string | undefined,
+  workspaceRoot: string | undefined,
+  existsSync: (p: string) => boolean,
+  platform: string
+): string {
+  if (!isTrusted) {
+    throw new Error("CodexA requires a trusted workspace to execute commands.");
+  }
+  if (cfgPath) { return cfgPath; }
+  if (workspaceRoot) {
+    const isWin = platform === "win32";
+    const venvBin = isWin
+      ? path.join(workspaceRoot, ".venv", "Scripts", "codexa.exe")
+      : path.join(workspaceRoot, ".venv", "bin", "codexa");
+    if (existsSync(venvBin)) { return venvBin; }
+  }
+  return "codexa";
+}
+
 function codexBin(): string {
   const cfg = vscode.workspace.getConfiguration("codexa");
   const explicit = cfg.get<string>("binaryPath");
-  if (explicit) { return explicit; }
   const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  if (root) {
-    const isWin = process.platform === "win32";
-    const venvBin = isWin
-      ? path.join(root, ".venv", "Scripts", "codexa.exe")
-      : path.join(root, ".venv", "bin", "codexa");
-    if (fs.existsSync(venvBin)) { return venvBin; }
-  }
-  return "codexa";
+  return resolveCodexBin(
+    vscode.workspace.isTrusted,
+    explicit,
+    root,
+    fs.existsSync,
+    process.platform
+  );
 }
 
 function workspaceRoot(): string {
