@@ -15,6 +15,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
+
 ---
 
 **CodexA** is a lightweight developer intelligence engine designed to cooperate
