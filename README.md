@@ -39,8 +39,7 @@ structured tool protocol that any AI agent can call over HTTP or CLI.
 | **Interactive TUI** | Terminal REPL with mode switching for interactive exploration |
 | **Streaming Responses** | Token-by-token streaming for chat and investigation commands |
 | **Plugin System** | 22 hooks for extending every layer — from indexing to tool invocation |
-| **VS Code Extension** | 4-panel sidebar (Search, Symbols, Quality, Tools), 8 commands, CodeLens, context menus, status bar |
-| **Editor Plugins** | Zed, JetBrains (IntelliJ/PyCharm), Neovim (telescope.nvim), Vim, Sublime Text, Emacs, Helix, Eclipse -- all sharing the same MCP/bridge protocol |
+| **VS Code Extension** | 4-panel sidebar (Search, Symbols, Quality, Tools), 8 commands, context menus, status bar |
 | **Cross-Language Intelligence** | FFI pattern detection, polyglot dependency graphs, language-aware search boosting, universal multi-language call graph |
 | **Multi-Agent Sessions** | Concurrent AI agent sessions with shared discovery, semantic diff (rename/move/signature/body detection), RAG code generation |
 

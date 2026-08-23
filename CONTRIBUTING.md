@@ -16,7 +16,7 @@ source .venv/bin/activate # macOS/Linux
 
 # Install in development mode
 pip install -e ".[dev]"
-pip install -r requirements.txt
+
 
 # Run the test suite
 pytest
@@ -56,7 +56,6 @@ CodexA/
 │   └── tests/                      # All test files (2596+ tests)
 ├── vscode-extension/               # VS Code sidebar extension
 ├── pyproject.toml
-├── requirements.txt
 ├── ROADMAP.md
 └── CHANGELOG.md
 ```
@@ -92,6 +91,19 @@ CodexA/
 - Docstrings for public classes and functions
 - Import from `semantic_code_intelligence.utils.logging` for consistent output
 - Keep modules focused — one responsibility per file
+
+### Rust Core Development
+
+The `codexa-core` native extension requires Rust and Cargo.
+When developing on Windows, the `pyo3-build-config` crate may fail to find your Python interpreter if you are using a virtual environment. To work around this, explicitly set the `PYO3_PYTHON` environment variable:
+
+```powershell
+# Windows PowerShell
+$env:PYO3_PYTHON = "..\.venv\Scripts\python.exe"
+cd codexa-core
+cargo clippy -- -D warnings
+cargo test
+```
 
 ## Plugin Development
 

@@ -3,7 +3,6 @@
 //! Replaces the Python `scan_repository` and `compute_file_hash` functions.
 //! Uses `rayon` for parallel file hashing and `blake3` (3× faster than SHA-256).
 
-use blake3;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use std::collections::HashSet;
@@ -84,10 +83,10 @@ fn load_ignore_patterns(root: &Path) -> Vec<String> {
 /// Known extensions for source code files.
 fn default_extensions() -> HashSet<String> {
     [
-        ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".go", ".rs", ".c", ".cpp",
-        ".h", ".hpp", ".rb", ".php", ".cs", ".swift", ".kt", ".scala", ".sh",
-        ".bash", ".sql", ".r", ".lua", ".dart", ".ex", ".exs", ".html", ".css",
-        ".json", ".yaml", ".yml", ".toml", ".xml", ".md", ".txt",
+        ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".go", ".rs", ".c", ".cpp", ".h", ".hpp",
+        ".rb", ".php", ".cs", ".swift", ".kt", ".scala", ".sh", ".bash", ".sql", ".r", ".lua",
+        ".dart", ".ex", ".exs", ".html", ".css", ".json", ".yaml", ".yml", ".toml", ".xml", ".md",
+        ".txt",
     ]
     .iter()
     .map(|s| s.to_string())
@@ -164,7 +163,15 @@ impl RustScanner {
 
         // Collect all candidate file paths (sequential walk — IO bound)
         let mut candidates: Vec<PathBuf> = Vec::new();
-        collect_files(&root_path, &root_path, &ext_set, &dir_set, &ignore_patterns, &exclude, &mut candidates);
+        collect_files(
+            &root_path,
+            &root_path,
+            &ext_set,
+            &dir_set,
+            &ignore_patterns,
+            &exclude,
+            &mut candidates,
+        );
         candidates.sort();
 
         // Parallel hash computation (CPU bound)
@@ -221,14 +228,19 @@ fn collect_files(
         let path = entry.path();
 
         if path.is_dir() {
-            let name = path
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("");
+            let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             if dir_set.contains(name) {
                 continue;
             }
-            collect_files(&path, root, ext_set, dir_set, ignore_patterns, exclude_patterns, out);
+            collect_files(
+                &path,
+                root,
+                ext_set,
+                dir_set,
+                ignore_patterns,
+                exclude_patterns,
+                out,
+            );
         } else if path.is_file() {
             let ext = path
                 .extension()

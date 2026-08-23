@@ -4,7 +4,7 @@
 
 CodexA is entering a stabilization cycle before the next feature release.
 
-## Next: v0.5.1
+## Next: v0.5.1 (Pending Merge)
 
 ### Security and Trust
 - Workspace Trust enforcement

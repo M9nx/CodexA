@@ -8,17 +8,17 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 
 | ID | Description | Register (09) | Sec Audit (06) | Roadmap (10) | Seq (11) | Status |
 |----|-------------|---------------|----------------|--------------|----------|--------|
-| F-01 | Workspace trust check | ✅ P1 | ✅ SEC-02 | ✅ R1 | ✅ Phase 2 | Traceable |
-| F-02 | CSP missing | ✅ P1 | ✅ SEC-01 | ✅ R1 | ✅ Phase 2 | Traceable |
+| F-01 | Workspace trust check | ✅ P1 | ✅ SEC-02 | ✅ R1 | ✅ Completed | Traceable |
+| F-02 | CSP missing | ✅ P1 | ✅ SEC-01 | ✅ R1 | ✅ Completed | Traceable |
 | F-03A | mypy config install | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
 | F-03B | mypy CI enforcement | ✅ P2 | N/A | ✅ R2 | N/A | Traceable |
-| F-04 | CI lacks coverage gate | ✅ P1 | N/A | ✅ R1 | ✅ Phase 1 | Traceable |
-| F-05 | CI requirements mismatch | ✅ P1 | N/A | ✅ R1 | ✅ Phase 1 | Traceable |
-| F-06 | ESLint missing | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
+| F-04 | CI lacks coverage gate | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
+| F-05 | CI requirements mismatch | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
+| F-06 | ESLint missing | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-07 | Cargo fmt diffs | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
-| F-08A | Rust Windows CI block | ✅ P1 | N/A | ✅ R1 | ✅ Phase 0 | Traceable |
+| F-08A | Rust Windows CI block | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-08B | Rust Windows local block | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
-| F-09 | claude_config.py coverage | ✅ P1 | N/A | ✅ R1 | ✅ Phase 4 | Traceable |
+| F-09 | claude_config.py coverage | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-10 | web/server.py coverage | ✅ P2 | N/A | ✅ R2 | ✅ Phase 6 | Traceable |
 | F-11 | mcp/__init__.py coverage | ✅ P2 | N/A | ✅ R2 | ✅ Phase 6 | Traceable |
 | F-12 | search/grep.py coverage | ✅ P2 | N/A | ✅ R2 | ✅ Phase 6 | Traceable |
@@ -27,18 +27,18 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-15 | JSON output contract | ✅ P2 | N/A | ✅ R2 | ✅ Phase 7 | Traceable |
 | F-16 | Rust backend logging | ✅ P2 | N/A | ✅ R2 | ✅ Phase 7 | Traceable |
 | F-17 | Schema versioning | ✅ P2 | N/A | ✅ R2 | ✅ Phase 7 | Traceable |
-| F-18 | assert in production | ✅ P1 | ✅ SEC-06 | ✅ R1 | ✅ Phase 2 | Traceable |
-| F-19 | CodeLens doc claim | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
-| F-20 | Editor plugins claim | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
+| F-18 | assert in production | ✅ P1 | ✅ SEC-06 | ✅ R1 | ✅ Completed | Traceable |
+| F-19 | CodeLens doc claim | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
+| F-20 | Editor plugins claim | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-21 | CLI arg injection | ❌ Removed | ❌ SEC-03 | ❌ Removed | ❌ Removed | False Positive |
-| F-22 | Disposables leak | ✅ P1 | N/A | ✅ R1 | ✅ Phase 2 | Traceable |
+| F-22 | Disposables leak | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-23A | ONNX checksum config | ✅ P2 | ✅ SEC-07 | ✅ R2 | N/A | Traceable |
 | F-23B | ONNX integration tests | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-24 | GH Actions pinned | ✅ P2 | ✅ SEC-08 | ✅ R2 | ✅ Phase 8 | Traceable |
 | F-25 | web/api.py coverage | ✅ P2 | N/A | ✅ R2 | ✅ Phase 6 | Traceable |
 | F-26 | rust_backend.py coverage | ✅ P2 | N/A | ✅ R2 | N/A | Traceable |
 | F-27 | uv.lock committed | ✅ P2 | ✅ SEC-09 | ✅ R2 | ✅ Phase 8 | Traceable |
-| F-28A | cargo audit CI step | ✅ P1 | ✅ SEC-11 | ✅ R1 | ✅ Phase 1 | Traceable |
+| F-28A | cargo audit CI step | ✅ P1 | ✅ SEC-11 | ✅ R1 | ✅ Completed | Traceable |
 | F-28B | cargo audit remediation | ✅ P2 | N/A | ✅ R2 | N/A | Traceable |
 | F-29 | tui/__init__.py coverage | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-30 | urlopen scheme validation | ✅ P2 | ✅ SEC-05 | ✅ R2 | ✅ Phase 8 | Traceable |
@@ -47,7 +47,7 @@ This document traces all identified findings (F-01 through F-41, plus RM-01 thro
 | F-32 | Rust parity tests | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-33 | evolution/ coverage | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
 | F-34 | VS Code tests | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |
-| F-35 | requirements.txt | ✅ P1 | N/A | ✅ R1 | ✅ Phase 3 | Traceable |
+| F-35 | requirements.txt | ✅ P1 | N/A | ✅ R1 | ✅ Completed | Traceable |
 | F-36 | Regex DoS limit | ✅ P2 | ✅ SEC-04 | ✅ R2 | N/A | Traceable |
 | F-37 | API key in config | ✅ P2 | ✅ SEC-12 | ✅ R2 | N/A | Traceable |
 | F-38 | web server performance | ✅ P3 | N/A | ✅ R3 | N/A | Traceable |

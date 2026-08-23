@@ -22,22 +22,22 @@
 
 | Work Item | Finding IDs | Component | Priority | Effort | Dependencies | Acceptance Criteria | Status |
 |-----------|-------------|-----------|----------|--------|--------------|---------------------|--------|
-| Add workspace trust check to `codexBin()` | F-01 / SEC-02 | Extension | P1 | XS | None | `vscode.workspace.isTrusted` checked; error surfaced | Open |
-| Add CSP `<meta>` to all 4 webviews | F-02 / SEC-01 | Extension | P1 | S | None | Each webview HTML has nonce-based CSP | Open |
+| Add workspace trust check to `codexBin()` | F-01 / SEC-02 | Extension | P1 | XS | None | `vscode.workspace.isTrusted` checked; error surfaced | Completed |
+| Add CSP `<meta>` to all 4 webviews | F-02 / SEC-01 | Extension | P1 | S | None | Each webview HTML has nonce-based CSP | Completed |
 | Add `mypy` to `pyproject.toml` dev deps | F-03A | Python | P1 | XS | None | `uv run mypy` resolves | Completed during audit |
 | Establish mypy baseline | F-41A | Python | P1 | M | F-03A | Baseline recorded in docs | Open |
-| Upgrade CI: pytest + coverage gate + bandit + pip-audit | F-04, F-05 | CI | P1 | S | None | `ci.yml` runs all checks; coverage gate ≥ 70% | Open |
-| Create `.eslintrc.js` | F-06 | Extension | P1 | XS | None | `npm run lint` exits 0 | Open |
-| Run `cargo fmt` and apply to all files | F-07 | Rust | P1 | XS | None | `cargo fmt --check` exits 0 | Open |
-| Add `cargo clippy -D warnings` to CI | F-07 | Rust | P1 | XS | None | Clippy step in `ci.yml` fails on warnings | Open |
-| Add `cargo audit` step to CI | F-28A / SEC-11 | Rust / CI | P1 | S | None | CI runs `cargo audit` | Open |
-| Document Windows Rust build workaround | F-08A | Rust / Docs | P1 | S | None | `CONTRIBUTING.md` has Windows Rust dev instructions | Open |
-| Add tests for `mcp/claude_config.py` | F-09 | Python | P1 | M | None | `mcp/claude_config.py` ≥ 80% coverage | Open |
-| Replace production `assert` with guard | F-18 / SEC-06 | Python | P1 | XS | None | Uses `if query_embedding is None: raise ValueError(...)` | Open |
-| Remove CodeLens claim from README | F-19 | Docs | P1 | XS | None | README does not claim CodeLens | Open |
-| Remove unsupported editor plugin claims | F-20 | Docs | P1 | XS | None | README only lists VS Code | Open |
-| Add disposables to `context.subscriptions` | F-22 | Extension | P1 | XS | None | Resources properly disposed | Open |
-| Remove `requirements.txt` entirely | F-35 | Python | P1 | XS | None | `requirements.txt` removed; install direct from `pyproject.toml` | Open |
+| Upgrade CI: pytest + coverage gate + bandit + pip-audit | F-04, F-05 | CI | P1 | S | None | `ci.yml` runs all checks; coverage gate ≥ 70% | Completed |
+| Create `.eslintrc.js` | F-06 | Extension | P1 | XS | None | `npm run lint` exits 0 | Completed |
+| Run `cargo fmt` and apply to all files | F-07 | Rust | P1 | XS | None | `cargo fmt --check` exits 0 | Completed |
+| Add `cargo clippy -D warnings` to CI | F-07 | Rust | P1 | XS | None | Clippy step in `ci.yml` fails on warnings | Completed |
+| Add `cargo audit` step to CI | F-28A / SEC-11 | Rust / CI | P1 | S | None | CI runs `cargo audit` | Completed |
+| Document Windows Rust build workaround | F-08A | Rust / Docs | P1 | S | None | `CONTRIBUTING.md` has Windows Rust dev instructions | Completed |
+| Add tests for `mcp/claude_config.py` | F-09 | Python | P1 | M | None | `mcp/claude_config.py` ≥ 80% coverage | Completed |
+| Replace production `assert` with guard | F-18 / SEC-06 | Python | P1 | XS | None | Uses `if query_embedding is None: raise ValueError(...)` | Completed |
+| Remove CodeLens claim from README | F-19 | Docs | P1 | XS | None | README does not claim CodeLens | Completed |
+| Remove unsupported editor plugin claims | F-20 | Docs | P1 | XS | None | README only lists VS Code | Completed |
+| Add disposables to `context.subscriptions` | F-22 | Extension | P1 | XS | None | Resources properly disposed | Completed |
+| Remove `requirements.txt` entirely | F-35 | Python | P1 | XS | None | `requirements.txt` removed; install direct from `pyproject.toml` | Completed |
 | Apply `npm audit fix` | SEC-10 | Extension | P1 | XS | None | Safe audit fix: **completed during audit**. Remaining major toolchain upgrade: deferred to R2 | Completed during audit |
 
 ---

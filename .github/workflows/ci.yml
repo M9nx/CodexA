@@ -25,10 +25,16 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
+          pip install -e ".[dev]"
 
-      - name: Run tests
-        run: pytest --tb=short -q
+      - name: Run tests with coverage
+        run: pytest --cov=semantic_code_intelligence --cov-fail-under=70
+
+      - name: Run security checks
+        run: |
+          pip install bandit pip-audit
+          bandit -r semantic_code_intelligence -x semantic_code_intelligence/tests -ll
+          pip-audit
 
   lint:
     runs-on: ubuntu-latest
@@ -42,3 +48,27 @@ jobs:
 
       - name: Check syntax
         run: python -m py_compile semantic_code_intelligence/__init__.py
+
+  rust-stable:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check formatting
+        run: cargo fmt --check --manifest-path codexa-core/Cargo.toml
+      - name: Run Clippy
+        run: cargo clippy --manifest-path codexa-core/Cargo.toml --all-targets -- -D warnings
+      - name: Run tests
+        run: cargo test --manifest-path codexa-core/Cargo.toml
+
+  cargo-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Run cargo audit
+        working-directory: codexa-core
+        run: cargo audit

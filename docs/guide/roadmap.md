@@ -42,7 +42,7 @@ and the VS Code extension.
 
 ## Planned Releases
 
-### v0.5.1 — Stabilization and Trustworthy Gates
+### v0.5.1 — Stabilization and Trustworthy Gates (Pending Merge)
 - VS Code Workspace Trust protection
 - Webview Content Security Policy
 - Functional lint, format, security, and coverage gates

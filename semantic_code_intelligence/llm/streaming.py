@@ -79,7 +79,7 @@ def _stream_ollama(
     completion_tokens = 0
 
     try:
-        with urlopen(req, timeout=120) as resp:  # noqa: S310 — localhost only
+        with urlopen(req, timeout=120) as resp:  # nosec B310 — localhost only; See docs/audit/13-security-waivers.md
             for raw_line in resp:
                 line = raw_line.decode("utf-8", errors="replace").strip()
                 if not line:

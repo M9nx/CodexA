@@ -293,7 +293,8 @@ class Workspace:
                 raw = [(h, h.score) for h in hits]
             else:
                 # semantic (default)
-                assert query_embedding is not None
+                if query_embedding is None:
+                    raise ValueError("query_embedding must not be None")
                 raw_store = store.search(query_embedding, top_k=top_k)
                 raw = [(meta, score) for meta, score in raw_store]
 

@@ -108,10 +108,7 @@ struct Span {
 }
 
 /// Walk the tree's immediate children to find definition boundaries.
-fn collect_definition_spans(
-    tree: &tree_sitter::Tree,
-    lang: &str,
-) -> Vec<Span> {
+fn collect_definition_spans(tree: &tree_sitter::Tree, lang: &str) -> Vec<Span> {
     let root = tree.root_node();
     let mut spans = Vec::new();
 
@@ -310,8 +307,7 @@ impl AstChunker {
 
                         // Compute overlap: take last `chunk_overlap` chars
                         // from the previous chunk boundary
-                        let overlap_start =
-                            find_overlap_start(&lines, cs, cur_end, chunk_overlap);
+                        let overlap_start = find_overlap_start(&lines, cs, cur_end, chunk_overlap);
 
                         cur_start = Some(overlap_start.min(*rs));
                         cur_end = *re;
@@ -352,7 +348,12 @@ impl AstChunker {
     ) -> PyResult<Vec<PyObject>> {
         let content = std::fs::read_to_string(file_path)
             .map_err(|e| pyo3::exceptions::PyIOError::new_err(e.to_string()))?;
-        Ok(Self::chunk_code(&content, file_path, chunk_size, chunk_overlap))
+        Ok(Self::chunk_code(
+            &content,
+            file_path,
+            chunk_size,
+            chunk_overlap,
+        ))
     }
 
     /// List supported languages for AST chunking.
@@ -401,31 +402,17 @@ fn detect_lang(file_path: &str) -> String {
 /// Concatenate lines from start..=end (0-indexed) into a string with newlines.
 fn line_range_text(lines: &[&str], start: usize, end: usize) -> String {
     let end = end.min(lines.len().saturating_sub(1));
-    let mut result = String::new();
-    for i in start..=end {
-        result.push_str(lines[i]);
-        if i < end {
-            result.push('\n');
-        }
-    }
-    result
+    lines.get(start..=end).unwrap_or(&[]).join("\n")
 }
 
 fn line_range_len(lines: &[&str], start: usize, end: usize) -> usize {
     let end = end.min(lines.len().saturating_sub(1));
-    (start..=end)
-        .map(|i| lines[i].len() + 1)
-        .sum::<usize>()
+    (start..=end).map(|i| lines[i].len() + 1).sum::<usize>()
 }
 
 /// Walk backwards from `end` towards `start` to find the first line where
 /// the accumulated character count exceeds `overlap`.
-fn find_overlap_start(
-    lines: &[&str],
-    start: usize,
-    end: usize,
-    overlap: usize,
-) -> usize {
+fn find_overlap_start(lines: &[&str], start: usize, end: usize, overlap: usize) -> usize {
     let mut chars = 0usize;
     for i in (start..=end).rev() {
         chars += lines[i].len() + 1;
