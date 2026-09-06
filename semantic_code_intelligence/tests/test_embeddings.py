@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import sys
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
 from semantic_code_intelligence.embeddings.generator import (
+    _model_cache,
     generate_embeddings,
     get_embedding_dimension,
     get_model,
@@ -14,6 +18,42 @@ from semantic_code_intelligence.embeddings.generator import (
 
 class TestGetModel:
     """Tests for model loading."""
+
+    def test_jina_model_uses_supported_attention_implementation(self, monkeypatch: pytest.MonkeyPatch):
+        calls: list[dict] = []
+
+        class FakeSentenceTransformer:
+            def __init__(self, model_name: str, **kwargs):
+                calls.append({"model_name": model_name, **kwargs})
+
+        monkeypatch.setitem(
+            sys.modules,
+            "sentence_transformers",
+            SimpleNamespace(SentenceTransformer=FakeSentenceTransformer),
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.embeddings.generator._model_cached_locally",
+            lambda model_name: False,
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.embeddings.generator._show_download_banner",
+            lambda model_name: None,
+        )
+        monkeypatch.setattr(
+            "semantic_code_intelligence.embeddings.generator._onnx_available",
+            lambda: False,
+        )
+        _model_cache.clear()
+
+        get_model("jinaai/jina-embeddings-v2-base-code", backend="torch")
+
+        assert calls == [
+            {
+                "model_name": "jinaai/jina-embeddings-v2-base-code",
+                "model_kwargs": {"attn_implementation": "eager"},
+                "trust_remote_code": True,
+            }
+        ]
 
     def test_loads_model(self):
         model = get_model("all-MiniLM-L6-v2")
