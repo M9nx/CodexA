@@ -22,13 +22,15 @@ from typing import Any
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import TextContent, Tool
+    from mcp.types import CallToolResult, ListToolsResult, TextContent, Tool
     _HAS_MCP = True
 except ImportError:  # mcp SDK not installed (e.g. Python 3.13)
     _HAS_MCP = False
     Server = None  # type: ignore[assignment,misc]
     TextContent = None  # type: ignore[assignment,misc]
     Tool = None  # type: ignore[assignment,misc]
+    CallToolResult = None  # type: ignore[assignment,misc]
+    ListToolsResult = None  # type: ignore[assignment,misc]
 
 from semantic_code_intelligence.config.settings import AppConfig
 from semantic_code_intelligence.utils.logging import get_logger
@@ -379,13 +381,7 @@ def _create_server(project_root: Path) -> "Server":
     """Create and configure an MCP ``Server`` with all CodexA tools."""
     if not _HAS_MCP:
         raise RuntimeError("The 'mcp' package is required but not installed.")
-    server = Server("codexa-mcp")
 
-    @server.list_tools()
-    async def handle_list_tools() -> list:
-        return MCP_TOOLS
-
-    @server.call_tool()
     async def handle_call_tool(name: str, arguments: dict | None) -> list:
         args = arguments or {}
         try:
@@ -393,6 +389,30 @@ def _create_server(project_root: Path) -> "Server":
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
         except Exception as e:
             return [TextContent(type="text", text=f"Error: {e}")]
+
+    if hasattr(Server, "list_tools"):
+        server = Server("codexa-mcp")
+
+        @server.list_tools()
+        async def handle_list_tools() -> list:
+            return MCP_TOOLS
+
+        @server.call_tool()
+        async def handle_call_tool_legacy(name: str, arguments: dict | None) -> list:
+            return await handle_call_tool(name, arguments)
+    else:
+        async def handle_list_tools_modern(_context: Any, _params: Any) -> ListToolsResult:
+            return ListToolsResult(tools=MCP_TOOLS)
+
+        async def handle_call_tool_modern(_context: Any, params: Any) -> CallToolResult:
+            content = await handle_call_tool(params.name, params.arguments)
+            return CallToolResult(content=content)
+
+        server = Server(
+            "codexa-mcp",
+            on_list_tools=handle_list_tools_modern,
+            on_call_tool=handle_call_tool_modern,
+        )
 
     return server
 
