@@ -28,3 +28,9 @@ vscode-extension/out/
 vscode-extension/*.vsix
 
 temp_check/
+
+# Rust build output
+codexa-core/target/
+
+# Local project metadata
+.codexaignore

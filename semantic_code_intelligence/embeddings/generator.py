@@ -28,6 +28,7 @@ logger = get_logger("embeddings")
 _model_cache: dict[str, "SentenceTransformer"] = {}
 BYTES_PER_GB = 1024 ** 3
 _MIN_TORCH_RAM_BYTES = 2 * BYTES_PER_GB
+_JINA_CODE_MODEL = "jinaai/jina-embeddings-v2-base-code"
 
 
 def _configure_hf_token() -> None:
@@ -263,6 +264,9 @@ def get_model(
         load_kwargs: dict[str, Any] = {}
         if local_only:
             load_kwargs["local_files_only"] = True
+        if not use_onnx and model_name == _JINA_CODE_MODEL:
+            load_kwargs["model_kwargs"] = {"attn_implementation": "eager"}
+            load_kwargs["trust_remote_code"] = True
 
         if use_onnx:
             try:
@@ -278,7 +282,7 @@ def get_model(
             if local_only:
                 # Cache may be corrupted — retry with network access
                 logger.warning("Local cache load failed; re-downloading model.")
-                _model_cache[cache_key] = SentenceTransformer(model_name)
+                _model_cache[cache_key] = SentenceTransformer(model_name, **load_kwargs)
             else:
                 raise
         except RuntimeError as exc:
