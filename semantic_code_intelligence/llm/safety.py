@@ -23,7 +23,11 @@ _DANGEROUS_PATTERNS: list[tuple[str, str]] = [
     (r"\brm\s+-rf\s+/", "Destructive rm -rf / command"),
     # Dynamic code execution
     (r"\beval\s*\(", "eval() call — avoid dynamic code execution"),
-    (r"\bexec\s*\(", "exec() call — avoid dynamic code execution"),
+    # Negative lookbehinds exclude OOP/PHP method calls (e.g. $pdo->exec(),
+    # PDO::exec()).  Whitespace normalisation in SafetyValidator.validate()
+    # ensures spaced forms ($pdo -> exec(), SomeClass :: exec()) are also
+    # excluded before these patterns are applied.
+    (r"(?<!->)(?<!::)\bexec\s*\(", "exec() call — avoid dynamic code execution"),
     (r"\b__import__\s*\(", "Dynamic __import__() — use explicit imports"),
     # SQL injection risk
     (r"DROP\s+TABLE|DROP\s+DATABASE", "SQL DROP statement — potential data loss"),
@@ -73,6 +77,14 @@ class SafetyReport:
         }
 
 
+# Regex used to collapse optional whitespace around PHP/OOP method-call
+# operators before safety patterns are applied.  This ensures that both the
+# compact form  ($pdo->exec())  and the spaced form  ($pdo -> exec())  are
+# normalised to the same token sequence, allowing the fixed-width
+# lookbehinds in _DANGEROUS_PATTERNS to work correctly in all cases.
+_PHP_OPERATOR_WS = re.compile(r"\s*(->|::)\s*")
+
+
 class SafetyValidator:
     """Validates LLM-generated code for known dangerous patterns."""
 
@@ -85,11 +97,22 @@ class SafetyValidator:
         """Scan ``code`` for dangerous patterns.
 
         Returns a SafetyReport. If any issues are found, ``safe`` is False.
+
+        Each source line is normalised before matching: whitespace surrounding
+        OOP/PHP method-call operators (``->`` and ``::``) is collapsed so that
+        both compact forms (``$pdo->exec()``) and spaced forms
+        (``$pdo -> exec()``) are treated identically by the lookbehind
+        assertions in the pattern list.
         """
         issues: list[SafetyIssue] = []
         for line_no, line in enumerate(code.splitlines(), start=1):
+            # Normalise  "-> "  and  ":: "  (with any surrounding whitespace)
+            # to the compact forms  "->"  and  "::"  so that the fixed-width
+            # negative lookbehinds  (?<!->)  and  (?<!::)  fire correctly even
+            # when the source code uses spaces around these operators.
+            normalised = _PHP_OPERATOR_WS.sub(r"\1", line)
             for pattern, description in self._patterns:
-                if re.search(pattern, line, re.IGNORECASE):
+                if re.search(pattern, normalised, re.IGNORECASE):
                     issues.append(
                         SafetyIssue(
                             pattern=pattern,

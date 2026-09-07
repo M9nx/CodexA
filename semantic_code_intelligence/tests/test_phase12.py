@@ -265,6 +265,62 @@ config = Path("config.yaml").read_text()
         assert any("XSS" in d for d in descs)
         assert any("MD5" in d for d in descs)
 
+    # --- Issue #19: PDO::exec() false-positive regression tests ---
+
+    def test_exec_global_still_flagged(self):
+        """Standalone exec() (global PHP / Python function) must still be caught."""
+        assert not self.validator.is_safe("exec('ls -la')")
+
+    def test_exec_global_python_still_flagged(self):
+        """Python exec() with dynamic code must still be caught."""
+        assert not self.validator.is_safe("exec(user_code)")
+
+    def test_pdo_arrow_exec_not_flagged(self):
+        """PHP $pdo->exec() is a PDO method call and must NOT be flagged."""
+        assert self.validator.is_safe("$pdo->exec('CREATE TABLE foo (id INT)')")
+
+    def test_connection_arrow_exec_not_flagged(self):
+        """PHP $connection->exec() is a PDO method call and must NOT be flagged."""
+        assert self.validator.is_safe("$connection->exec($sql)")
+
+    def test_pdo_static_exec_not_flagged(self):
+        """PHP PDO::exec() static call must NOT be flagged."""
+        assert self.validator.is_safe("PDO::exec($statement)")
+
+    def test_pdo_exec_multiline_not_flagged(self):
+        """Multi-line PHP code using PDO method calls should pass the safety check."""
+        php_code = (
+            "$pdo = new PDO($dsn, $user, $pass);\n"
+            "$pdo->exec('SET NAMES utf8mb4');\n"
+            "$connection->exec($migrationSql);\n"
+        )
+        assert self.validator.is_safe(php_code)
+
+    # Whitespace-spaced forms — regression tests added per M9nx review feedback.
+    # PHP permits spaces around -> and :: so "$pdo -> exec($sql)" and
+    # "SomeClass :: exec($sql)" must also be treated as method calls, not
+    # flagged as dynamic code execution.
+
+    def test_pdo_arrow_spaced_exec_not_flagged(self):
+        """PHP $pdo -> exec() with spaces around -> must NOT be flagged."""
+        assert self.validator.is_safe("$pdo -> exec($sql)")
+
+    def test_connection_arrow_spaced_exec_not_flagged(self):
+        """PHP $connection -> exec() with spaces around -> must NOT be flagged."""
+        assert self.validator.is_safe("$connection -> exec($migrationSql)")
+
+    def test_static_double_colon_spaced_exec_not_flagged(self):
+        """PHP SomeClass :: exec() with spaces around :: must NOT be flagged."""
+        assert self.validator.is_safe("SomeClass :: exec($statement)")
+
+    def test_pdo_static_spaced_exec_not_flagged(self):
+        """PHP PDO :: exec() with spaces around :: must NOT be flagged."""
+        assert self.validator.is_safe("PDO :: exec($stmt)")
+
+    def test_exec_global_still_flagged_after_normalisation(self):
+        """Bare exec() must still be caught even after whitespace normalisation."""
+        assert not self.validator.is_safe("result = exec(user_input)")
+
 
 # =========================================================================
 # VSCode streaming context tests
