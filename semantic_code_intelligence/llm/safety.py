@@ -23,7 +23,7 @@ _DANGEROUS_PATTERNS: list[tuple[str, str]] = [
     (r"\brm\s+-rf\s+/", "Destructive rm -rf / command"),
     # Dynamic code execution
     (r"\beval\s*\(", "eval() call — avoid dynamic code execution"),
-    (r"\bexec\s*\(", "exec() call — avoid dynamic code execution"),
+    (r"(?<!->)(?<!::)\bexec\s*\(", "exec() call — avoid dynamic code execution"),
     (r"\b__import__\s*\(", "Dynamic __import__() — use explicit imports"),
     # SQL injection risk
     (r"DROP\s+TABLE|DROP\s+DATABASE", "SQL DROP statement — potential data loss"),
