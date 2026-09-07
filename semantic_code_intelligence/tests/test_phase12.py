@@ -265,6 +265,37 @@ config = Path("config.yaml").read_text()
         assert any("XSS" in d for d in descs)
         assert any("MD5" in d for d in descs)
 
+    # --- Issue #19: PDO::exec() false-positive regression tests ---
+
+    def test_exec_global_still_flagged(self):
+        """Standalone exec() (global PHP / Python function) must still be caught."""
+        assert not self.validator.is_safe("exec('ls -la')")
+
+    def test_exec_global_python_still_flagged(self):
+        """Python exec() with dynamic code must still be caught."""
+        assert not self.validator.is_safe("exec(user_code)")
+
+    def test_pdo_arrow_exec_not_flagged(self):
+        """PHP $pdo->exec() is a PDO method call and must NOT be flagged."""
+        assert self.validator.is_safe("$pdo->exec('CREATE TABLE foo (id INT)')")
+
+    def test_connection_arrow_exec_not_flagged(self):
+        """PHP $connection->exec() is a PDO method call and must NOT be flagged."""
+        assert self.validator.is_safe("$connection->exec($sql)")
+
+    def test_pdo_static_exec_not_flagged(self):
+        """PHP PDO::exec() static call must NOT be flagged."""
+        assert self.validator.is_safe("PDO::exec($statement)")
+
+    def test_pdo_exec_multiline_not_flagged(self):
+        """Multi-line PHP code using PDO method calls should pass the safety check."""
+        php_code = (
+            "$pdo = new PDO($dsn, $user, $pass);\n"
+            "$pdo->exec('SET NAMES utf8mb4');\n"
+            "$connection->exec($migrationSql);\n"
+        )
+        assert self.validator.is_safe(php_code)
+
 
 # =========================================================================
 # VSCode streaming context tests
