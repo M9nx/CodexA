@@ -27,6 +27,15 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
 
+      - name: Pre-download embedding model
+        run: |
+          python -c "
+from sentence_transformers import SentenceTransformer
+model = SentenceTransformer('all-MiniLM-L6-v2')
+print('Model downloaded/cached successfully')
+print(f'Embedding dimension: {model.get_sentence_embedding_dimension()}')
+"
+
       - name: Run tests
         run: pytest --tb=short -q
 
