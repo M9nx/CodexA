@@ -11,6 +11,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.11", "3.12", "3.13"]
@@ -29,13 +30,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Pre-download embedding model
-        run: |
-          python -c "
-from sentence_transformers import SentenceTransformer
-model = SentenceTransformer('all-MiniLM-L6-v2')
-print('Model downloaded/cached successfully')
-print(f'Embedding dimension: {model.get_sentence_embedding_dimension()}')
-"
+        run: >-
+          python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer('all-MiniLM-L6-v2'); print('Model downloaded/cached successfully'); print(f'Embedding dimension: {model.get_sentence_embedding_dimension()}')"
 
       - name: Run tests
         run: pytest --tb=short -q
