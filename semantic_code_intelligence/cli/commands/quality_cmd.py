@@ -192,19 +192,19 @@ def quality_cmd(
     root = directory_path or option_path
     if safety_only:
         # Fast path: only safety scan
+        from semantic_code_intelligence.config.settings import IndexConfig
+        from semantic_code_intelligence.indexing.scanner import scan_repository
         from semantic_code_intelligence.parsing.parser import EXTENSION_TO_LANGUAGE
+
+        quality_config = IndexConfig(extensions=set(EXTENSION_TO_LANGUAGE))
         code = ""
         count = 0
-        for f in root.rglob("*"):
-            if f.is_file() and f.suffix in EXTENSION_TO_LANGUAGE:
-                parts = f.relative_to(root).parts
-                if any(p.startswith(".") or p in ("__pycache__", "node_modules") for p in parts):
-                    continue
-                try:
-                    code += f.read_text(encoding="utf-8", errors="replace") + "\n"
-                    count += 1
-                except Exception:
-                    logger.debug("Skipping unreadable file: %s", f)
+        for scanned in scan_repository(root, quality_config):
+            try:
+                code += scanned.path.read_text(encoding="utf-8", errors="replace") + "\n"
+                count += 1
+            except Exception:
+                logger.debug("Skipping unreadable file: %s", scanned.path)
         validator = SafetyValidator()
         safety = validator.validate(code)
         _output_safety(safety, count, json_mode=json_mode, pipe=pipe)

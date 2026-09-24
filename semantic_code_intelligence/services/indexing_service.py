@@ -19,7 +19,7 @@ from semantic_code_intelligence.embeddings.generator import (
     get_embedding_dimension,
 )
 from semantic_code_intelligence.indexing.chunker import CodeChunk, chunk_file, detect_language
-from semantic_code_intelligence.indexing.scanner import ScannedFile, scan_repository
+from semantic_code_intelligence.indexing.scanner import ScannedFile, scan_repository, should_index_file
 from semantic_code_intelligence.parsing.parser import Symbol, parse_file
 from semantic_code_intelligence.storage.chunk_hash_store import ChunkHashStore, compute_chunk_hash
 from semantic_code_intelligence.storage.hash_store import HashStore
@@ -505,7 +505,7 @@ def run_incremental_indexing(
     scanned_files: list[ScannedFile] = []
     for fp in changed_files:
         p = Path(fp)
-        if not p.is_file():
+        if not should_index_file(p, project_root, config.index):
             continue
         try:
             rel = str(p.relative_to(project_root))

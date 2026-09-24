@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 # Default directories to ignore during scanning
 DEFAULT_IGNORE_DIRS: set[str] = {
     ".git",
+    ".codexa",
     "node_modules",
     "build",
     "dist",
