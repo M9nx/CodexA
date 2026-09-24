@@ -11,6 +11,7 @@ from semantic_code_intelligence.indexing.scanner import (
     compute_file_hash,
     scan_repository,
     should_ignore,
+    should_index_file,
 )
 from semantic_code_intelligence.config.settings import IndexConfig
 
@@ -125,6 +126,26 @@ class TestScanRepository:
         result = scan_repository(tmp_path, config)
         paths = [scanned.relative_path for scanned in result]
         assert paths == ["main.py"]
+
+    def test_codexaignore_directory_pattern_excludes_descendants(self, tmp_path: Path):
+        (tmp_path / ".codexaignore").write_text("vendor/\n", encoding="utf-8")
+        (tmp_path / "app.py").write_text("x = 1", encoding="utf-8")
+        vendor = tmp_path / "vendor" / "composer"
+        vendor.mkdir(parents=True)
+        (vendor / "autoload_static.php").write_text("<?php echo 'ignored';", encoding="utf-8")
+
+        result = scan_repository(tmp_path, IndexConfig(ignore_dirs=set()))
+
+        assert [scanned.relative_path for scanned in result] == ["app.py"]
+
+    def test_should_index_file_uses_codexaignore(self, tmp_path: Path):
+        (tmp_path / ".codexaignore").write_text("vendor/\n", encoding="utf-8")
+        vendor = tmp_path / "vendor"
+        vendor.mkdir()
+        ignored = vendor / "ignored.py"
+        ignored.write_text("x = 1", encoding="utf-8")
+
+        assert should_index_file(ignored, tmp_path, IndexConfig(ignore_dirs=set())) is False
 
     def test_results_sorted(self, tmp_path: Path):
         (tmp_path / "z.py").write_text("z", encoding="utf-8")

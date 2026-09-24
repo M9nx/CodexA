@@ -19,7 +19,9 @@ from pathlib import Path
 from typing import Any
 
 from semantic_code_intelligence.parsing.parser import Symbol, parse_file
+from semantic_code_intelligence.config.settings import IndexConfig
 from semantic_code_intelligence.context.engine import CallGraph, ContextBuilder
+from semantic_code_intelligence.indexing.scanner import scan_repository
 from semantic_code_intelligence.llm.safety import SafetyValidator, SafetyReport
 from semantic_code_intelligence.utils.logging import get_logger
 
@@ -529,16 +531,10 @@ def analyze_project(
     if file_paths:
         files = [str(Path(f).resolve()) for f in file_paths]
     else:
-        # Walk project for supported files
         from semantic_code_intelligence.parsing.parser import EXTENSION_TO_LANGUAGE
-        files = []
-        for f in project_root.rglob("*"):
-            if f.is_file() and f.suffix in EXTENSION_TO_LANGUAGE:
-                # Skip hidden dirs, .codexa, __pycache__, node_modules
-                parts = f.relative_to(project_root).parts
-                if any(p.startswith(".") or p in ("__pycache__", "node_modules", ".codexa") for p in parts):
-                    continue
-                files.append(str(f))
+
+        quality_config = IndexConfig(extensions=set(EXTENSION_TO_LANGUAGE))
+        files = [str(scanned.path) for scanned in scan_repository(project_root, quality_config)]
 
     for fpath in files:
         try:

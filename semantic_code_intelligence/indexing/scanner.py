@@ -11,7 +11,7 @@ import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from semantic_code_intelligence.config.settings import AppConfig, IndexConfig
+from semantic_code_intelligence.config.settings import IndexConfig
 
 
 @dataclass
@@ -60,13 +60,47 @@ def _load_ignore_patterns(root: Path) -> list[str]:
 
 def _matches_ignore_patterns(relative_path: str, patterns: list[str]) -> bool:
     """Check whether a relative path matches any .codexaignore pattern."""
+    relative_path = relative_path.replace("\\", "/").lstrip("/")
     for pattern in patterns:
+        pattern = pattern.replace("\\", "/").lstrip("/")
+        if not pattern:
+            continue
+
+        if pattern.endswith("/"):
+            directory = pattern.rstrip("/")
+            if relative_path == directory or relative_path.startswith(f"{directory}/"):
+                return True
+
         if fnmatch.fnmatch(relative_path, pattern):
             return True
-        # Also check against each path component for directory patterns
-        if fnmatch.fnmatch(relative_path.replace("\\", "/"), pattern):
+        if fnmatch.fnmatch(Path(relative_path).name, pattern):
             return True
     return False
+
+
+def should_index_file(path: Path, root: Path, index_config: IndexConfig | None = None) -> bool:
+    """Return True when *path* is an indexable file under *root*."""
+    if index_config is None:
+        index_config = IndexConfig()
+
+    root = root.resolve()
+    path = path.resolve()
+    if not path.is_file() or path.suffix not in index_config.extensions:
+        return False
+    if should_ignore(path, root, index_config.ignore_dirs):
+        return False
+
+    try:
+        rel = str(path.relative_to(root)).replace("\\", "/")
+    except ValueError:
+        return False
+
+    ignore_patterns = _load_ignore_patterns(root)
+    if ignore_patterns and _matches_ignore_patterns(rel, ignore_patterns):
+        return False
+
+    config_exclude_patterns = [pattern.replace("\\", "/") for pattern in index_config.exclude_files]
+    return not (config_exclude_patterns and _matches_ignore_patterns(rel, config_exclude_patterns))
 
 
 def should_ignore(path: Path, root: Path, ignore_dirs: set[str]) -> bool:
@@ -115,16 +149,14 @@ def scan_repository(
         if not file_path.is_file():
             continue
 
-        if file_path.suffix not in index_config.extensions:
-            continue
-
-        if should_ignore(file_path, root, index_config.ignore_dirs):
-            continue
-
-        # Check .codexaignore patterns
         try:
             rel = str(file_path.relative_to(root)).replace("\\", "/")
         except ValueError:
+            continue
+
+        if file_path.suffix not in index_config.extensions:
+            continue
+        if should_ignore(file_path, root, index_config.ignore_dirs):
             continue
         if ignore_patterns and _matches_ignore_patterns(rel, ignore_patterns):
             continue
