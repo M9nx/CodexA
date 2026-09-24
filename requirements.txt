@@ -27,5 +27,5 @@ pytest-cov>=4.1.0
 
 # Optional
 orjson>=3.9.0
-networkx>=3.1
+networkx>=3.6.1
 joblib>=1.6.0
