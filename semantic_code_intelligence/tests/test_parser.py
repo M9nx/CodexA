@@ -19,30 +19,39 @@ from semantic_code_intelligence.parsing.parser import (
 # ---------------------------------------------------------------------------
 
 class TestDetectLanguage:
+    @pytest.mark.unit
     def test_python(self):
         assert detect_language("main.py") == "python"
 
+    @pytest.mark.unit
     def test_javascript(self):
         assert detect_language("app.js") == "javascript"
 
+    @pytest.mark.unit
     def test_jsx(self):
         assert detect_language("component.jsx") == "javascript"
 
+    @pytest.mark.unit
     def test_java(self):
         assert detect_language("Main.java") == "java"
 
+    @pytest.mark.unit
     def test_go(self):
         assert detect_language("main.go") == "go"
 
+    @pytest.mark.unit
     def test_rust(self):
         assert detect_language("lib.rs") == "rust"
 
+    @pytest.mark.unit
     def test_unsupported(self):
         assert detect_language("style.css") is None
 
+    @pytest.mark.unit
     def test_no_extension(self):
         assert detect_language("Makefile") is None
 
+    @pytest.mark.unit
     def test_case_insensitive(self):
         assert detect_language("FILE.PY") == "python"
         assert detect_language("APP.JS") == "javascript"
@@ -53,29 +62,36 @@ class TestDetectLanguage:
 # ---------------------------------------------------------------------------
 
 class TestGetLanguage:
+    @pytest.mark.unit
     def test_load_python(self):
         lang = get_language("python")
         assert lang is not None
 
+    @pytest.mark.unit
     def test_load_javascript(self):
         lang = get_language("javascript")
         assert lang is not None
 
+    @pytest.mark.unit
     def test_load_java(self):
         lang = get_language("java")
         assert lang is not None
 
+    @pytest.mark.unit
     def test_load_go(self):
         lang = get_language("go")
         assert lang is not None
 
+    @pytest.mark.unit
     def test_load_rust(self):
         lang = get_language("rust")
         assert lang is not None
 
+    @pytest.mark.unit
     def test_unsupported_language(self):
         assert get_language("cobol") is None
 
+    @pytest.mark.unit
     def test_caching(self):
         """Loading same language twice returns cached instance."""
         lang1 = get_language("python")
@@ -119,21 +135,25 @@ class TestPythonParsing:
     def setup(self):
         self.symbols = parse_file("example.py", PYTHON_CODE)
 
+    @pytest.mark.unit
     def test_total_symbols_found(self):
         # 2 imports + 1 function + 1 class + 3 methods + 1 private helper
         assert len(self.symbols) >= 7
 
+    @pytest.mark.unit
     def test_function_extraction(self):
         funcs = [s for s in self.symbols if s.kind == "function"]
         names = {f.name for f in funcs}
         assert "hello" in names
         assert "_private_helper" in names
 
+    @pytest.mark.unit
     def test_class_extraction(self):
         classes = [s for s in self.symbols if s.kind == "class"]
         assert len(classes) == 1
         assert classes[0].name == "Calculator"
 
+    @pytest.mark.unit
     def test_method_extraction(self):
         methods = [s for s in self.symbols if s.kind == "method"]
         names = {m.name for m in methods}
@@ -141,29 +161,35 @@ class TestPythonParsing:
         assert "add" in names
         assert "subtract" in names
 
+    @pytest.mark.unit
     def test_methods_have_parent(self):
         methods = [s for s in self.symbols if s.kind == "method"]
         for m in methods:
             assert m.parent == "Calculator"
 
+    @pytest.mark.unit
     def test_import_extraction(self):
         imports = [s for s in self.symbols if s.kind == "import"]
         assert len(imports) >= 2
 
+    @pytest.mark.unit
     def test_line_numbers(self):
         hello = next(s for s in self.symbols if s.name == "hello")
         assert hello.start_line == 4
         assert hello.end_line == 6
 
+    @pytest.mark.unit
     def test_body_contains_code(self):
         hello = next(s for s in self.symbols if s.name == "hello")
         assert "def hello" in hello.body
         assert "return" in hello.body
 
+    @pytest.mark.unit
     def test_parameters(self):
         hello = next(s for s in self.symbols if s.name == "hello")
         assert "name" in hello.parameters
 
+    @pytest.mark.unit
     def test_symbol_to_dict(self):
         hello = next(s for s in self.symbols if s.name == "hello")
         d = hello.to_dict()
@@ -204,21 +230,25 @@ class TestJavaScriptParsing:
     def setup(self):
         self.symbols = parse_file("app.js", JS_CODE)
 
+    @pytest.mark.unit
     def test_function_found(self):
         funcs = extract_functions("app.js", JS_CODE)
         names = {f.name for f in funcs}
         assert "greet" in names
 
+    @pytest.mark.unit
     def test_class_found(self):
         classes = extract_classes("app.js", JS_CODE)
         assert any(c.name == "Counter" for c in classes)
 
+    @pytest.mark.unit
     def test_methods_found(self):
         methods = [s for s in self.symbols if s.kind == "method"]
         names = {m.name for m in methods}
         # constructor and increment
         assert "constructor" in names or "increment" in names
 
+    @pytest.mark.unit
     def test_import_found(self):
         imports = extract_imports("app.js", JS_CODE)
         assert len(imports) >= 1
@@ -255,21 +285,25 @@ class TestJavaParsing:
     def setup(self):
         self.symbols = parse_file("Calculator.java", JAVA_CODE)
 
+    @pytest.mark.unit
     def test_class_found(self):
         classes = extract_classes("Calculator.java", JAVA_CODE)
         assert any(c.name == "Calculator" for c in classes)
 
+    @pytest.mark.unit
     def test_methods_found(self):
         methods = [s for s in self.symbols if s.kind == "method"]
         names = {m.name for m in methods}
         assert "add" in names
         assert "getValue" in names
 
+    @pytest.mark.unit
     def test_constructor_found(self):
         methods = [s for s in self.symbols if s.kind == "method"]
         names = {m.name for m in methods}
         assert "Calculator" in names
 
+    @pytest.mark.unit
     def test_import_found(self):
         imports = extract_imports("Calculator.java", JAVA_CODE)
         assert len(imports) >= 1
@@ -308,21 +342,25 @@ class TestGoParsing:
     def setup(self):
         self.symbols = parse_file("main.go", GO_CODE)
 
+    @pytest.mark.unit
     def test_functions_found(self):
         funcs = [s for s in self.symbols if s.kind == "function"]
         names = {f.name for f in funcs}
         assert "main" in names
         assert "add" in names
 
+    @pytest.mark.unit
     def test_type_found(self):
         classes = extract_classes("main.go", GO_CODE)
         assert len(classes) >= 1
 
+    @pytest.mark.unit
     def test_method_found(self):
         methods = [s for s in self.symbols if s.kind == "method"]
         names = {m.name for m in methods}
         assert "Add" in names
 
+    @pytest.mark.unit
     def test_import_found(self):
         imports = extract_imports("main.go", GO_CODE)
         assert len(imports) >= 1
@@ -370,28 +408,33 @@ class TestRustParsing:
     def setup(self):
         self.symbols = parse_file("lib.rs", RUST_CODE)
 
+    @pytest.mark.unit
     def test_functions_found(self):
         funcs = [s for s in self.symbols if s.kind == "function"]
         names = {f.name for f in funcs}
         assert "main" in names
         assert "add" in names
 
+    @pytest.mark.unit
     def test_struct_found(self):
         classes = extract_classes("lib.rs", RUST_CODE)
         names = {c.name for c in classes}
         assert "Calculator" in names
 
+    @pytest.mark.unit
     def test_impl_methods(self):
         # Methods inside impl blocks
         methods = [s for s in self.symbols if s.kind == "method"]
         names = {m.name for m in methods}
         assert "new" in names or "add" in names
 
+    @pytest.mark.unit
     def test_enum_found(self):
         classes = extract_classes("lib.rs", RUST_CODE)
         names = {c.name for c in classes}
         assert "Color" in names
 
+    @pytest.mark.unit
     def test_use_found(self):
         imports = extract_imports("lib.rs", RUST_CODE)
         assert len(imports) >= 1
@@ -402,10 +445,12 @@ class TestRustParsing:
 # ---------------------------------------------------------------------------
 
 class TestEdgeCases:
+    @pytest.mark.unit
     def test_empty_file(self):
         symbols = parse_file("empty.py", "")
         assert symbols == []
 
+    @pytest.mark.unit
     def test_syntax_error_still_parses(self):
         """tree-sitter is error-tolerant and should still parse partial code."""
         code = "def broken_func(:\n    pass"
@@ -413,10 +458,12 @@ class TestEdgeCases:
         # Should not crash — may or may not find symbols
         assert isinstance(symbols, list)
 
+    @pytest.mark.unit
     def test_unsupported_extension(self):
         symbols = parse_file("style.css", "body { color: red; }")
         assert symbols == []
 
+    @pytest.mark.unit
     def test_unicode_content(self):
         code = 'def greet():\n    print("Héllo, 世界!")\n'
         symbols = parse_file("unicode.py", code)
@@ -441,16 +488,19 @@ class TestEdgeCases:
 # ---------------------------------------------------------------------------
 
 class TestExtractHelpers:
+    @pytest.mark.unit
     def test_extract_functions_filters(self):
         funcs = extract_functions("example.py", PYTHON_CODE)
         for f in funcs:
             assert f.kind in ("function", "method")
 
+    @pytest.mark.unit
     def test_extract_classes_filters(self):
         classes = extract_classes("example.py", PYTHON_CODE)
         for c in classes:
             assert c.kind == "class"
 
+    @pytest.mark.unit
     def test_extract_imports_filters(self):
         imports = extract_imports("example.py", PYTHON_CODE)
         for i in imports:
@@ -483,12 +533,14 @@ class TestDecorators:
     def setup(self):
         self.symbols = parse_file("decorated.py", DECORATED_CODE)
 
+    @pytest.mark.unit
     def test_decorated_function_found(self):
         funcs = [s for s in self.symbols if s.kind == "function"]
         names = {f.name for f in funcs}
         assert "decorated_function" in names
         assert "my_decorator" in names
 
+    @pytest.mark.unit
     def test_static_method_found(self):
         methods = [s for s in self.symbols if s.kind == "method"]
         names = {m.name for m in methods}

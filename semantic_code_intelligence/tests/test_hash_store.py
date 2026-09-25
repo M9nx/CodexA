@@ -12,30 +12,36 @@ from semantic_code_intelligence.storage.hash_store import HashStore
 class TestHashStore:
     """Tests for HashStore operations."""
 
+    @pytest.mark.unit
     def test_empty_store(self):
         store = HashStore()
         assert store.count == 0
         assert store.get("file.py") is None
 
+    @pytest.mark.unit
     def test_set_and_get(self):
         store = HashStore()
         store.set("file.py", "abc123")
         assert store.get("file.py") == "abc123"
 
+    @pytest.mark.unit
     def test_has_changed_new_file(self):
         store = HashStore()
         assert store.has_changed("file.py", "hash1") is True
 
+    @pytest.mark.unit
     def test_has_changed_same_hash(self):
         store = HashStore()
         store.set("file.py", "hash1")
         assert store.has_changed("file.py", "hash1") is False
 
+    @pytest.mark.unit
     def test_has_changed_different_hash(self):
         store = HashStore()
         store.set("file.py", "hash1")
         assert store.has_changed("file.py", "hash2") is True
 
+    @pytest.mark.unit
     def test_remove(self):
         store = HashStore()
         store.set("file.py", "hash1")
@@ -43,10 +49,12 @@ class TestHashStore:
         assert store.get("file.py") is None
         assert store.count == 0
 
+    @pytest.mark.unit
     def test_remove_nonexistent_no_error(self):
         store = HashStore()
         store.remove("nonexistent.py")  # should not raise
 
+    @pytest.mark.unit
     def test_count(self):
         store = HashStore()
         store.set("a.py", "h1")

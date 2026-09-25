@@ -10,7 +10,10 @@ from semantic_code_intelligence.utils.logging import (
     get_logger,
     setup_logging,
 )
+import pytest
 
+
+pytestmark = [pytest.mark.unit]
 
 class TestSetupLogging:
     """Tests for logging setup."""

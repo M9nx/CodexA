@@ -57,6 +57,7 @@ class Calculator {
 # ---------------------------------------------------------------------------
 
 class TestSemanticChunk:
+    @pytest.mark.unit
     def test_creation(self):
         sc = SemanticChunk(
             file_path="test.py",
@@ -71,6 +72,7 @@ class TestSemanticChunk:
         assert sc.symbol_name == "foo"
         assert sc.symbol_kind == "function"
 
+    @pytest.mark.unit
     def test_to_dict(self):
         sc = SemanticChunk(
             file_path="test.py",
@@ -88,6 +90,7 @@ class TestSemanticChunk:
         assert d["symbol_kind"] == "class"
         assert d["parameters"] == ["x", "y"]
 
+    @pytest.mark.unit
     def test_defaults(self):
         sc = SemanticChunk(
             file_path="t.py", content="x=1", start_line=1,
@@ -103,6 +106,7 @@ class TestSemanticChunk:
 # ---------------------------------------------------------------------------
 
 class TestBuildSemanticLabel:
+    @pytest.mark.unit
     def test_function(self):
         sc = SemanticChunk(
             file_path="t.py", content="", start_line=1, end_line=1,
@@ -115,6 +119,7 @@ class TestBuildSemanticLabel:
         assert "foo" in label
         assert "(x)" in label
 
+    @pytest.mark.unit
     def test_method_with_parent(self):
         sc = SemanticChunk(
             file_path="t.py", content="", start_line=1, end_line=1,
@@ -125,6 +130,7 @@ class TestBuildSemanticLabel:
         label = _build_semantic_label(sc)
         assert "Greeter.greet" in label
 
+    @pytest.mark.unit
     def test_empty_kind(self):
         sc = SemanticChunk(
             file_path="t.py", content="x=1", start_line=1, end_line=1,
@@ -139,11 +145,13 @@ class TestBuildSemanticLabel:
 # ---------------------------------------------------------------------------
 
 class TestExtractUncoveredBlocks:
+    @pytest.mark.unit
     def test_all_covered(self):
         lines = ["a\n", "b\n", "c\n"]
         covered = {1, 2, 3}
         assert _extract_uncovered_blocks(lines, covered) == []
 
+    @pytest.mark.unit
     def test_none_covered(self):
         lines = ["a\n", "b\n"]
         blocks = _extract_uncovered_blocks(lines, set())
@@ -151,6 +159,7 @@ class TestExtractUncoveredBlocks:
         assert blocks[0][0] == 1  # start_line
         assert blocks[0][1] == 2  # end_line
 
+    @pytest.mark.unit
     def test_gap_in_middle(self):
         lines = ["a\n", "b\n", "c\n", "d\n", "e\n"]
         covered = {1, 2, 5}
@@ -159,6 +168,7 @@ class TestExtractUncoveredBlocks:
         assert blocks[0][0] == 3
         assert blocks[0][1] == 4
 
+    @pytest.mark.unit
     def test_multiple_gaps(self):
         lines = [f"line{i}\n" for i in range(1, 8)]
         covered = {2, 5}
@@ -171,19 +181,23 @@ class TestExtractUncoveredBlocks:
 # ---------------------------------------------------------------------------
 
 class TestSemanticChunkCode:
+    @pytest.mark.unit
     def test_empty_content(self):
         result = semantic_chunk_code("", "test.py")
         assert result == []
 
+    @pytest.mark.unit
     def test_whitespace_only(self):
         result = semantic_chunk_code("   \n  ", "test.py")
         assert result == []
 
+    @pytest.mark.unit
     def test_python_produces_chunks(self):
         chunks = semantic_chunk_code(SAMPLE_PYTHON, "test.py")
         assert len(chunks) > 0
         assert all(isinstance(c, SemanticChunk) for c in chunks)
 
+    @pytest.mark.unit
     def test_python_has_function_chunks(self):
         chunks = semantic_chunk_code(SAMPLE_PYTHON, "test.py")
         func_chunks = [c for c in chunks if c.symbol_kind == "function"]
@@ -191,16 +205,19 @@ class TestSemanticChunkCode:
         names = [c.symbol_name for c in func_chunks]
         assert "hello" in names
 
+    @pytest.mark.unit
     def test_python_has_class_chunks(self):
         chunks = semantic_chunk_code(SAMPLE_PYTHON, "test.py")
         class_chunks = [c for c in chunks if c.symbol_kind == "class"]
         assert len(class_chunks) >= 1
         assert any(c.symbol_name == "Greeter" for c in class_chunks)
 
+    @pytest.mark.unit
     def test_javascript_produces_chunks(self):
         chunks = semantic_chunk_code(SAMPLE_JS, "test.js")
         assert len(chunks) > 0
 
+    @pytest.mark.unit
     def test_unsupported_language_fallback(self):
         code = "some random code\nanother line\n"
         chunks = semantic_chunk_code(code, "test.xyz")
@@ -208,16 +225,19 @@ class TestSemanticChunkCode:
         # Fallback chunks are "block" kind
         assert all(c.symbol_kind == "block" for c in chunks)
 
+    @pytest.mark.unit
     def test_chunk_indices_sequential(self):
         chunks = semantic_chunk_code(SAMPLE_PYTHON, "test.py")
         indices = [c.chunk_index for c in chunks]
         assert indices == list(range(len(chunks)))
 
+    @pytest.mark.unit
     def test_chunks_have_content(self):
         chunks = semantic_chunk_code(SAMPLE_PYTHON, "test.py")
         for c in chunks:
             assert c.content.strip() != ""
 
+    @pytest.mark.unit
     def test_large_function_gets_split(self):
         # Generate a big function
         big_body = "\n".join(f"    x{i} = {i}" for i in range(100))
@@ -226,6 +246,7 @@ class TestSemanticChunkCode:
         func_chunks = [c for c in chunks if c.symbol_name == "big_func"]
         assert len(func_chunks) > 1
 
+    @pytest.mark.unit
     def test_semantic_labels_populated(self):
         chunks = semantic_chunk_code(SAMPLE_PYTHON, "test.py")
         labeled = [c for c in chunks if c.semantic_label]

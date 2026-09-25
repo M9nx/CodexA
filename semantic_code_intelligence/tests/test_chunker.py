@@ -17,21 +17,27 @@ from semantic_code_intelligence.indexing.chunker import (
 class TestDetectLanguage:
     """Tests for language detection."""
 
+    @pytest.mark.unit
     def test_python(self):
         assert detect_language("main.py") == "python"
 
+    @pytest.mark.unit
     def test_javascript(self):
         assert detect_language("app.js") == "javascript"
 
+    @pytest.mark.unit
     def test_typescript(self):
         assert detect_language("component.tsx") == "typescript"
 
+    @pytest.mark.unit
     def test_java(self):
         assert detect_language("Main.java") == "java"
 
+    @pytest.mark.unit
     def test_unknown(self):
         assert detect_language("data.xyz") == "unknown"
 
+    @pytest.mark.unit
     def test_path_with_directory(self):
         assert detect_language("/some/path/file.py") == "python"
         assert detect_language("C:\\code\\file.js") == "javascript"
@@ -40,14 +46,17 @@ class TestDetectLanguage:
 class TestChunkCode:
     """Tests for code chunking logic."""
 
+    @pytest.mark.unit
     def test_empty_content(self):
         chunks = chunk_code("", "test.py")
         assert chunks == []
 
+    @pytest.mark.unit
     def test_whitespace_only(self):
         chunks = chunk_code("   \n  \n ", "test.py")
         assert chunks == []
 
+    @pytest.mark.unit
     def test_small_file_single_chunk(self):
         code = "def hello():\n    return 'world'\n"
         chunks = chunk_code(code, "test.py", chunk_size=1000)
@@ -58,12 +67,14 @@ class TestChunkCode:
         assert chunks[0].language == "python"
         assert chunks[0].chunk_index == 0
 
+    @pytest.mark.unit
     def test_large_file_multiple_chunks(self):
         lines = [f"line_{i} = {i}\n" for i in range(100)]
         code = "".join(lines)
         chunks = chunk_code(code, "test.py", chunk_size=200, chunk_overlap=50)
         assert len(chunks) > 1
 
+    @pytest.mark.unit
     def test_chunks_cover_all_content(self):
         lines = [f"x_{i} = {i}\n" for i in range(50)]
         code = "".join(lines)
@@ -73,6 +84,7 @@ class TestChunkCode:
         for line in lines:
             assert line in all_chunk_text
 
+    @pytest.mark.unit
     def test_chunk_index_sequential(self):
         lines = [f"var_{i} = {i}\n" for i in range(100)]
         code = "".join(lines)
@@ -80,12 +92,14 @@ class TestChunkCode:
         for i, chunk in enumerate(chunks):
             assert chunk.chunk_index == i
 
+    @pytest.mark.unit
     def test_chunk_metadata(self):
         code = "function hello() { return 1; }\n"
         chunks = chunk_code(code, "app.js", chunk_size=1000)
         assert chunks[0].file_path == "app.js"
         assert chunks[0].language == "javascript"
 
+    @pytest.mark.unit
     def test_overlap_between_chunks(self):
         lines = [f"line_{i:03d} = {i}\n" for i in range(100)]
         code = "".join(lines)

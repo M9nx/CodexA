@@ -66,6 +66,7 @@ class FailingPlugin(PluginBase):
 # ---------------------------------------------------------------------------
 
 class TestPluginMetadata:
+    @pytest.mark.unit
     def test_to_dict(self):
         meta = PluginMetadata(
             name="my-plugin",
@@ -78,6 +79,7 @@ class TestPluginMetadata:
         assert d["version"] == "2.0"
         assert "pre_search" in d["hooks"]
 
+    @pytest.mark.unit
     def test_defaults(self):
         meta = PluginMetadata(name="minimal")
         assert meta.version == "0.1.0"
@@ -89,11 +91,13 @@ class TestPluginMetadata:
 # ---------------------------------------------------------------------------
 
 class TestPluginHook:
+    @pytest.mark.unit
     def test_values(self):
         assert PluginHook.PRE_INDEX.value == "pre_index"
         assert PluginHook.POST_SEARCH.value == "post_search"
         assert PluginHook.ON_FILE_CHANGE.value == "on_file_change"
 
+    @pytest.mark.unit
     def test_all_hooks_are_strings(self):
         for hook in PluginHook:
             assert isinstance(hook.value, str)
@@ -104,12 +108,14 @@ class TestPluginHook:
 # ---------------------------------------------------------------------------
 
 class TestPluginManagerRegistration:
+    @pytest.mark.unit
     def test_register(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
         mgr.register(plugin)
         assert "test-plugin" in mgr.registered_plugins
 
+    @pytest.mark.unit
     def test_register_duplicate_replaces(self):
         mgr = PluginManager()
         p1 = SamplePlugin("dup")
@@ -118,6 +124,7 @@ class TestPluginManagerRegistration:
         mgr.register(p2)
         assert mgr.registered_plugins.count("dup") == 1
 
+    @pytest.mark.unit
     def test_unregister(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -125,6 +132,7 @@ class TestPluginManagerRegistration:
         mgr.unregister("test-plugin")
         assert "test-plugin" not in mgr.registered_plugins
 
+    @pytest.mark.unit
     def test_unregister_nonexistent(self):
         mgr = PluginManager()
         mgr.unregister("nope")  # should not raise
@@ -135,6 +143,7 @@ class TestPluginManagerRegistration:
 # ---------------------------------------------------------------------------
 
 class TestPluginManagerActivation:
+    @pytest.mark.unit
     def test_activate(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -143,6 +152,7 @@ class TestPluginManagerActivation:
         assert "test-plugin" in mgr.active_plugins
         assert plugin.activated
 
+    @pytest.mark.unit
     def test_deactivate(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -152,11 +162,13 @@ class TestPluginManagerActivation:
         assert "test-plugin" not in mgr.active_plugins
         assert plugin.deactivated
 
+    @pytest.mark.unit
     def test_activate_unregistered(self):
         mgr = PluginManager()
         with pytest.raises(ValueError):
             mgr.activate("nope")
 
+    @pytest.mark.unit
     def test_unregister_active_deactivates(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -171,6 +183,7 @@ class TestPluginManagerActivation:
 # ---------------------------------------------------------------------------
 
 class TestPluginManagerDispatch:
+    @pytest.mark.unit
     def test_dispatch_basic(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -181,6 +194,7 @@ class TestPluginManagerDispatch:
         assert result["processed_by"] == "test-plugin"
         assert len(plugin.hooks_received) == 1
 
+    @pytest.mark.unit
     def test_dispatch_skips_inactive(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -190,6 +204,7 @@ class TestPluginManagerDispatch:
         assert "processed_by" not in result
         assert len(plugin.hooks_received) == 0
 
+    @pytest.mark.unit
     def test_dispatch_unregistered_hook(self):
         mgr = PluginManager()
         plugin = SamplePlugin()  # only PRE_INDEX and POST_INDEX
@@ -199,6 +214,7 @@ class TestPluginManagerDispatch:
         result = mgr.dispatch(PluginHook.PRE_SEARCH, {"query": "test"})
         assert "processed_by" not in result  # plugin not registered for this hook
 
+    @pytest.mark.unit
     def test_dispatch_chain(self):
         mgr = PluginManager()
         p1 = SamplePlugin("plugin-a")
@@ -212,6 +228,7 @@ class TestPluginManagerDispatch:
         # Last plugin wins for processed_by
         assert result["processed_by"] == "plugin-b"
 
+    @pytest.mark.unit
     def test_dispatch_failing_plugin_continues(self):
         mgr = PluginManager()
         failing = FailingPlugin()
@@ -231,6 +248,7 @@ class TestPluginManagerDispatch:
 # ---------------------------------------------------------------------------
 
 class TestPluginManagerInfo:
+    @pytest.mark.unit
     def test_get_plugin_info(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -240,6 +258,7 @@ class TestPluginManagerInfo:
         assert info["name"] == "test-plugin"
         assert info["active"] is False
 
+    @pytest.mark.unit
     def test_get_plugin_info_active(self):
         mgr = PluginManager()
         plugin = SamplePlugin()
@@ -248,6 +267,7 @@ class TestPluginManagerInfo:
         info = mgr.get_plugin_info("test-plugin")
         assert info["active"] is True
 
+    @pytest.mark.unit
     def test_get_plugin_info_missing(self):
         mgr = PluginManager()
         assert mgr.get_plugin_info("nope") is None

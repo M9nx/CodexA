@@ -75,18 +75,27 @@ pytest -m unit --collect-only -q
 
 ## Current state
 
-The markers are registered and documented, but **no test carries them yet**.
-Measured on this commit with 2683 collected tests:
+`unit` is the only marker applied so far. Measured on this commit with 2683
+collected tests:
 
-| command | result today |
+| command | result |
 | --- | --- |
 | `pytest` | 2683 selected — unchanged, and this is what CI runs |
-| `pytest -m unit` | 2683 deselected, **0 selected**, pytest exits 5 |
-| `pytest -m "not slow and not model"` | 2683 selected (unmarked tests match negative markers) |
+| `pytest -m unit` | 312 selected, 2371 deselected, passes in about 1 second |
+| `pytest -m integration` | 0 selected, pytest exits 5 |
 
-So a positive marker selection currently matches nothing until classification
-lands. Nothing about CI changes, because CI runs a plain `pytest` with no `-m`
-filter.
+287 test functions carry `unit`: 119 in five files marked at module level, and
+168 marked individually. Those 287 functions expand to 312 test items because
+some are parametrized.
+
+The `unit` group is deliberately conservative. A test only qualifies if neither
+its own body, nor the fixtures it requests, nor any same-module helper it calls
+touches the network, a subprocess, a real model, FAISS, the clock, threads, or
+the real filesystem. A fast selection is therefore a strong signal, not a
+guarantee, until `integration`, `model` and `http` markers exist.
+
+Groups that are not yet marked (`integration`, `e2e`, `model`, `http`,
+`platform`, `compat`, `slow`) currently select nothing.
 
 ## Adding a marker to a test
 

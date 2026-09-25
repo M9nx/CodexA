@@ -11,6 +11,8 @@ from semantic_code_intelligence.embeddings.enhanced import (
 from semantic_code_intelligence.indexing.semantic_chunker import SemanticChunk
 
 
+pytestmark = [pytest.mark.unit]
+
 # ---------------------------------------------------------------------------
 # Preprocessing
 # ---------------------------------------------------------------------------
