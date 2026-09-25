@@ -48,3 +48,48 @@ jobs:
 
       - name: Check syntax
         run: python -m py_compile semantic_code_intelligence/__init__.py
+
+  ci-required:
+    name: ci-required
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    if: always()
+    steps:
+      - name: Verify required job results
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+        run: |
+          echo "test: $TEST_RESULT"
+          echo "lint: $LINT_RESULT"
+          failed=0
+          check_required() {
+            case "$2" in
+              success)
+                echo "ok: $1 succeeded"
+                ;;
+              failure)
+                echo "::error::required job '$1' failed"
+                failed=1
+                ;;
+              cancelled)
+                echo "::error::required job '$1' was cancelled"
+                failed=1
+                ;;
+              skipped)
+                echo "::error::required job '$1' was unexpectedly skipped"
+                failed=1
+                ;;
+              *)
+                echo "::error::required job '$1' reported unexpected result '$2'"
+                failed=1
+                ;;
+            esac
+          }
+          check_required "test" "$TEST_RESULT"
+          check_required "lint" "$LINT_RESULT"
+          if [ "$failed" -ne 0 ]; then
+            echo "ci-required: FAILED"
+            exit 1
+          fi
+          echo "ci-required: PASSED"
