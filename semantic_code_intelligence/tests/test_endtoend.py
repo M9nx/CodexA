@@ -237,13 +237,13 @@ class TestIndexing:
     def test_index_creates_vectors(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
-        runner.invoke(cli, ["index", str(project)])
+        result = runner.invoke(cli, ["index", str(project)])
+        assert result.exit_code == 0
         index_dir = project / ".codexa" / "index"
-        # Either vectors.faiss exists or no indexable files were found
-        faiss_file = index_dir / "vectors.faiss"
-        metadata_file = index_dir / "metadata.json"
-        if faiss_file.exists():
-            assert metadata_file.exists()
+        # the project fixture contains indexable source, so indexing must
+        # produce an index rather than silently finding nothing to do
+        assert (index_dir / "vectors.faiss").exists()
+        assert (index_dir / "metadata.json").exists()
 
 
 # =========================================================================

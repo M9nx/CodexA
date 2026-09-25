@@ -104,12 +104,13 @@ class TestChunkCode:
         lines = [f"line_{i:03d} = {i}\n" for i in range(100)]
         code = "".join(lines)
         chunks = chunk_code(code, "test.py", chunk_size=200, chunk_overlap=50)
-        if len(chunks) >= 2:
-            # Last lines of chunk N should appear in chunk N+1
-            chunk0_lines = set(chunks[0].content.splitlines())
-            chunk1_lines = set(chunks[1].content.splitlines())
-            overlap = chunk0_lines & chunk1_lines
-            assert len(overlap) > 0
+        # 1390 chars at chunk_size=200 must split; assert it rather than
+        # skipping the overlap check when it does not.
+        assert len(chunks) >= 2
+        chunk0_lines = set(chunks[0].content.splitlines())
+        chunk1_lines = set(chunks[1].content.splitlines())
+        overlap = chunk0_lines & chunk1_lines
+        assert len(overlap) > 0
 
 
 class TestChunkFile:

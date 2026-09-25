@@ -240,12 +240,13 @@ class TestCallGraph:
 
     @pytest.mark.unit
     def test_edge_to_dict(self):
-        if self.graph.edges:
-            d = self.graph.edges[0].to_dict()
-            assert "caller" in d
-            assert "callee" in d
-            assert "file_path" in d
-            assert "line" in d
+        # the fixture builds the graph from a sample with a known call edge
+        assert self.graph.edges, "fixture produced no edges to serialise"
+        d = self.graph.edges[0].to_dict()
+        assert "caller" in d
+        assert "callee" in d
+        assert "file_path" in d
+        assert "line" in d
 
     @pytest.mark.unit
     def test_js_call_graph(self):
@@ -316,11 +317,12 @@ class TestDependencyMap:
     @pytest.mark.unit
     def test_dependency_to_dict(self):
         deps = self.dep_map.add_file("app.py", PYTHON_SAMPLE)
-        if deps:
-            d = deps[0].to_dict()
-            assert "source_file" in d
-            assert "import_text" in d
-            assert "line" in d
+        # PYTHON_SAMPLE imports os and pathlib, so two dependencies are expected
+        assert deps, "expected dependencies from the sample's imports"
+        d = deps[0].to_dict()
+        assert "source_file" in d
+        assert "import_text" in d
+        assert "line" in d
 
     @pytest.mark.unit
     def test_to_dict(self):

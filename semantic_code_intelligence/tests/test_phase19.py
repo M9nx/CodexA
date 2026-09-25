@@ -864,10 +864,16 @@ class TestVersionPhase19:
     @pytest.mark.integration
     def test_pyproject_version(self):
         import tomllib
+
+        from semantic_code_intelligence import __version__
+
         pyproject = Path(__file__).resolve().parent.parent.parent / "pyproject.toml"
-        if pyproject.exists():
-            data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
-            assert data["project"]["version"] == "0.5.0"
+        assert pyproject.exists(), f"pyproject.toml not found at {pyproject}"
+        data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+        # pyproject is the packaging source of truth and must agree with the
+        # version the package reports
+        assert data["project"]["version"] == __version__
+        assert __version__ == "0.5.0"
 
 
 # =========================================================================

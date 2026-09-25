@@ -307,10 +307,44 @@ class TestAPIHandlerRouting:
         assert hasattr(APIHandler, "do_POST")
         assert hasattr(APIHandler, "do_OPTIONS")
 
-    def test_handler_health_route(self):
-        """Verify health check logic exists."""
-        source = APIHandler._handle_health.__doc__ or ""
-        assert "health" in source.lower() or True  # method exists
+    def test_handler_health_route(self, tmp_path):
+        """GET /health reports ok, and reflects whether the project is indexed."""
+        recorded: dict[str, object] = {}
+
+        class _Stub:
+            project_root = tmp_path
+
+            def _json(self, status, payload):
+                recorded["status"] = status
+                recorded["payload"] = payload
+
+        APIHandler._handle_health(_Stub(), {})
+
+        assert recorded["status"] == 200
+        payload = recorded["payload"]
+        assert payload["status"] == "ok"
+        assert payload["project_root"] == str(tmp_path)
+        # a project with no .codexa directory is reported as un-indexed
+        assert payload["indexed"] is False
+        assert payload["config_found"] is False
+
+    def test_handler_health_route_reports_indexed_project(self, tmp_path):
+        """Once .codexa/index exists, /health reports the project as indexed."""
+        (tmp_path / ".codexa" / "index").mkdir(parents=True)
+        (tmp_path / ".codexa" / "config.json").write_text("{}", encoding="utf-8")
+        recorded: dict[str, object] = {}
+
+        class _Stub:
+            project_root = tmp_path
+
+            def _json(self, status, payload):
+                recorded["status"] = status
+                recorded["payload"] = payload
+
+        APIHandler._handle_health(_Stub(), {})
+
+        assert recorded["payload"]["indexed"] is True
+        assert recorded["payload"]["config_found"] is True
 
     def test_handler_search_route(self):
         assert hasattr(APIHandler, "_handle_search")

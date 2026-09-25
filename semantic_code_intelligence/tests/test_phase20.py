@@ -2412,9 +2412,13 @@ class TestFileWatcherDeep:
     @pytest.mark.integration
     def test_has_start_stop(self):
         with tempfile.TemporaryDirectory() as tmp:
-            fw = FileWatcher(Path(tmp))
-            assert hasattr(fw, "start")
-            assert hasattr(fw, "stop")
+            fw = FileWatcher(Path(tmp), poll_interval=0.1)
+            fw.start()
+            try:
+                assert fw.is_running is True
+            finally:
+                fw.stop()
+            assert fw.is_running is False
 
 
 # ---------------------------------------------------------------------------
