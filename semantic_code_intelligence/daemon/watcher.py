@@ -74,6 +74,10 @@ class NativeFileWatcher:
         self._config = load_config(self._root)
         self._running = False
         self._thread: threading.Thread | None = None
+        # Signalled by stop() so the watchfiles generator returns and the watch
+        # thread can actually exit. Without it, watch() blocks until its
+        # rust_timeout and the thread outlives stop().
+        self._stop_event = threading.Event()
         self._callbacks: list[Callable[[list[FileChangeEvent]], None]] = []
         # Build set of supported extensions for filtering
         self._extensions = set(self._config.index.extensions)
@@ -97,7 +101,7 @@ class NativeFileWatcher:
                 self._root,
                 debounce=self._debounce,
                 step=100,
-                stop_event=threading.Event() if not self._running else None,
+                stop_event=self._stop_event,
                 recursive=True,
                 rust_timeout=5000,
             ):
@@ -153,6 +157,7 @@ class NativeFileWatcher:
         if self._running:
             return
         self._running = True
+        self._stop_event.clear()
         self._thread = threading.Thread(
             target=self._watch_loop, daemon=True, name="codexa-native-watcher",
         )
@@ -160,6 +165,7 @@ class NativeFileWatcher:
 
     def stop(self) -> None:
         self._running = False
+        self._stop_event.set()
         if self._thread is not None:
             self._thread.join(timeout=3.0)
             self._thread = None
