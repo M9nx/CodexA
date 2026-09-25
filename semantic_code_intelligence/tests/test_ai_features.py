@@ -16,6 +16,8 @@ from semantic_code_intelligence.analysis.ai_features import (
 from semantic_code_intelligence.context.engine import ContextBuilder
 
 
+pytestmark = [pytest.mark.unit]
+
 # ---------------------------------------------------------------------------
 # Sample code
 # ---------------------------------------------------------------------------

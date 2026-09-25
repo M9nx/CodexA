@@ -19,6 +19,8 @@ from semantic_code_intelligence.parsing.parser import (
 )
 
 
+pytestmark = [pytest.mark.unit]
+
 # =========================================================================
 # Language detection tests
 # =========================================================================

@@ -8,6 +8,8 @@ import pytest
 from semantic_code_intelligence.cli.router import register_commands
 
 
+pytestmark = [pytest.mark.unit]
+
 class TestRouter:
     """Tests for command registration."""
 

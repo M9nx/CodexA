@@ -34,11 +34,13 @@ class TestDefaultConfigs:
         assert cfg.chunk_size == 512
         assert cfg.chunk_overlap == 64
 
+    @pytest.mark.unit
     def test_search_config_defaults(self):
         cfg = SearchConfig()
         assert cfg.top_k == 10
         assert cfg.similarity_threshold == 0.3
 
+    @pytest.mark.unit
     def test_index_config_defaults(self):
         cfg = IndexConfig()
         assert cfg.ignore_dirs == DEFAULT_IGNORE_DIRS
@@ -46,6 +48,7 @@ class TestDefaultConfigs:
         assert cfg.exclude_files == set()
         assert cfg.use_incremental is True
 
+    @pytest.mark.unit
     def test_app_config_defaults(self):
         cfg = AppConfig()
         assert cfg.verbose is False
@@ -149,13 +152,16 @@ class TestInitProject:
 class TestDefaultIgnoreDirs:
     """Tests for default ignore directories."""
 
+    @pytest.mark.unit
     def test_common_dirs_ignored(self):
         for dirname in [".git", "node_modules", "build", "dist", "venv", "__pycache__"]:
             assert dirname in DEFAULT_IGNORE_DIRS
 
+    @pytest.mark.unit
     def test_default_extensions_include_python(self):
         assert ".py" in DEFAULT_EXTENSIONS
 
+    @pytest.mark.unit
     def test_default_extensions_include_common_languages(self):
         for ext in [".js", ".ts", ".java", ".go", ".rs", ".cpp"]:
             assert ext in DEFAULT_EXTENSIONS
@@ -164,14 +170,17 @@ class TestDefaultIgnoreDirs:
 class TestResourceRecommendations:
     """Tests for resource-aware recommendations."""
 
+    @pytest.mark.unit
     def test_recommend_batch_size_low_resources(self):
         mem_bytes = 500 * 1024 * 1024  # ~0.5 GB
         assert recommend_batch_size(mem_bytes, cpu_count=2) == 8
 
+    @pytest.mark.unit
     def test_recommend_batch_size_mid_range(self):
         mem_bytes = 3 * 1024 * 1024 * 1024  # 3 GB
         assert recommend_batch_size(mem_bytes, cpu_count=8) == 32
 
+    @pytest.mark.unit
     def test_recommend_batch_size_respects_cpu_cap(self):
         mem_bytes = 6 * BYTES_PER_GB  # would suggest 48 based on RAM
         assert recommend_batch_size(mem_bytes, cpu_count=2) == 16
