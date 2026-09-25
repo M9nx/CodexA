@@ -11,6 +11,9 @@ from click.testing import CliRunner
 from semantic_code_intelligence import __version__
 from semantic_code_intelligence.cli.main import cli
 
+# Repository root, so path assertions do not depend on the working directory.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 # =========================================================================
 # Version
@@ -206,12 +209,15 @@ class TestModelRegistry:
 
 class TestBuildScript:
     def test_build_script_exists(self):
-        assert Path("scripts/build_binary.py").exists() or Path("d:/mounir/CodexA/scripts/build_binary.py").exists()
+        assert (_REPO_ROOT / "scripts" / "build_binary.py").exists()
 
     def test_build_script_importable(self):
         import importlib.util
-        spec = importlib.util.spec_from_file_location("build_binary", "scripts/build_binary.py")
+
+        script = _REPO_ROOT / "scripts" / "build_binary.py"
+        spec = importlib.util.spec_from_file_location("build_binary", script)
         assert spec is not None
+        assert spec.loader is not None
 
 
 # =========================================================================
@@ -220,18 +226,15 @@ class TestBuildScript:
 
 class TestVSCodeExtension:
     def test_package_json_exists(self):
-        p = Path("vscode-extension/package.json")
-        assert p.exists() or Path("d:/mounir/CodexA/vscode-extension/package.json").exists()
+        assert (_REPO_ROOT / "vscode-extension" / "package.json").exists()
 
     def test_extension_ts_exists(self):
-        p = Path("vscode-extension/src/extension.ts")
-        assert p.exists() or Path("d:/mounir/CodexA/vscode-extension/src/extension.ts").exists()
+        assert (_REPO_ROOT / "vscode-extension" / "src" / "extension.ts").exists()
 
     @pytest.mark.integration
     def test_package_json_valid(self):
-        p = Path("vscode-extension/package.json")
-        if not p.exists():
-            p = Path("d:/mounir/CodexA/vscode-extension/package.json")
+        p = _REPO_ROOT / "vscode-extension" / "package.json"
+        assert p.exists(), f"missing extension manifest: {p}"
         data = json.loads(p.read_text(encoding="utf-8"))
         assert data["name"] == "codexa"
         assert "commands" in str(data["contributes"])
