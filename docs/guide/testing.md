@@ -86,10 +86,49 @@ commit with 2683 collected tests:
 | `pytest -m model` | 33 selected |
 | `pytest -m http` | 5 selected |
 | `pytest -m slow` | 1 selected |
+| `pytest -m platform` | 0 selected |
+| `pytest -m compat` | 0 selected |
 | `pytest -m "unit or integration or model or http"` | 843 selected |
 
 Each group runs and passes on its own, so a group can be used as a quick local
 check or as the basis for a later CI split.
+
+### The smoke selection
+
+There is deliberately no `smoke` marker, because a definition expressed as a
+selection cannot drift away from the tests. Two useful shapes, measured from CI
+per-test durations (2683 tests, 204.2 s of summed test time in one cell):
+
+| selection | tests | time | share of suite |
+| --- | --- | --- | --- |
+| `pytest` | 2683 | 204.2 s | 100 % |
+| `pytest -m "not slow and not model"` | 2650 | 37.5 s | 18.4 % |
+| `pytest -m "unit or integration or http"` | 810 | 7.4 s | 3.6 % |
+| `pytest -m unit` | 312 | 0.3 s | 0.1 % |
+
+The first is the practical smoke gate: it runs 98 % of the suite in under a
+fifth of the time, because the 33 `model` tests alone account for 81.6 % of
+suite runtime. The second is a much faster, narrower gate if that is ever
+needed.
+
+### Platform and version coverage
+
+`platform` and `compat` are registered but **currently select nothing**, and
+that is a real finding rather than an unfinished job:
+
+- The test suite contains no `sys.platform`, `platform.system()`, `os.name`,
+  `sys.version_info` or `skipif` logic at all.
+- All six matrix cells report identical results: 2683 collected, 2678 passed,
+  5 skipped, with the *same five* tests skipped on every cell. Those five are
+  skipped by `pytest.importorskip("mcp")`, which does not depend on the OS or
+  the Python version.
+- The only two tests with a platform in their name,
+  `test_uri_to_path_unix` and `test_uri_to_path_windows`, are plain
+  input-parsing tests that pass identically everywhere.
+
+So today every test runs on every OS and every supported Python version, and
+none of them is conditional on either. Adding those tests is tracked under
+platform coverage and Python compatibility work, not here.
 
 ### How tests are classified
 
@@ -115,7 +154,8 @@ marker.
 
 - `e2e` — roughly 100 CLI tests that shell out to the `codexa` binary and touch
   the real home directory are deliberately still unmarked.
-- `platform`, `compat` — reserved for later work.
+- `platform`, `compat` — nothing to classify yet; see
+  [Platform and version coverage](#platform-and-version-coverage).
 - About 1715 tests have no marker at all. Most look unit-like by the static
   rule, but they sit in the same category as the one test above that static
   analysis got wrong, so they are held back until each can be confirmed by
