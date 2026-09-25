@@ -342,6 +342,7 @@ class TestDependencyMap:
 # ---------------------------------------------------------------------------
 
 class TestContextEdgeCases:
+    @pytest.mark.integration
     def test_builder_nonexistent_file(self, tmp_path):
         builder = ContextBuilder()
         syms = builder.index_file(str(tmp_path / "nope.py"))

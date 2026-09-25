@@ -115,6 +115,7 @@ class TestDepsCmd:
 # ---------------------------------------------------------------------------
 
 class TestWatchCmd:
+    @pytest.mark.integration
     def test_watch_no_init(self, runner, tmp_path):
         result = runner.invoke(cli, ["watch", "-p", str(tmp_path)])
         assert result.exit_code == 0

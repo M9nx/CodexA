@@ -75,27 +75,51 @@ pytest -m unit --collect-only -q
 
 ## Current state
 
-`unit` is the only marker applied so far. Measured on this commit with 2683
-collected tests:
+`unit`, `integration`, `model`, `http` and `slow` are applied. Measured on this
+commit with 2683 collected tests:
 
 | command | result |
 | --- | --- |
 | `pytest` | 2683 selected — unchanged, and this is what CI runs |
-| `pytest -m unit` | 312 selected, 2371 deselected, passes in about 1 second |
-| `pytest -m integration` | 0 selected, pytest exits 5 |
+| `pytest -m unit` | 312 selected, passes in about 1 second |
+| `pytest -m integration` | 493 selected |
+| `pytest -m model` | 33 selected |
+| `pytest -m http` | 5 selected |
+| `pytest -m slow` | 1 selected |
+| `pytest -m "unit or integration or model or http"` | 843 selected |
 
-287 test functions carry `unit`: 119 in five files marked at module level, and
-168 marked individually. Those 287 functions expand to 312 test items because
-some are parametrized.
+Each group runs and passes on its own, so a group can be used as a quick local
+check or as the basis for a later CI split.
 
-The `unit` group is deliberately conservative. A test only qualifies if neither
-its own body, nor the fixtures it requests, nor any same-module helper it calls
-touches the network, a subprocess, a real model, FAISS, the clock, threads, or
-the real filesystem. A fast selection is therefore a strong signal, not a
-guarantee, until `integration`, `model` and `http` markers exist.
+### How tests are classified
 
-Groups that are not yet marked (`integration`, `e2e`, `model`, `http`,
-`platform`, `compat`, `slow`) currently select nothing.
+`unit` is decided statically: a test qualifies only if neither its own body, nor
+the fixtures it requests, nor any same-module helper it calls touches the
+network, a subprocess, a real model, FAISS, the clock, threads, or the real
+filesystem.
+
+Static analysis has a known blind spot: a heavy dependency loaded *dynamically*
+inside production code is invisible. One test was classified this way.
+`test_phase20.py::TestToolRegistryInvocations::test_invoke_semantic_search_no_index`
+takes **177.65 s on average on CI** because `ToolRegistry.invoke("semantic_search")`
+loads a real embedding model, yet nothing in the test file mentions one. It is
+marked `model` and `slow` on the strength of the JUnit duration evidence
+produced by CI, not on static analysis.
+
+`integration`, `model` and `http` are assigned from the resolved closure signals
+by priority: HTTP server or socket first, then a real model or FAISS, then
+anything else that needs the real environment. A test may carry more than one
+marker.
+
+### Not yet classified
+
+- `e2e` — roughly 100 CLI tests that shell out to the `codexa` binary and touch
+  the real home directory are deliberately still unmarked.
+- `platform`, `compat` — reserved for later work.
+- About 1715 tests have no marker at all. Most look unit-like by the static
+  rule, but they sit in the same category as the one test above that static
+  analysis got wrong, so they are held back until each can be confirmed by
+  evidence rather than by scanning.
 
 ## Adding a marker to a test
 

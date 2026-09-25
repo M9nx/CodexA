@@ -141,6 +141,7 @@ class TestHotspotDataclasses:
 class TestAnalyzeHotspots:
     """Tests for the hotspot detection engine."""
 
+    @pytest.mark.integration
     def test_basic_analysis(self, tmp_path):
         from semantic_code_intelligence.ci.hotspots import analyze_hotspots
 
@@ -154,6 +155,7 @@ class TestAnalyzeHotspots:
         assert report.symbols_analyzed >= 1
         assert isinstance(report.hotspots, list)
 
+    @pytest.mark.integration
     def test_top_n_limits(self, tmp_path):
         from semantic_code_intelligence.ci.hotspots import analyze_hotspots
 
@@ -166,6 +168,7 @@ class TestAnalyzeHotspots:
         )
         assert len(report.hotspots) <= 2
 
+    @pytest.mark.integration
     def test_custom_weights(self, tmp_path):
         from semantic_code_intelligence.ci.hotspots import analyze_hotspots
 
@@ -179,6 +182,7 @@ class TestAnalyzeHotspots:
         )
         assert report.symbols_analyzed >= 1
 
+    @pytest.mark.integration
     def test_no_git_redistributes_weights(self, tmp_path):
         from semantic_code_intelligence.ci.hotspots import analyze_hotspots
 
@@ -193,6 +197,7 @@ class TestAnalyzeHotspots:
             factor_names = [f.name for f in h.factors]
             assert "churn" not in factor_names
 
+    @pytest.mark.integration
     def test_hotspot_scores_are_sorted_desc(self, tmp_path):
         from semantic_code_intelligence.ci.hotspots import analyze_hotspots
 
@@ -205,6 +210,7 @@ class TestAnalyzeHotspots:
         scores = [h.risk_score for h in report.hotspots]
         assert scores == sorted(scores, reverse=True)
 
+    @pytest.mark.integration
     def test_empty_project(self, tmp_path):
         from semantic_code_intelligence.ci.hotspots import analyze_hotspots
 
@@ -217,6 +223,7 @@ class TestAnalyzeHotspots:
         assert report.symbols_analyzed == 0
         assert report.hotspots == []
 
+    @pytest.mark.integration
     def test_report_serialisation_roundtrip(self, tmp_path):
         from semantic_code_intelligence.ci.hotspots import analyze_hotspots
 
@@ -292,6 +299,7 @@ class TestImpactDataclasses:
 class TestAnalyzeImpact:
     """Tests for the impact analysis engine."""
 
+    @pytest.mark.integration
     def test_basic_impact(self, tmp_path):
         from semantic_code_intelligence.ci.impact import analyze_impact
 
@@ -302,6 +310,7 @@ class TestAnalyzeImpact:
         assert report.target == "helper"
         assert report.target_kind == "symbol"
 
+    @pytest.mark.integration
     def test_unknown_symbol_empty_report(self, tmp_path):
         from semantic_code_intelligence.ci.impact import analyze_impact
 
@@ -311,6 +320,7 @@ class TestAnalyzeImpact:
         report = analyze_impact("nonexistent_xyz", symbols, cg, dep_map, tmp_path)
         assert report.total_affected == 0
 
+    @pytest.mark.integration
     def test_impact_file_target(self, tmp_path):
         from semantic_code_intelligence.ci.impact import analyze_impact
 
@@ -323,6 +333,7 @@ class TestAnalyzeImpact:
         )
         assert report.target_kind == "file"
 
+    @pytest.mark.integration
     def test_impact_max_depth(self, tmp_path):
         from semantic_code_intelligence.ci.impact import analyze_impact
 
@@ -336,6 +347,7 @@ class TestAnalyzeImpact:
         for s in report.transitive_symbols:
             assert s.depth <= 1
 
+    @pytest.mark.integration
     def test_impact_chains(self, tmp_path):
         from semantic_code_intelligence.ci.impact import analyze_impact
 
@@ -345,6 +357,7 @@ class TestAnalyzeImpact:
         report = analyze_impact("helper", symbols, cg, dep_map, tmp_path)
         assert isinstance(report.chains, list)
 
+    @pytest.mark.integration
     def test_impact_serialisation(self, tmp_path):
         from semantic_code_intelligence.ci.impact import analyze_impact
 
@@ -409,6 +422,7 @@ class TestTraceDataclasses:
 class TestTraceSymbol:
     """Tests for the symbol trace tool."""
 
+    @pytest.mark.integration
     def test_basic_trace(self, tmp_path):
         from semantic_code_intelligence.ci.trace import trace_symbol
 
@@ -419,6 +433,7 @@ class TestTraceSymbol:
         assert result.target == "compute"
         assert result.target_file != ""
 
+    @pytest.mark.integration
     def test_trace_unknown_symbol(self, tmp_path):
         from semantic_code_intelligence.ci.trace import trace_symbol
 
@@ -429,6 +444,7 @@ class TestTraceSymbol:
         assert result.target_file == ""
         assert result.total_nodes == 0
 
+    @pytest.mark.integration
     def test_trace_has_upstream(self, tmp_path):
         from semantic_code_intelligence.ci.trace import trace_symbol
 
@@ -439,6 +455,7 @@ class TestTraceSymbol:
         # helper is called by compute, so upstream should be non-empty
         assert len(result.upstream) >= 1 or len(result.edges) >= 0
 
+    @pytest.mark.integration
     def test_trace_has_downstream(self, tmp_path):
         from semantic_code_intelligence.ci.trace import trace_symbol
 
@@ -449,6 +466,7 @@ class TestTraceSymbol:
         # orchestrate calls compute, so downstream should be non-empty
         assert len(result.downstream) >= 0  # depends on call graph heuristic
 
+    @pytest.mark.integration
     def test_trace_max_depth(self, tmp_path):
         from semantic_code_intelligence.ci.trace import trace_symbol
 
@@ -459,6 +477,7 @@ class TestTraceSymbol:
         for n in result.upstream:
             assert abs(n.depth) <= 1
 
+    @pytest.mark.integration
     def test_trace_edges_list(self, tmp_path):
         from semantic_code_intelligence.ci.trace import trace_symbol
 
@@ -468,6 +487,7 @@ class TestTraceSymbol:
         result = trace_symbol("compute", symbols, cg)
         assert isinstance(result.edges, list)
 
+    @pytest.mark.integration
     def test_trace_serialisation(self, tmp_path):
         from semantic_code_intelligence.ci.trace import trace_symbol
 
@@ -512,6 +532,7 @@ class TestNormalise:
 class TestResolveTarget:
     """Tests for target resolution in impact analysis."""
 
+    @pytest.mark.integration
     def test_resolve_symbol(self, tmp_path):
         from semantic_code_intelligence.ci.impact import _resolve_target_symbols
 
@@ -522,6 +543,7 @@ class TestResolveTarget:
         assert kind == "symbol"
         assert len(matched) >= 1
 
+    @pytest.mark.integration
     def test_resolve_file(self, tmp_path):
         from semantic_code_intelligence.ci.impact import _resolve_target_symbols
 
@@ -533,6 +555,7 @@ class TestResolveTarget:
         )
         assert kind == "file"
 
+    @pytest.mark.integration
     def test_resolve_unknown(self, tmp_path):
         from semantic_code_intelligence.ci.impact import _resolve_target_symbols
 
@@ -560,6 +583,7 @@ class TestHotspotsCLI:
         assert result.exit_code == 0
         assert "hotspot" in result.output.lower()
 
+    @pytest.mark.integration
     def test_hotspots_json(self, tmp_path):
         from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
 
@@ -572,6 +596,7 @@ class TestHotspotsCLI:
         data = json.loads(result.output)
         assert "hotspots" in data
 
+    @pytest.mark.integration
     def test_hotspots_pipe(self, tmp_path):
         from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
 
@@ -583,6 +608,7 @@ class TestHotspotsCLI:
         assert result.exit_code == 0
         assert "files=" in result.output
 
+    @pytest.mark.integration
     def test_hotspots_top_n(self, tmp_path):
         from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
 
@@ -595,6 +621,7 @@ class TestHotspotsCLI:
         data = json.loads(result.output)
         assert len(data["hotspots"]) <= 1
 
+    @pytest.mark.integration
     def test_hotspots_rich_output(self, tmp_path):
         from semantic_code_intelligence.cli.commands.hotspots_cmd import hotspots_cmd
 
@@ -622,6 +649,7 @@ class TestImpactCLI:
         assert result.exit_code == 0
         assert "impact" in result.output.lower() or "blast" in result.output.lower()
 
+    @pytest.mark.integration
     def test_impact_json(self, tmp_path):
         from semantic_code_intelligence.cli.commands.impact_cmd import impact_cmd
 
@@ -634,6 +662,7 @@ class TestImpactCLI:
         data = json.loads(result.output)
         assert data["target"] == "helper"
 
+    @pytest.mark.integration
     def test_impact_pipe(self, tmp_path):
         from semantic_code_intelligence.cli.commands.impact_cmd import impact_cmd
 
@@ -645,6 +674,7 @@ class TestImpactCLI:
         assert result.exit_code == 0
         assert "target=helper" in result.output
 
+    @pytest.mark.integration
     def test_impact_unknown_target(self, tmp_path):
         from semantic_code_intelligence.cli.commands.impact_cmd import impact_cmd
 
@@ -657,6 +687,7 @@ class TestImpactCLI:
         data = json.loads(result.output)
         assert data["total_affected"] == 0
 
+    @pytest.mark.integration
     def test_impact_rich_output(self, tmp_path):
         from semantic_code_intelligence.cli.commands.impact_cmd import impact_cmd
 
@@ -684,6 +715,7 @@ class TestTraceCLI:
         assert result.exit_code == 0
         assert "trace" in result.output.lower()
 
+    @pytest.mark.integration
     def test_trace_json(self, tmp_path):
         from semantic_code_intelligence.cli.commands.trace_cmd import trace_cmd
 
@@ -696,6 +728,7 @@ class TestTraceCLI:
         data = json.loads(result.output)
         assert data["target"] == "compute"
 
+    @pytest.mark.integration
     def test_trace_pipe(self, tmp_path):
         from semantic_code_intelligence.cli.commands.trace_cmd import trace_cmd
 
@@ -707,6 +740,7 @@ class TestTraceCLI:
         assert result.exit_code == 0
         assert "target=compute" in result.output
 
+    @pytest.mark.integration
     def test_trace_unknown_symbol(self, tmp_path):
         from semantic_code_intelligence.cli.commands.trace_cmd import trace_cmd
 
@@ -719,6 +753,7 @@ class TestTraceCLI:
         data = json.loads(result.output)
         assert "error" in data
 
+    @pytest.mark.integration
     def test_trace_rich_output(self, tmp_path):
         from semantic_code_intelligence.cli.commands.trace_cmd import trace_cmd
 
@@ -869,12 +904,14 @@ class TestDocsGeneration:
         assert "codexa impact" in md
         assert "codexa trace" in md
 
+    @pytest.mark.integration
     def test_workflow_intelligence_in_all_docs(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
 
         generated = generate_all_docs(tmp_path)
         assert "WORKFLOW_INTELLIGENCE.md" in generated
 
+    @pytest.mark.integration
     def test_workflow_intelligence_file_content(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
 

@@ -160,6 +160,7 @@ class TestIncrementalIndexing:
 class TestHFTokenConfig:
     """Tests for _configure_hf_token() in embeddings/generator.py."""
 
+    @pytest.mark.integration
     def test_hf_token_already_set(self) -> None:
         from semantic_code_intelligence.embeddings.generator import _configure_hf_token
 
@@ -167,6 +168,7 @@ class TestHFTokenConfig:
             _configure_hf_token()
             assert os.environ["HF_TOKEN"] == "existing"
 
+    @pytest.mark.integration
     def test_hugging_face_hub_token_propagated(self) -> None:
         from semantic_code_intelligence.embeddings.generator import _configure_hf_token
 
@@ -176,6 +178,7 @@ class TestHFTokenConfig:
             _configure_hf_token()
             assert os.environ.get("HF_TOKEN") == "hub_tok"
 
+    @pytest.mark.integration
     def test_huggingface_token_propagated(self) -> None:
         from semantic_code_intelligence.embeddings.generator import _configure_hf_token
 
@@ -186,6 +189,7 @@ class TestHFTokenConfig:
             _configure_hf_token()
             assert os.environ.get("HF_TOKEN") == "hf_tok"
 
+    @pytest.mark.integration
     def test_no_token_set(self) -> None:
         from semantic_code_intelligence.embeddings.generator import _configure_hf_token
 
@@ -280,6 +284,7 @@ class TestSilentExceptionLogging:
         "semantic_code_intelligence.docs",
         "semantic_code_intelligence.llm.streaming",
     ])
+    @pytest.mark.integration
     def test_module_has_no_bare_pass_in_except(self, module_path: str) -> None:
         """Ensure no bare 'except Exception: pass' remains in the source.
 

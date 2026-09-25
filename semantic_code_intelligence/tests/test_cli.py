@@ -59,6 +59,7 @@ class TestInitCommand:
         assert (tmp_path / ".codexa" / "config.json").exists()
         assert (tmp_path / ".codexa" / "index").is_dir()
 
+    @pytest.mark.integration
     def test_init_already_initialized(self, runner: CliRunner, tmp_path: Path):
         # First init
         runner.invoke(cli, ["init", str(tmp_path)])
@@ -73,6 +74,7 @@ class TestInitCommand:
             assert result.exit_code == 0
             assert Path(td, ".codexa").is_dir()
 
+    @pytest.mark.integration
     def test_init_profile_aliases(self, runner: CliRunner, tmp_path: Path):
         cases = [
             ("small", "fast"),
@@ -188,10 +190,12 @@ class TestInitCommand:
 class TestIndexCommand:
     """Tests for the index command."""
 
+    @pytest.mark.integration
     def test_index_without_init_fails(self, runner: CliRunner, tmp_path: Path):
         result = runner.invoke(cli, ["index", str(tmp_path)])
         assert result.exit_code != 0 or "not initialized" in result.output.lower()
 
+    @pytest.mark.integration
     def test_index_initialized_project(self, runner: CliRunner, tmp_path: Path):
         # Initialize first
         runner.invoke(cli, ["init", str(tmp_path)])
@@ -210,6 +214,7 @@ class TestIndexCommand:
         # Should find 2 py files (not counting files in .codexa)
         assert "2 files" in result.output
 
+    @pytest.mark.integration
     def test_index_ignores_excluded_dirs(self, runner: CliRunner, tmp_path: Path):
         # Create files in ignored directories
         (tmp_path / "main.py").write_text("def hello(): pass", encoding="utf-8")
@@ -222,6 +227,7 @@ class TestIndexCommand:
         assert result.exit_code == 0
         assert "1 files" in result.output
 
+    @pytest.mark.integration
     def test_index_force_flag(self, runner: CliRunner, tmp_path: Path):
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(cli, ["index", str(tmp_path), "--force"])
@@ -258,6 +264,7 @@ class TestIndexCommand:
         assert config["embedding"]["batch_size"] == 8
         assert captured["batch_size"] == 8
 
+    @pytest.mark.integration
     def test_index_network_oserror_is_nonfatal(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         runner.invoke(cli, ["init", str(tmp_path)])
 
@@ -269,6 +276,7 @@ class TestIndexCommand:
         assert result.exit_code == 0
         assert "network issue" in result.output.lower()
 
+    @pytest.mark.integration
     def test_index_non_network_oserror_fails(self, runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         runner.invoke(cli, ["init", str(tmp_path)])
 
@@ -283,10 +291,12 @@ class TestIndexCommand:
 class TestSearchCommand:
     """Tests for the search command."""
 
+    @pytest.mark.integration
     def test_search_without_init_fails(self, runner: CliRunner, tmp_path: Path):
         result = runner.invoke(cli, ["search", "test query", "--path", str(tmp_path)])
         assert result.exit_code != 0 or "not initialized" in result.output.lower()
 
+    @pytest.mark.integration
     def test_search_human_readable(self, runner: CliRunner, tmp_path: Path):
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(
@@ -296,6 +306,7 @@ class TestSearchCommand:
         # Without an index, shows empty index warning
         assert "empty" in result.output.lower() or "no results" in result.output.lower()
 
+    @pytest.mark.integration
     def test_search_json_output(self, runner: CliRunner, tmp_path: Path):
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(
@@ -307,6 +318,7 @@ class TestSearchCommand:
         assert "results" in data
         assert isinstance(data["results"], list)
 
+    @pytest.mark.integration
     def test_search_custom_top_k(self, runner: CliRunner, tmp_path: Path):
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(
@@ -317,6 +329,7 @@ class TestSearchCommand:
         data = json.loads(result.output)
         assert data["top_k"] == 5
 
+    @pytest.mark.integration
     def test_search_default_top_k_from_config(self, runner: CliRunner, tmp_path: Path):
         runner.invoke(cli, ["init", str(tmp_path)])
         result = runner.invoke(

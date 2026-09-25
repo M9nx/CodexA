@@ -434,6 +434,7 @@ class TestVizCLI:
         result = runner.invoke(viz_cmd, ["--help"])
         assert "--json" in result.output
 
+    @pytest.mark.integration
     def test_viz_workspace(self, runner, tmp_path):
         """Viz workspace should produce Mermaid output."""
         result = runner.invoke(viz_cmd, ["workspace", "--path", str(tmp_path)])
@@ -458,6 +459,7 @@ class TestVizCLI:
         assert result.exit_code == 0
         assert "flowchart" in result.output or "error" in result.output.lower()
 
+    @pytest.mark.integration
     def test_viz_json_mode(self, runner, tmp_path):
         """--json flag should output JSON."""
         result = runner.invoke(viz_cmd, ["workspace", "--json", "--path", str(tmp_path)])
@@ -466,6 +468,7 @@ class TestVizCLI:
         assert "mermaid" in data
         assert "kind" in data
 
+    @pytest.mark.integration
     def test_viz_output_file(self, runner, tmp_path):
         """--output should write to file."""
         outfile = tmp_path / "graph.mmd"

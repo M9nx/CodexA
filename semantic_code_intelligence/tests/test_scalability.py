@@ -108,6 +108,7 @@ class TestParallelScanner:
         assert results == []
         assert errors == []
 
+    @pytest.mark.integration
     def test_scan_files(self, tmp_path):
         for i in range(5):
             (tmp_path / f"file{i}.txt").write_text(f"content {i}", encoding="utf-8")
@@ -121,6 +122,7 @@ class TestParallelScanner:
         assert len(results) == 5
         assert len(errors) == 0
 
+    @pytest.mark.integration
     def test_scan_with_errors(self, tmp_path):
         paths = [tmp_path / "exists.txt", tmp_path / "missing.txt"]
         paths[0].write_text("ok", encoding="utf-8")

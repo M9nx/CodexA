@@ -243,6 +243,7 @@ class TestQualityReport:
 class TestAnalyzeProject:
     """Tests for project-level analysis."""
 
+    @pytest.mark.integration
     def test_analyze_empty_dir(self, tmp_path):
         from semantic_code_intelligence.ci.quality import analyze_project
 
@@ -250,6 +251,7 @@ class TestAnalyzeProject:
         assert report.files_analyzed == 0
         assert report.issue_count == 0
 
+    @pytest.mark.integration
     def test_analyze_with_file(self, tmp_path):
         from semantic_code_intelligence.ci.quality import analyze_project
 
@@ -275,6 +277,7 @@ class TestChangeSummary:
         assert result.files_changed == 0
         assert result.to_dict()["files_changed"] == 0
 
+    @pytest.mark.integration
     def test_with_python_file(self, tmp_path):
         from semantic_code_intelligence.ci.pr import build_change_summary
 
@@ -284,6 +287,7 @@ class TestChangeSummary:
         assert result.files_changed == 1
         assert "python" in result.languages
 
+    @pytest.mark.integration
     def test_nonsupported_file(self, tmp_path):
         from semantic_code_intelligence.ci.pr import build_change_summary
 
@@ -294,6 +298,7 @@ class TestChangeSummary:
         d = result.file_details[0]
         assert d.language is None
 
+    @pytest.mark.integration
     def test_symbols_detected(self, tmp_path):
         from semantic_code_intelligence.ci.pr import build_change_summary
 
@@ -308,6 +313,7 @@ class TestChangeSummary:
 class TestImpactAnalysis:
     """Tests for semantic impact analysis."""
 
+    @pytest.mark.integration
     def test_impact_empty(self, tmp_path):
         from semantic_code_intelligence.ci.pr import analyze_impact
 
@@ -315,6 +321,7 @@ class TestImpactAnalysis:
         assert result.changed_symbols == []
         assert result.to_dict()["affected_files"] == []
 
+    @pytest.mark.integration
     def test_impact_with_file(self, tmp_path):
         from semantic_code_intelligence.ci.pr import analyze_impact
 
@@ -401,6 +408,7 @@ class TestPRReport:
         assert d["change_summary"]["files_changed"] == 1
         assert d["risk"]["score"] == 10
 
+    @pytest.mark.integration
     def test_generate_pr_report_empty(self, tmp_path):
         from semantic_code_intelligence.ci.pr import generate_pr_report
 
@@ -482,6 +490,7 @@ class TestPrecommitHooks:
         assert result.passed is True
         assert result.files_checked == 0
 
+    @pytest.mark.integration
     def test_safe_file(self, tmp_path):
         from semantic_code_intelligence.ci.hooks import run_precommit_check
 
@@ -546,6 +555,7 @@ class TestQualityCLI:
         result = runner.invoke(quality_cmd, ["--help"])
         assert "--pipe" in result.output
 
+    @pytest.mark.integration
     def test_json_output(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.quality_cmd import quality_cmd
 
@@ -554,6 +564,7 @@ class TestQualityCLI:
         data = json.loads(result.output)
         assert "files_analyzed" in data
 
+    @pytest.mark.integration
     def test_safety_only_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.quality_cmd import quality_cmd
 
@@ -563,6 +574,7 @@ class TestQualityCLI:
         assert result.exit_code == 0
         assert "PASS" in result.output or "FAIL" in result.output
 
+    @pytest.mark.integration
     def test_pipe_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.quality_cmd import quality_cmd
 
@@ -597,6 +609,7 @@ class TestPRSummaryCLI:
         result = runner.invoke(pr_summary_cmd, ["--help"])
         assert "--files" in result.output or "-f" in result.output
 
+    @pytest.mark.integration
     def test_json_with_specific_file(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.pr_summary_cmd import pr_summary_cmd
 
@@ -609,6 +622,7 @@ class TestPRSummaryCLI:
         data = json.loads(result.output)
         assert "change_summary" in data
 
+    @pytest.mark.integration
     def test_pipe_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.pr_summary_cmd import pr_summary_cmd
 
@@ -657,6 +671,7 @@ class TestCIGenCLI:
         assert result.exit_code == 0
         assert "pre-commit" in result.output.lower()
 
+    @pytest.mark.integration
     def test_output_to_file(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.ci_gen_cmd import ci_gen_cmd
 
@@ -769,6 +784,7 @@ class TestDocsGenerator:
         assert "codexa pr-summary" in md
         assert "codexa ci-gen" in md
 
+    @pytest.mark.integration
     def test_generate_all_docs_includes_ci(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
 

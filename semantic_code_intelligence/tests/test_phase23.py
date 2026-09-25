@@ -58,6 +58,7 @@ _SRC = _PROJECT_ROOT / "semantic_code_intelligence"
 class TestIndexManifest:
     """Tests for IndexManifest dataclass."""
 
+    @pytest.mark.model
     def test_defaults(self):
         m = IndexManifest()
         assert m.schema_version == SCHEMA_VERSION
@@ -91,6 +92,7 @@ class TestIndexManifest:
         m = IndexManifest.from_dict(d)
         assert m.total_files == 3
 
+    @pytest.mark.integration
     def test_touch_sets_timestamps(self):
         m = IndexManifest()
         assert m.created_at == 0.0
@@ -103,12 +105,14 @@ class TestIndexManifest:
         assert m.created_at == first_created  # created_at unchanged
         assert m.updated_at > first_created
 
+    @pytest.mark.model
     def test_is_compatible(self):
         m = IndexManifest(embedding_model="all-MiniLM-L6-v2", embedding_dimension=384)
         assert m.is_compatible("all-MiniLM-L6-v2", 384) is True
         assert m.is_compatible("other-model", 384) is False
         assert m.is_compatible("all-MiniLM-L6-v2", 768) is False
 
+    @pytest.mark.integration
     def test_save_and_load(self, tmp_path: Path):
         m = IndexManifest(total_files=5, total_chunks=20, project_root="/repo")
         m.touch()
@@ -123,13 +127,16 @@ class TestIndexManifest:
         assert loaded.project_root == "/repo"
         assert loaded.created_at > 0.0
 
+    @pytest.mark.integration
     def test_load_returns_none_when_missing(self, tmp_path: Path):
         assert IndexManifest.load(tmp_path) is None
 
+    @pytest.mark.integration
     def test_load_returns_none_on_corrupt_json(self, tmp_path: Path):
         (tmp_path / MANIFEST_FILE).write_text("not json", encoding="utf-8")
         assert IndexManifest.load(tmp_path) is None
 
+    @pytest.mark.integration
     def test_save_creates_directory(self, tmp_path: Path):
         deep = tmp_path / "a" / "b" / "c"
         IndexManifest().save(deep)
@@ -294,6 +301,7 @@ class TestSymbolRegistry:
         assert summary["function"] == 2
         assert summary["class"] == 1
 
+    @pytest.mark.integration
     def test_save_and_load(self, tmp_path: Path):
         reg = SymbolRegistry()
         reg.add(_make_entry(name="func1", kind="function", language="python"))
@@ -307,10 +315,12 @@ class TestSymbolRegistry:
         assert len(loaded.find_by_name("func1")) == 1
         assert loaded.find_by_name("Cls1")[0].kind == "class"
 
+    @pytest.mark.integration
     def test_load_returns_empty_when_missing(self, tmp_path: Path):
         reg = SymbolRegistry.load(tmp_path)
         assert reg.size == 0
 
+    @pytest.mark.integration
     def test_load_handles_corrupt_json(self, tmp_path: Path):
         (tmp_path / REGISTRY_FILE).write_text("not json", encoding="utf-8")
         reg = SymbolRegistry.load(tmp_path)
@@ -405,6 +415,7 @@ class TestIndexStats:
         assert len(s2.language_coverage) == 1
         assert s2.language_coverage[0].language == "python"
 
+    @pytest.mark.integration
     def test_save_and_load(self, tmp_path: Path):
         s = IndexStats(
             total_files=8,
@@ -420,9 +431,11 @@ class TestIndexStats:
         assert loaded.total_files == 8
         assert len(loaded.language_coverage) == 1
 
+    @pytest.mark.integration
     def test_load_returns_none_when_missing(self, tmp_path: Path):
         assert IndexStats.load(tmp_path) is None
 
+    @pytest.mark.integration
     def test_load_returns_none_on_corrupt_json(self, tmp_path: Path):
         (tmp_path / STATS_FILE).write_text("broken", encoding="utf-8")
         assert IndexStats.load(tmp_path) is None
@@ -527,6 +540,7 @@ class TestQueryHistory:
         h.clear()
         assert h.size == 0
 
+    @pytest.mark.integration
     def test_save_and_load(self, tmp_path: Path):
         h = QueryHistory()
         h.record("search1", result_count=3, top_score=0.9, languages=["python"])
@@ -540,10 +554,12 @@ class TestQueryHistory:
         assert loaded.records[0].query == "search1"
         assert loaded.records[1].top_files == ["main.py"]
 
+    @pytest.mark.integration
     def test_load_returns_empty_when_missing(self, tmp_path: Path):
         h = QueryHistory.load(tmp_path)
         assert h.size == 0
 
+    @pytest.mark.integration
     def test_load_handles_corrupt_json(self, tmp_path: Path):
         (tmp_path / HISTORY_FILE).write_text("not json", encoding="utf-8")
         h = QueryHistory.load(tmp_path)

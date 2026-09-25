@@ -426,12 +426,14 @@ class TestReasoningEngine:
         engine = ReasoningEngine(provider, tmp_path)
         return engine, provider
 
+    @pytest.mark.integration
     def test_ask(self, tmp_path):
         engine, provider = self._make_engine(tmp_path, "The answer is 42.")
         result = engine.ask("What is the meaning?")
         assert result.answer == "The answer is 42."
         assert result.question == "What is the meaning?"
 
+    @pytest.mark.integration
     def test_review(self, tmp_path):
         engine, provider = self._make_engine(
             tmp_path,
@@ -443,11 +445,13 @@ class TestReasoningEngine:
         assert len(result.issues) == 1
         assert result.summary == "Needs docs"
 
+    @pytest.mark.integration
     def test_review_file_not_found(self, tmp_path):
         engine, _ = self._make_engine(tmp_path)
         result = engine.review(str(tmp_path / "nonexistent.py"))
         assert "not found" in result.summary.lower() or "empty" in result.summary.lower()
 
+    @pytest.mark.integration
     def test_refactor(self, tmp_path):
         engine, provider = self._make_engine(
             tmp_path,
@@ -458,6 +462,7 @@ class TestReasoningEngine:
         assert result.refactored_code != ""
         assert "docstring" in result.explanation.lower()
 
+    @pytest.mark.integration
     def test_suggest(self, tmp_path):
         engine, provider = self._make_engine(
             tmp_path,
@@ -467,6 +472,7 @@ class TestReasoningEngine:
         assert len(result.suggestions) == 1
         assert result.suggestions[0]["title"] == "Add type hints"
 
+    @pytest.mark.integration
     def test_suggest_raw_fallback(self, tmp_path):
         engine, _ = self._make_engine(tmp_path, "Just some plain text")
         result = engine.suggest("hello")

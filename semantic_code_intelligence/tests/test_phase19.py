@@ -334,12 +334,14 @@ class TestToolExecutionResult:
 class TestToolExecutor:
     """Tests for the ToolExecutor engine."""
 
+    @pytest.mark.integration
     def test_creation(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
         executor = ToolExecutor(tmp_path)
         assert executor is not None
 
+    @pytest.mark.integration
     def test_available_tools_includes_builtins(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -350,6 +352,7 @@ class TestToolExecutor:
         assert "summarize_repo" in names
         assert len(names) >= 8
 
+    @pytest.mark.integration
     def test_get_tool_schema(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -359,12 +362,14 @@ class TestToolExecutor:
         assert schema["name"] == "semantic_search"
         assert "parameters" in schema
 
+    @pytest.mark.integration
     def test_get_tool_schema_unknown(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
         executor = ToolExecutor(tmp_path)
         assert executor.get_tool_schema("nonexistent") is None
 
+    @pytest.mark.integration
     def test_execute_unknown_tool(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -376,6 +381,7 @@ class TestToolExecutor:
         assert result.error is not None
         assert result.error.error_code == "unknown_tool"
 
+    @pytest.mark.integration
     def test_execute_missing_required_arg(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -387,6 +393,7 @@ class TestToolExecutor:
         assert result.error is not None
         assert result.error.error_code == "missing_required_arg"
 
+    @pytest.mark.integration
     def test_execute_summarize_repo(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -399,6 +406,7 @@ class TestToolExecutor:
         assert result.execution_time_ms >= 0
         assert result.tool_name == "summarize_repo"
 
+    @pytest.mark.integration
     def test_execute_has_timing(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -408,6 +416,7 @@ class TestToolExecutor:
         result = executor.execute(inv)
         assert result.execution_time_ms >= 0
 
+    @pytest.mark.integration
     def test_execute_preserves_request_id(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -417,6 +426,7 @@ class TestToolExecutor:
         result = executor.execute(inv)
         assert result.request_id == "my-id-123"
 
+    @pytest.mark.integration
     def test_execute_batch(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -431,6 +441,7 @@ class TestToolExecutor:
         assert results[0].success is True
         assert results[1].success is False
 
+    @pytest.mark.integration
     def test_registry_access(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -446,6 +457,7 @@ class TestToolExecutor:
 class TestPluginToolRegistration:
     """Tests for plugin-registered tools in the ToolExecutor."""
 
+    @pytest.mark.integration
     def test_register_plugin_tool(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -458,6 +470,7 @@ class TestPluginToolRegistration:
         )
         assert "my_custom_tool" in executor.list_tool_names()
 
+    @pytest.mark.integration
     def test_plugin_tool_schema(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -472,6 +485,7 @@ class TestPluginToolRegistration:
         assert schema is not None
         assert schema["source"] == "plugin"
 
+    @pytest.mark.integration
     def test_execute_plugin_tool(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -488,6 +502,7 @@ class TestPluginToolRegistration:
         assert result.success is True
         assert result.result_payload["echoed"] == "hello"
 
+    @pytest.mark.integration
     def test_plugin_tool_cannot_override_builtin(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -500,6 +515,7 @@ class TestPluginToolRegistration:
                 handler=lambda: {},
             )
 
+    @pytest.mark.integration
     def test_unregister_plugin_tool(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -514,12 +530,14 @@ class TestPluginToolRegistration:
         assert executor.unregister_plugin_tool("temp_tool") is True
         assert "temp_tool" not in executor.list_tool_names()
 
+    @pytest.mark.integration
     def test_unregister_nonexistent(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
         executor = ToolExecutor(tmp_path)
         assert executor.unregister_plugin_tool("nonexistent") is False
 
+    @pytest.mark.integration
     def test_plugin_tool_error_handling(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -596,6 +614,7 @@ class TestBridgeProtocolExtensions:
 class TestBridgeServerToolEndpoints:
     """Tests for the bridge server's tool-related endpoints."""
 
+    @pytest.mark.integration
     def test_dispatch_list_tools(self, tmp_path):
         from semantic_code_intelligence.bridge.server import BridgeServer
         from semantic_code_intelligence.bridge.protocol import AgentRequest
@@ -607,6 +626,7 @@ class TestBridgeServerToolEndpoints:
         assert "tools" in resp.data
         assert resp.data["count"] >= 8
 
+    @pytest.mark.integration
     def test_dispatch_invoke_tool(self, tmp_path):
         from semantic_code_intelligence.bridge.server import BridgeServer
         from semantic_code_intelligence.bridge.protocol import AgentRequest
@@ -620,6 +640,7 @@ class TestBridgeServerToolEndpoints:
         resp = server.dispatch(req)
         assert resp.success is True
 
+    @pytest.mark.integration
     def test_dispatch_invoke_unknown_tool(self, tmp_path):
         from semantic_code_intelligence.bridge.server import BridgeServer
         from semantic_code_intelligence.bridge.protocol import AgentRequest
@@ -633,12 +654,14 @@ class TestBridgeServerToolEndpoints:
         resp = server.dispatch(req)
         assert resp.success is False
 
+    @pytest.mark.integration
     def test_server_has_executor(self, tmp_path):
         from semantic_code_intelligence.bridge.server import BridgeServer
 
         server = BridgeServer(tmp_path)
         assert server._executor is not None
 
+    @pytest.mark.integration
     def test_capabilities_include_tools(self, tmp_path):
         from semantic_code_intelligence.bridge.server import BridgeServer
 
@@ -711,6 +734,7 @@ class TestCLIToolCommand:
         assert result.exit_code == 0
         assert "semantic_search" in result.output
 
+    @pytest.mark.integration
     def test_tool_run_subcommand(self, tmp_path):
         from semantic_code_intelligence.cli.commands.tool_cmd import tool_cmd
 
@@ -724,6 +748,7 @@ class TestCLIToolCommand:
         data = json.loads(result.output)
         assert data["tool_name"] == "summarize_repo"
 
+    @pytest.mark.integration
     def test_tool_run_with_args(self, tmp_path):
         from semantic_code_intelligence.cli.commands.tool_cmd import tool_cmd
 
@@ -737,6 +762,7 @@ class TestCLIToolCommand:
         ])
         assert result.exit_code == 0
 
+    @pytest.mark.integration
     def test_tool_run_unknown_tool(self, tmp_path):
         from semantic_code_intelligence.cli.commands.tool_cmd import tool_cmd
 
@@ -750,6 +776,7 @@ class TestCLIToolCommand:
         data = json.loads(result.output)
         assert data["success"] is False
 
+    @pytest.mark.integration
     def test_tool_run_invalid_arg_format(self, tmp_path):
         from semantic_code_intelligence.cli.commands.tool_cmd import tool_cmd
 
@@ -787,6 +814,7 @@ class TestCLIToolCommand:
         assert result.exit_code == 0
         assert "Unknown tool" in result.output
 
+    @pytest.mark.integration
     def test_tool_run_pipe_mode(self, tmp_path):
         from semantic_code_intelligence.cli.commands.tool_cmd import tool_cmd
 
@@ -833,6 +861,7 @@ class TestVersionPhase19:
 
         assert __version__ == "0.5.0"
 
+    @pytest.mark.integration
     def test_pyproject_version(self):
         import tomllib
         pyproject = Path(__file__).resolve().parent.parent.parent / "pyproject.toml"
@@ -887,6 +916,7 @@ class TestDocGenerationPhase19:
         assert "codexa tool list" in md
         assert "codexa tool run" in md
 
+    @pytest.mark.integration
     def test_generate_all_docs_includes_protocol(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
 
@@ -895,6 +925,7 @@ class TestDocGenerationPhase19:
         content = (tmp_path / "AI_TOOL_PROTOCOL.md").read_text(encoding="utf-8")
         assert "AI Tool Protocol" in content
 
+    @pytest.mark.integration
     def test_docs_count(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
 
@@ -920,6 +951,7 @@ class TestSafetyGuardrails:
             assert "exec" not in name.lower(), f"Tool {name} may execute code"
             assert "run" not in name.lower() or name == "summarize_repo", f"Tool {name} may run code"
 
+    @pytest.mark.integration
     def test_unknown_tool_rejected(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation
@@ -929,6 +961,7 @@ class TestSafetyGuardrails:
         result = executor.execute(inv)
         assert result.success is False
 
+    @pytest.mark.integration
     def test_plugin_cannot_override_builtin(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
 
@@ -941,6 +974,7 @@ class TestSafetyGuardrails:
                 handler=lambda: {},
             )
 
+    @pytest.mark.integration
     def test_argument_validation_enforced(self, tmp_path):
         from semantic_code_intelligence.tools.executor import ToolExecutor
         from semantic_code_intelligence.tools.protocol import ToolInvocation

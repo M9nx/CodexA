@@ -79,12 +79,14 @@ class TestLSPServerModule:
 class TestLSPDocumentStore:
     """Test the in-memory document store."""
 
+    @pytest.mark.integration
     def test_open_and_get(self):
         from semantic_code_intelligence.lsp import _DocumentStore
         ds = _DocumentStore()
         ds.open("file:///test.py", "hello world")
         assert ds.get("file:///test.py") == "hello world"
 
+    @pytest.mark.integration
     def test_update(self):
         from semantic_code_intelligence.lsp import _DocumentStore
         ds = _DocumentStore()
@@ -92,6 +94,7 @@ class TestLSPDocumentStore:
         ds.update("file:///a.py", "new")
         assert ds.get("file:///a.py") == "new"
 
+    @pytest.mark.integration
     def test_close(self):
         from semantic_code_intelligence.lsp import _DocumentStore
         ds = _DocumentStore()
@@ -99,6 +102,7 @@ class TestLSPDocumentStore:
         ds.close("file:///x.py")
         assert ds.get("file:///x.py") is None
 
+    @pytest.mark.integration
     def test_get_word_at(self):
         from semantic_code_intelligence.lsp import _DocumentStore
         ds = _DocumentStore()
@@ -266,6 +270,7 @@ class TestLSPCLI:
         assert result.exit_code == 0
         assert "Language Server Protocol" in result.output
 
+    @pytest.mark.integration
     def test_lsp_requires_init(self):
         """LSP should fail if project not initialized."""
         runner = CliRunner()
@@ -417,6 +422,7 @@ class TestIncrementalIndexingFunction:
 class TestDaemonIncrementalWiring:
     """Test that the daemon uses incremental indexing."""
 
+    @pytest.mark.integration
     def test_indexing_task_has_deleted_paths(self):
         from semantic_code_intelligence.daemon.watcher import IndexingTask
         task = IndexingTask(
@@ -426,12 +432,14 @@ class TestDaemonIncrementalWiring:
         assert len(task.deleted_paths) == 1
         assert task.deleted_paths[0] == "c.py"
 
+    @pytest.mark.integration
     def test_indexing_task_defaults(self):
         from semantic_code_intelligence.daemon.watcher import IndexingTask
         task = IndexingTask(file_paths=["a.py"])
         assert task.deleted_paths == []
         assert task.force is False
 
+    @pytest.mark.integration
     def test_enqueue_with_deleted(self):
         from semantic_code_intelligence.daemon.watcher import AsyncIndexer
         import tempfile

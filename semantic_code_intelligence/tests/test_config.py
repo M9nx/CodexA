@@ -27,6 +27,7 @@ from semantic_code_intelligence.embeddings.generator import (
 class TestDefaultConfigs:
     """Tests for default configuration values."""
 
+    @pytest.mark.model
     def test_embedding_config_defaults(self):
         cfg = EmbeddingConfig()
         assert cfg.model_name == "all-MiniLM-L6-v2"
@@ -76,6 +77,7 @@ class TestConfigPaths:
 class TestLoadConfig:
     """Tests for loading config from disk."""
 
+    @pytest.mark.model
     def test_load_config_no_file_returns_defaults(self, tmp_path: Path):
         cfg = load_config(tmp_path)
         assert cfg.project_root == str(tmp_path.resolve())
@@ -107,6 +109,7 @@ class TestLoadConfig:
 class TestSaveConfig:
     """Tests for saving config to disk."""
 
+    @pytest.mark.integration
     def test_save_config_creates_file(self, tmp_path: Path):
         cfg = AppConfig(project_root=str(tmp_path))
         config_path = save_config(cfg, tmp_path)
@@ -133,16 +136,19 @@ class TestInitProject:
         config, config_path = init_project(tmp_path)
         assert (tmp_path / ".codexa" / "index").is_dir()
 
+    @pytest.mark.integration
     def test_init_creates_config_file(self, tmp_path: Path):
         config, config_path = init_project(tmp_path)
         assert config_path.exists()
         assert config_path.name == "config.json"
 
+    @pytest.mark.integration
     def test_init_returns_valid_config(self, tmp_path: Path):
         config, _ = init_project(tmp_path)
         assert config.project_root == str(tmp_path.resolve())
         assert isinstance(config, AppConfig)
 
+    @pytest.mark.integration
     def test_init_config_is_loadable(self, tmp_path: Path):
         init_project(tmp_path)
         loaded = load_config(tmp_path)

@@ -215,6 +215,7 @@ class TestEnhancedSafetyPatterns:
         assert not self.validator.is_safe("DROP TABLE users")
 
     # New Phase 12 patterns
+    @pytest.mark.integration
     def test_path_traversal(self):
         assert not self.validator.is_safe("open('../../etc/passwd')")
 
@@ -242,9 +243,11 @@ class TestEnhancedSafetyPatterns:
     def test_http_localhost_allowed(self):
         assert self.validator.is_safe("url = 'http://localhost:8080'")
 
+    @pytest.mark.http
     def test_ssl_verify_disabled(self):
         assert not self.validator.is_safe("requests.get(url, verify=False)")
 
+    @pytest.mark.integration
     def test_safe_code_passes(self):
         safe = """
 import hashlib

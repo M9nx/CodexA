@@ -6,6 +6,7 @@ chunking, scanning, parsing, and CLI helpers.
 """
 
 from __future__ import annotations
+import pytest
 
 import json
 import tempfile
@@ -35,6 +36,7 @@ from semantic_code_intelligence.config.settings import (
 
 
 class TestEmbeddingConfig:
+    @pytest.mark.model
     def test_defaults(self):
         ec = EmbeddingConfig()
         assert ec.model_name == "all-MiniLM-L6-v2"
@@ -149,11 +151,13 @@ class TestAppConfig:
             assert cd.name == ".codexa"
             assert cd.parent == Path(tmp).resolve()
 
+    @pytest.mark.integration
     def test_config_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             cp = AppConfig.config_path(tmp)
             assert cp.name == "config.json"
 
+    @pytest.mark.integration
     def test_index_dir(self):
         with tempfile.TemporaryDirectory() as tmp:
             idx = AppConfig.index_dir(tmp)
@@ -176,11 +180,13 @@ class TestAppConfig:
 
 
 class TestLoadConfig:
+    @pytest.mark.integration
     def test_load_default(self):
         with tempfile.TemporaryDirectory() as tmp:
             cfg = load_config(tmp)
             assert isinstance(cfg, AppConfig)
 
+    @pytest.mark.integration
     def test_load_from_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             cfg, path = init_project(tmp)
@@ -189,12 +195,14 @@ class TestLoadConfig:
 
 
 class TestSaveConfig:
+    @pytest.mark.integration
     def test_save_creates_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             cfg = AppConfig(project_root=str(Path(tmp).resolve()))
             path = save_config(cfg, tmp)
             assert path.exists()
 
+    @pytest.mark.integration
     def test_save_json_parseable(self):
         with tempfile.TemporaryDirectory() as tmp:
             cfg = AppConfig(project_root=str(Path(tmp).resolve()))
@@ -204,6 +212,7 @@ class TestSaveConfig:
 
 
 class TestInitProject:
+    @pytest.mark.integration
     def test_creates_dirs(self):
         with tempfile.TemporaryDirectory() as tmp:
             cfg, path = init_project(tmp)
@@ -211,6 +220,7 @@ class TestInitProject:
             assert AppConfig.config_dir(tmp).exists()
             assert AppConfig.index_dir(tmp).exists()
 
+    @pytest.mark.integration
     def test_returns_config(self):
         with tempfile.TemporaryDirectory() as tmp:
             cfg, _ = init_project(tmp)
@@ -829,6 +839,7 @@ class TestContextBuilder:
         matches = cb.find_symbol("nonexistent")
         assert matches == []
 
+    @pytest.mark.integration
     def test_index_file(self):
         cb = ContextBuilder()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
@@ -838,6 +849,7 @@ class TestContextBuilder:
             syms = cb.index_file(f.name)
         assert isinstance(syms, list)
 
+    @pytest.mark.integration
     def test_find_after_index(self):
         cb = ContextBuilder()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
@@ -1148,6 +1160,7 @@ from semantic_code_intelligence.indexing.scanner import (
 
 
 class TestComputeFileHash:
+    @pytest.mark.integration
     def test_basic(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
                                           delete=False, encoding="utf-8") as f:
@@ -1157,6 +1170,7 @@ class TestComputeFileHash:
         assert isinstance(h, str)
         assert len(h) > 0
 
+    @pytest.mark.integration
     def test_deterministic(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
                                           delete=False, encoding="utf-8") as f:
@@ -1168,6 +1182,7 @@ class TestComputeFileHash:
 
 
 class TestShouldIgnoreDeep:
+    @pytest.mark.integration
     def test_git_dir(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1176,6 +1191,7 @@ class TestShouldIgnoreDeep:
             git_file.touch()
             assert should_ignore(git_file, root, {".git"}) is True
 
+    @pytest.mark.integration
     def test_normal_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1184,6 +1200,7 @@ class TestShouldIgnoreDeep:
             f.touch()
             assert should_ignore(f, root, {".git"}) is False
 
+    @pytest.mark.integration
     def test_node_modules(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1192,6 +1209,7 @@ class TestShouldIgnoreDeep:
             f.touch()
             assert should_ignore(f, root, {"node_modules"}) is True
 
+    @pytest.mark.integration
     def test_pycache(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1269,6 +1287,7 @@ class TestParserSymbol:
 
 
 class TestParseFile:
+    @pytest.mark.integration
     def test_python_file(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
                                           delete=False, encoding="utf-8") as f:
@@ -1280,6 +1299,7 @@ class TestParseFile:
         assert "greet" in names
         assert "Greeter" in names
 
+    @pytest.mark.integration
     def test_empty_file(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
                                           delete=False, encoding="utf-8") as f:
@@ -1361,6 +1381,7 @@ class TestHashStoreExtended:
         hs.set("a.py", "h1")
         assert hs.has_changed("a.py", "h2") is True
 
+    @pytest.mark.integration
     def test_save_load_roundtrip(self):
         with tempfile.TemporaryDirectory() as tmp:
             hs = HashStore()
@@ -1416,6 +1437,7 @@ class TestVectorStoreExtended:
         results = vs.search(query, top_k=5)
         assert results == []
 
+    @pytest.mark.integration
     def test_save_load(self):
         import numpy as np
         with tempfile.TemporaryDirectory() as tmp:
@@ -1487,6 +1509,7 @@ class TestWorkspaceExtended:
             assert ws.config_dir.name == ".codexa"
             assert ws.repos_dir.name == "repos"
 
+    @pytest.mark.integration
     def test_add_repo(self):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace(Path(tmp))
@@ -1494,6 +1517,7 @@ class TestWorkspaceExtended:
             assert entry.name == "myrepo"
             assert len(ws.repos) == 1
 
+    @pytest.mark.integration
     def test_get_repo(self):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace(Path(tmp))
@@ -1502,11 +1526,13 @@ class TestWorkspaceExtended:
             assert found is not None
             assert found.name == "r1"
 
+    @pytest.mark.integration
     def test_get_repo_missing(self):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace(Path(tmp))
             assert ws.get_repo("nonexistent") is None
 
+    @pytest.mark.integration
     def test_add_duplicate_raises(self):
         import pytest
         with tempfile.TemporaryDirectory() as tmp:
@@ -1515,6 +1541,7 @@ class TestWorkspaceExtended:
             with pytest.raises(ValueError):
                 ws.add_repo("r1", Path(tmp))
 
+    @pytest.mark.integration
     def test_save_and_load(self):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace(Path(tmp))
@@ -1525,6 +1552,7 @@ class TestWorkspaceExtended:
             assert len(ws2.repos) == 1
             assert ws2.repos[0].name == "myrepo"
 
+    @pytest.mark.integration
     def test_load_or_create(self):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace.load_or_create(Path(tmp))
@@ -1557,11 +1585,13 @@ class TestFileChangeEventExtended:
 
 
 class TestFileWatcherExtended:
+    @pytest.mark.integration
     def test_not_running(self):
         with tempfile.TemporaryDirectory() as tmp:
             fw = FileWatcher(Path(tmp))
             assert fw.is_running is False
 
+    @pytest.mark.integration
     def test_on_change_callback(self):
         with tempfile.TemporaryDirectory() as tmp:
             fw = FileWatcher(Path(tmp))
@@ -1748,6 +1778,7 @@ class TestBatchProcessorExtended:
 
 
 class TestParallelScannerExtended:
+    @pytest.mark.integration
     def test_process_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             for i in range(3):
@@ -1859,11 +1890,13 @@ class TestToolResultExtended:
 
 
 class TestToolRegistryExtended:
+    @pytest.mark.integration
     def test_create(self):
         with tempfile.TemporaryDirectory() as tmp:
             tr = ToolRegistry(Path(tmp))
             assert tr is not None
 
+    @pytest.mark.integration
     def test_tool_definitions(self):
         with tempfile.TemporaryDirectory() as tmp:
             tr = ToolRegistry(Path(tmp))
@@ -1901,11 +1934,13 @@ from semantic_code_intelligence.bridge.context_provider import ContextProvider
 
 
 class TestContextProvider:
+    @pytest.mark.integration
     def test_create(self):
         with tempfile.TemporaryDirectory() as tmp:
             cp = ContextProvider(Path(tmp))
             assert cp is not None
 
+    @pytest.mark.integration
     def test_repo_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
             cp = ContextProvider(Path(tmp))
@@ -1967,6 +2002,7 @@ from semantic_code_intelligence.ci.hooks import run_precommit_check
 
 
 class TestPrecommitCheck:
+    @pytest.mark.integration
     def test_no_git_dir(self):
         with tempfile.TemporaryDirectory() as tmp:
             # No .git dir — just verify it's callable
@@ -2040,17 +2076,20 @@ from semantic_code_intelligence.docs import generate_all_docs
 
 
 class TestDocsGenerationExtended:
+    @pytest.mark.integration
     def test_returns_list(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = generate_all_docs(Path(tmp))
             assert isinstance(result, list)
 
+    @pytest.mark.integration
     def test_files_created(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = generate_all_docs(Path(tmp))
             for name in result:
                 assert (Path(tmp) / name).exists()
 
+    @pytest.mark.integration
     def test_files_are_markdown(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = generate_all_docs(Path(tmp))

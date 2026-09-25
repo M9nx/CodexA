@@ -19,6 +19,7 @@ from semantic_code_intelligence.config.settings import IndexConfig
 class TestComputeFileHash:
     """Tests for file hashing."""
 
+    @pytest.mark.integration
     def test_hash_returns_hex_string(self, tmp_path: Path):
         f = tmp_path / "test.py"
         f.write_text("hello world", encoding="utf-8")
@@ -26,6 +27,7 @@ class TestComputeFileHash:
         assert isinstance(h, str)
         assert len(h) == 64  # SHA-256 hex digest
 
+    @pytest.mark.integration
     def test_same_content_same_hash(self, tmp_path: Path):
         f1 = tmp_path / "a.py"
         f2 = tmp_path / "b.py"
@@ -33,6 +35,7 @@ class TestComputeFileHash:
         f2.write_text("same content", encoding="utf-8")
         assert compute_file_hash(f1) == compute_file_hash(f2)
 
+    @pytest.mark.integration
     def test_different_content_different_hash(self, tmp_path: Path):
         f1 = tmp_path / "a.py"
         f2 = tmp_path / "b.py"
@@ -44,18 +47,22 @@ class TestComputeFileHash:
 class TestShouldIgnore:
     """Tests for directory ignore logic."""
 
+    @pytest.mark.integration
     def test_ignore_git_dir(self, tmp_path: Path):
         p = tmp_path / ".git" / "config"
         assert should_ignore(p, tmp_path, {".git"}) is True
 
+    @pytest.mark.integration
     def test_ignore_node_modules(self, tmp_path: Path):
         p = tmp_path / "node_modules" / "pkg" / "index.js"
         assert should_ignore(p, tmp_path, {"node_modules"}) is True
 
+    @pytest.mark.integration
     def test_allow_normal_file(self, tmp_path: Path):
         p = tmp_path / "src" / "main.py"
         assert should_ignore(p, tmp_path, {".git"}) is False
 
+    @pytest.mark.integration
     def test_nested_ignored_dir(self, tmp_path: Path):
         p = tmp_path / "src" / "__pycache__" / "mod.cpython-312.pyc"
         assert should_ignore(p, tmp_path, {"__pycache__"}) is True
@@ -64,16 +71,19 @@ class TestShouldIgnore:
 class TestScanRepository:
     """Tests for repository scanning."""
 
+    @pytest.mark.integration
     def test_empty_directory(self, tmp_path: Path):
         result = scan_repository(tmp_path)
         assert result == []
 
+    @pytest.mark.integration
     def test_finds_python_files(self, tmp_path: Path):
         (tmp_path / "main.py").write_text("print('hi')", encoding="utf-8")
         (tmp_path / "utils.py").write_text("x = 1", encoding="utf-8")
         result = scan_repository(tmp_path)
         assert len(result) == 2
 
+    @pytest.mark.integration
     def test_ignores_non_code_files(self, tmp_path: Path):
         (tmp_path / "main.py").write_text("x = 1", encoding="utf-8")
         (tmp_path / "readme.md").write_text("# Readme", encoding="utf-8")
@@ -82,6 +92,7 @@ class TestScanRepository:
         assert len(result) == 1
         assert result[0].extension == ".py"
 
+    @pytest.mark.integration
     def test_ignores_excluded_dirs(self, tmp_path: Path):
         (tmp_path / "main.py").write_text("x = 1", encoding="utf-8")
         venv = tmp_path / "venv"
@@ -90,6 +101,7 @@ class TestScanRepository:
         result = scan_repository(tmp_path)
         assert len(result) == 1
 
+    @pytest.mark.integration
     def test_scanned_file_metadata(self, tmp_path: Path):
         content = "def hello(): pass"
         (tmp_path / "test.py").write_text(content, encoding="utf-8")
@@ -101,6 +113,7 @@ class TestScanRepository:
         assert sf.size_bytes > 0
         assert len(sf.content_hash) == 64
 
+    @pytest.mark.integration
     def test_finds_multiple_languages(self, tmp_path: Path):
         (tmp_path / "main.py").write_text("x = 1", encoding="utf-8")
         (tmp_path / "app.js").write_text("let x = 1;", encoding="utf-8")
@@ -109,6 +122,7 @@ class TestScanRepository:
         extensions = {sf.extension for sf in result}
         assert extensions == {".py", ".js", ".java"}
 
+    @pytest.mark.integration
     def test_custom_config(self, tmp_path: Path):
         (tmp_path / "main.py").write_text("x = 1", encoding="utf-8")
         (tmp_path / "app.js").write_text("let x = 1;", encoding="utf-8")
@@ -117,6 +131,7 @@ class TestScanRepository:
         assert len(result) == 1
         assert result[0].extension == ".py"
 
+    @pytest.mark.integration
     def test_exclude_files_patterns(self, tmp_path: Path):
         (tmp_path / "main.py").write_text("x = 1", encoding="utf-8")
         secrets_dir = tmp_path / "secrets"
@@ -147,6 +162,7 @@ class TestScanRepository:
 
         assert should_index_file(ignored, tmp_path, IndexConfig(ignore_dirs=set())) is False
 
+    @pytest.mark.integration
     def test_results_sorted(self, tmp_path: Path):
         (tmp_path / "z.py").write_text("z", encoding="utf-8")
         (tmp_path / "a.py").write_text("a", encoding="utf-8")

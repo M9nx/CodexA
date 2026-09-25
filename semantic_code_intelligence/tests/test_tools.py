@@ -78,21 +78,25 @@ class TestToolDefinitions:
 # ---------------------------------------------------------------------------
 
 class TestToolRegistry:
+    @pytest.mark.integration
     def test_init(self, tmp_path):
         registry = ToolRegistry(tmp_path)
         assert registry.tool_definitions == TOOL_DEFINITIONS
 
+    @pytest.mark.integration
     def test_unknown_tool(self, tmp_path):
         registry = ToolRegistry(tmp_path)
         result = registry.invoke("nonexistent_tool")
         assert result.success is False
         assert "Unknown tool" in result.error
 
+    @pytest.mark.integration
     def test_explain_symbol_not_found(self, tmp_path):
         registry = ToolRegistry(tmp_path)
         result = registry.invoke("explain_symbol", symbol_name="NoSuchSymbol")
         assert result.success is False
 
+    @pytest.mark.integration
     def test_index_and_explain_symbol(self, tmp_path):
         f = tmp_path / "service.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -105,6 +109,7 @@ class TestToolRegistry:
         assert result.data["symbol_name"] == "greet"
         assert len(result.data["explanations"]) >= 1
 
+    @pytest.mark.integration
     def test_explain_file(self, tmp_path):
         f = tmp_path / "service.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -114,6 +119,7 @@ class TestToolRegistry:
         assert result.success is True
         assert len(result.data["symbols"]) >= 1
 
+    @pytest.mark.integration
     def test_summarize_repo(self, tmp_path):
         f = tmp_path / "service.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -125,6 +131,7 @@ class TestToolRegistry:
         assert result.success is True
         assert "total_files" in result.data
 
+    @pytest.mark.integration
     def test_find_references(self, tmp_path):
         f = tmp_path / "service.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -136,6 +143,7 @@ class TestToolRegistry:
         assert result.success is True
         assert result.data["reference_count"] >= 1
 
+    @pytest.mark.integration
     def test_get_dependencies(self, tmp_path):
         f = tmp_path / "service.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -144,6 +152,7 @@ class TestToolRegistry:
         result = registry.invoke("get_dependencies", file_path=str(f))
         assert result.success is True
 
+    @pytest.mark.integration
     def test_get_call_graph(self, tmp_path):
         f = tmp_path / "service.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -156,6 +165,7 @@ class TestToolRegistry:
         assert "callers" in result.data
         assert "callees" in result.data
 
+    @pytest.mark.integration
     def test_get_context_found(self, tmp_path):
         f = tmp_path / "service.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
@@ -166,6 +176,7 @@ class TestToolRegistry:
         result = registry.invoke("get_context", symbol_name="Service")
         assert result.success is True
 
+    @pytest.mark.integration
     def test_get_context_not_found(self, tmp_path):
         registry = ToolRegistry(tmp_path)
         result = registry.invoke("get_context", symbol_name="Missing")

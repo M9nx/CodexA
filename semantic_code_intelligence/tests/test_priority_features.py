@@ -203,6 +203,7 @@ class TestSectionExpander:
 class TestAutoIndex:
     """Tests for auto-indexing when searching without an existing index."""
 
+    @pytest.mark.integration
     def test_search_auto_indexes(self, tmp_path: Path):
         """Searching a project with no index should trigger auto-index."""
         config, _ = init_project(tmp_path)
@@ -224,6 +225,7 @@ class TestAutoIndex:
 class TestChunkHashStore:
     """Tests for chunk-level content hashing."""
 
+    @pytest.mark.integration
     def test_store_and_check(self, tmp_path: Path):
         from semantic_code_intelligence.storage.chunk_hash_store import ChunkHashStore
 
@@ -232,6 +234,7 @@ class TestChunkHashStore:
         assert store.get("file.py:1:10") == "abc123"
         assert store.get("nonexistent") is None
 
+    @pytest.mark.integration
     def test_has_changed(self, tmp_path: Path):
         from semantic_code_intelligence.storage.chunk_hash_store import ChunkHashStore
 
@@ -241,6 +244,7 @@ class TestChunkHashStore:
         assert store.has_changed("file.py:1:10", "def456")
         assert store.has_changed("new_key", "anything")
 
+    @pytest.mark.integration
     def test_remove_by_file(self, tmp_path: Path):
         from semantic_code_intelligence.storage.chunk_hash_store import ChunkHashStore
 
@@ -254,6 +258,7 @@ class TestChunkHashStore:
         assert store.get("a.py:1:10") is None
         assert store.get("b.py:1:5") == "h3"
 
+    @pytest.mark.integration
     def test_save_and_load(self, tmp_path: Path):
         from semantic_code_intelligence.storage.chunk_hash_store import ChunkHashStore
 
@@ -284,12 +289,14 @@ class TestChunkHashStore:
 class TestModelRegistry:
     """Tests for the embedding model registry."""
 
+    @pytest.mark.model
     def test_resolve_alias(self):
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
 
         assert resolve_model_name("minilm") == "all-MiniLM-L6-v2"
         assert resolve_model_name("bge-small") == "BAAI/bge-small-en-v1.5"
 
+    @pytest.mark.model
     def test_resolve_full_name(self):
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
 
@@ -301,6 +308,7 @@ class TestModelRegistry:
         # Unknown names should be returned as-is (for custom models)
         assert resolve_model_name("my-custom-model") == "my-custom-model"
 
+    @pytest.mark.model
     def test_get_model_info(self):
         from semantic_code_intelligence.embeddings.model_registry import get_model_info
 
@@ -308,6 +316,7 @@ class TestModelRegistry:
         assert info is not None
         assert info.dimension == 384
 
+    @pytest.mark.model
     def test_list_models(self):
         from semantic_code_intelligence.embeddings.model_registry import list_models
 
@@ -339,6 +348,7 @@ class TestONNXBackend:
 class TestParallelIndexing:
     """Tests for parallel file chunking and hash scanning."""
 
+    @pytest.mark.integration
     def test_parallel_chunk_files(self, tmp_path: Path):
         from semantic_code_intelligence.indexing.parallel import parallel_chunk_files
         from semantic_code_intelligence.indexing.scanner import ScannedFile
@@ -358,6 +368,7 @@ class TestParallelIndexing:
         chunks = parallel_chunk_files(scanned, chunk_size=200, chunk_overlap=0)
         assert len(chunks) >= 5  # At least one tuple per file
 
+    @pytest.mark.integration
     def test_parallel_scan_hashes(self, tmp_path: Path):
         from semantic_code_intelligence.indexing.parallel import parallel_scan_hashes
 
@@ -407,6 +418,7 @@ class TestCodexaIgnore:
         patterns = _load_ignore_patterns(tmp_path)
         assert patterns == ["pattern"]
 
+    @pytest.mark.integration
     def test_no_codexaignore_file(self, tmp_path: Path):
         from semantic_code_intelligence.indexing.scanner import _load_ignore_patterns
 
@@ -599,6 +611,7 @@ class TestASTCallGraph:
 class TestCrossRepoSearchModes:
     """Tests for multi-mode cross-repo workspace search."""
 
+    @pytest.mark.integration
     def test_workspace_search_keyword_mode(self, tmp_path: Path):
         from semantic_code_intelligence.workspace import Workspace
 
@@ -617,6 +630,7 @@ class TestCrossRepoSearchModes:
         results = ws.search("greet", top_k=5, mode="keyword")
         assert isinstance(results, list)
 
+    @pytest.mark.integration
     def test_workspace_search_regex_mode(self, tmp_path: Path):
         from semantic_code_intelligence.workspace import Workspace
 

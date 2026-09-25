@@ -44,26 +44,32 @@ def _read_pyproject() -> str:
 class TestMypyConfig:
     """[tool.mypy] section validations."""
 
+    @pytest.mark.integration
     def test_mypy_section_exists(self) -> None:
         text = _read_pyproject()
         assert "[tool.mypy]" in text
 
+    @pytest.mark.integration
     def test_strict_enabled(self) -> None:
         text = _read_pyproject()
         assert "strict = true" in text
 
+    @pytest.mark.integration
     def test_warn_return_any(self) -> None:
         text = _read_pyproject()
         assert "warn_return_any = true" in text
 
+    @pytest.mark.integration
     def test_warn_unused_ignores(self) -> None:
         text = _read_pyproject()
         assert "warn_unused_ignores = true" in text
 
+    @pytest.mark.integration
     def test_ignore_missing_imports(self) -> None:
         text = _read_pyproject()
         assert "ignore_missing_imports = true" in text
 
+    @pytest.mark.integration
     def test_tests_excluded(self) -> None:
         text = _read_pyproject()
         assert 'exclude = ["tests/"]' in text
@@ -76,22 +82,27 @@ class TestMypyConfig:
 class TestCoverageConfig:
     """[tool.coverage.*] section validations."""
 
+    @pytest.mark.integration
     def test_coverage_run_section_exists(self) -> None:
         text = _read_pyproject()
         assert "[tool.coverage.run]" in text
 
+    @pytest.mark.integration
     def test_coverage_source(self) -> None:
         text = _read_pyproject()
         assert 'source = ["semantic_code_intelligence"]' in text
 
+    @pytest.mark.integration
     def test_coverage_omit_tests(self) -> None:
         text = _read_pyproject()
         assert "semantic_code_intelligence/tests/*" in text
 
+    @pytest.mark.integration
     def test_coverage_report_section_exists(self) -> None:
         text = _read_pyproject()
         assert "[tool.coverage.report]" in text
 
+    @pytest.mark.integration
     def test_fail_under_gate(self) -> None:
         text = _read_pyproject()
         # Expect fail_under = 70 (or any integer >= 70)
@@ -99,6 +110,7 @@ class TestCoverageConfig:
         assert match is not None, "fail_under not found in pyproject.toml"
         assert int(match.group(1)) >= 70
 
+    @pytest.mark.integration
     def test_show_missing(self) -> None:
         text = _read_pyproject()
         assert "show_missing = true" in text
@@ -115,6 +127,7 @@ class TestSafetyReportImport:
         from semantic_code_intelligence.ci import pr
         assert hasattr(pr, "SafetyReport")
 
+    @pytest.mark.integration
     def test_safety_report_in_source(self) -> None:
         src = (_SRC / "ci" / "pr.py").read_text(encoding="utf-8")
         assert "SafetyReport" in src
@@ -124,11 +137,13 @@ class TestSafetyReportImport:
 class TestFileDependencyAttr:
     """investigation.py must use .import_text not .module."""
 
+    @pytest.mark.integration
     def test_no_dot_module_usage(self) -> None:
         src = (_SRC / "llm" / "investigation.py").read_text(encoding="utf-8")
         # Should NOT contain d.module
         assert ".module" not in src or "import_text" in src
 
+    @pytest.mark.integration
     def test_import_text_usage(self) -> None:
         src = (_SRC / "llm" / "investigation.py").read_text(encoding="utf-8")
         assert "import_text" in src
@@ -137,10 +152,12 @@ class TestFileDependencyAttr:
 class TestVizCmdReposList:
     """viz_cmd.py must iterate list, not call .values()."""
 
+    @pytest.mark.integration
     def test_no_values_call(self) -> None:
         src = (_SRC / "cli" / "commands" / "viz_cmd.py").read_text(encoding="utf-8")
         assert ".repos.values()" not in src
 
+    @pytest.mark.integration
     def test_direct_iteration(self) -> None:
         src = (_SRC / "cli" / "commands" / "viz_cmd.py").read_text(encoding="utf-8")
         assert "ws.repos]" in src or "r.to_dict() for r in ws.repos" in src
@@ -149,6 +166,7 @@ class TestVizCmdReposList:
 class TestQualityCmdDuplicateVar:
     """quality_cmd.py should not reuse dead_code var name for duplicates."""
 
+    @pytest.mark.integration
     def test_duplicate_loop_uses_dup_var(self) -> None:
         src = (_SRC / "cli" / "commands" / "quality_cmd.py").read_text(encoding="utf-8")
         # The duplicates loop should use 'dup' not 'd'
@@ -158,6 +176,7 @@ class TestQualityCmdDuplicateVar:
 class TestCrossRefactorTuple:
     """cross_refactor.py pair_key must be tuple[str, str]."""
 
+    @pytest.mark.integration
     def test_no_bare_tuple_sorted(self) -> None:
         src = (_SRC / "llm" / "cross_refactor.py").read_text(encoding="utf-8")
         # Should NOT have tuple(sorted([...]))
@@ -167,6 +186,7 @@ class TestCrossRefactorTuple:
 class TestImpactAffectedSymbolVar:
     """impact.py loop vars for AffectedSymbol lists renamed."""
 
+    @pytest.mark.integration
     def test_direct_loop_uses_af(self) -> None:
         src = (_SRC / "ci" / "impact.py").read_text(encoding="utf-8")
         assert "for af in direct:" in src or "for af in direct[" in src
@@ -248,6 +268,7 @@ class TestNoBareDictReturns:
         "tools/__init__.py",
         "bridge/context_provider.py",
     ])
+    @pytest.mark.integration
     def test_no_bare_dict_in_file(self, rel_path: str) -> None:
         src = (_SRC / rel_path).read_text(encoding="utf-8")
         tree = ast.parse(src)
@@ -277,18 +298,22 @@ class TestNoBareDictReturns:
 class TestNoAnyReturnFixes:
     """Key functions should cast/annotate to avoid returning Any."""
 
+    @pytest.mark.integration
     def test_ollama_api_call_returns_typed(self) -> None:
         src = (_SRC / "llm" / "ollama_provider.py").read_text(encoding="utf-8")
         assert "result: dict[str, Any]" in src
 
+    @pytest.mark.integration
     def test_vector_store_size_int_cast(self) -> None:
         src = (_SRC / "storage" / "vector_store.py").read_text(encoding="utf-8")
         assert "int(self.index.ntotal)" in src
 
+    @pytest.mark.integration
     def test_embedding_dim_none_guard(self) -> None:
         src = (_SRC / "embeddings" / "generator.py").read_text(encoding="utf-8")
         assert "if dim is None:" in src
 
+    @pytest.mark.integration
     def test_templates_typed_generators(self) -> None:
         src = (_SRC / "ci" / "templates.py").read_text(encoding="utf-8")
         assert "Callable[..., str]" in src
@@ -301,6 +326,7 @@ class TestNoAnyReturnFixes:
 class TestNoStaleTypeIgnore:
     """Unused type:ignore comments should be removed."""
 
+    @pytest.mark.integration
     def test_plugins_no_unused_ignore(self) -> None:
         src = (_SRC / "plugins" / "__init__.py").read_text(encoding="utf-8")
         # The exec_module line should NOT have type: ignore
@@ -308,6 +334,7 @@ class TestNoStaleTypeIgnore:
             if "exec_module" in line:
                 assert "type: ignore" not in line, f"Stale type:ignore: {line}"
 
+    @pytest.mark.integration
     def test_openai_no_unused_ignore(self) -> None:
         src = (_SRC / "llm" / "openai_provider.py").read_text(encoding="utf-8")
         for line in src.splitlines():
@@ -322,10 +349,12 @@ class TestNoStaleTypeIgnore:
 class TestDocsClickType:
     """docs/__init__.py should not use click.BaseCommand as type hint."""
 
+    @pytest.mark.integration
     def test_no_base_command_annotation(self) -> None:
         src = (_SRC / "docs" / "__init__.py").read_text(encoding="utf-8")
         assert "group: click.BaseCommand" not in src
 
+    @pytest.mark.integration
     def test_uses_proper_type(self) -> None:
         src = (_SRC / "docs" / "__init__.py").read_text(encoding="utf-8")
         # Should use click.Group | click.Command or similar
@@ -378,6 +407,7 @@ class TestCoverageGateIntegrity:
     def test_pytest_cov_installed(self) -> None:
         import pytest_cov  # noqa: F401
 
+    @pytest.mark.integration
     def test_coverage_source_matches_package(self) -> None:
         text = _read_pyproject()
         assert "semantic_code_intelligence" in text
@@ -399,6 +429,7 @@ class TestTypeCheckingGuard:
         "cli/commands/ask_cmd.py",
         "cli/commands/investigate_cmd.py",
     ])
+    @pytest.mark.integration
     def test_type_checking_import(self, rel_path: str) -> None:
         src = (_SRC / rel_path).read_text(encoding="utf-8")
         assert "TYPE_CHECKING" in src
@@ -419,6 +450,7 @@ class TestVersion:
         major, minor = int(parts[0]), int(parts[1])
         assert (major, minor) >= (0, 4)
 
+    @pytest.mark.integration
     def test_version_in_pyproject(self) -> None:
         text = _read_pyproject()
         match = re.search(r'version\s*=\s*"(\d+\.\d+\.\d+)"', text)

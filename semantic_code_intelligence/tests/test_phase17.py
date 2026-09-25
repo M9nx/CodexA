@@ -70,6 +70,7 @@ def _write_sample_project(root: Path) -> None:
 class TestFileMetrics:
     """Tests for per-file metric computation."""
 
+    @pytest.mark.integration
     def test_basic_metrics(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_file_metrics
 
@@ -82,6 +83,7 @@ class TestFileMetrics:
         assert fm.symbol_count >= 2  # greet, add
         assert 0 <= fm.maintainability_index <= 100
 
+    @pytest.mark.integration
     def test_empty_file(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_file_metrics
 
@@ -91,12 +93,14 @@ class TestFileMetrics:
         assert fm.lines_of_code == 0
         assert fm.maintainability_index >= 0
 
+    @pytest.mark.integration
     def test_nonexistent_file(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_file_metrics
 
         fm = compute_file_metrics(tmp_path / "nope.py")
         assert fm.lines_of_code == 0
 
+    @pytest.mark.integration
     def test_comment_ratio_property(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_file_metrics
 
@@ -104,6 +108,7 @@ class TestFileMetrics:
         fm = compute_file_metrics(tmp_path / "src" / "simple.py")
         assert 0.0 <= fm.comment_ratio <= 1.0
 
+    @pytest.mark.integration
     def test_to_dict(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_file_metrics
 
@@ -126,6 +131,7 @@ class TestFileMetrics:
 class TestProjectMetrics:
     """Tests for project-wide metric aggregation."""
 
+    @pytest.mark.integration
     def test_project_metrics(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_project_metrics
 
@@ -137,6 +143,7 @@ class TestProjectMetrics:
         assert pm.total_symbols > 0
         assert 0 <= pm.maintainability_index <= 100
 
+    @pytest.mark.integration
     def test_project_metrics_with_file_paths(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_project_metrics
 
@@ -146,6 +153,7 @@ class TestProjectMetrics:
 
         assert pm.files_analyzed == 1
 
+    @pytest.mark.integration
     def test_empty_project(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_project_metrics
 
@@ -153,6 +161,7 @@ class TestProjectMetrics:
         assert pm.files_analyzed == 0
         assert pm.maintainability_index >= 0
 
+    @pytest.mark.integration
     def test_to_dict(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_project_metrics
 
@@ -166,6 +175,7 @@ class TestProjectMetrics:
         assert "file_metrics" in d
         assert isinstance(d["file_metrics"], list)
 
+    @pytest.mark.integration
     def test_comment_ratio(self, tmp_path):
         from semantic_code_intelligence.ci.metrics import compute_project_metrics
 
@@ -551,6 +561,7 @@ class TestMetricsCLI:
     def runner(self):
         return CliRunner()
 
+    @pytest.mark.integration
     def test_basic_metrics_json(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
 
@@ -563,6 +574,7 @@ class TestMetricsCLI:
         assert "files_analyzed" in data
         assert "maintainability_index" in data
 
+    @pytest.mark.integration
     def test_pipe_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
 
@@ -573,6 +585,7 @@ class TestMetricsCLI:
         assert result.exit_code == 0
         assert "MI:" in result.output
 
+    @pytest.mark.integration
     def test_rich_output(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.metrics_cmd import metrics_cmd
 
@@ -628,6 +641,7 @@ class TestGateCLI:
     def runner(self):
         return CliRunner()
 
+    @pytest.mark.integration
     def test_gate_json(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.gate_cmd import gate_cmd
 
@@ -640,6 +654,7 @@ class TestGateCLI:
         assert "passed" in data
         assert "violations" in data
 
+    @pytest.mark.integration
     def test_gate_pipe_pass(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.gate_cmd import gate_cmd
 
@@ -650,6 +665,7 @@ class TestGateCLI:
         assert result.exit_code == 0
         assert "MI=" in result.output
 
+    @pytest.mark.integration
     def test_gate_rich_output(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.gate_cmd import gate_cmd
 
@@ -659,6 +675,7 @@ class TestGateCLI:
         ], obj={"pipe": False})
         assert result.exit_code == 0
 
+    @pytest.mark.integration
     def test_gate_custom_thresholds(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.gate_cmd import gate_cmd
 
@@ -698,6 +715,7 @@ class TestQualityConfigExtension:
         assert "quality" in d
         assert d["quality"]["complexity_threshold"] == 10
 
+    @pytest.mark.integration
     def test_load_config_with_quality(self, tmp_path):
         from semantic_code_intelligence.config.settings import (
             AppConfig,
@@ -730,6 +748,7 @@ class TestDocsPhase17:
         assert "codexa gate" in md
         assert "codexa metrics" in md
 
+    @pytest.mark.integration
     def test_generate_all_docs_includes_quality(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
 

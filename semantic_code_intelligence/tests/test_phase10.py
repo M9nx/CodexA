@@ -118,16 +118,19 @@ class TestWorkspaceProperties:
         assert ws.repos_dir == tmp_path.resolve() / ".codexa" / "repos"
         assert ws.manifest_path == tmp_path.resolve() / ".codexa" / WORKSPACE_FILE
 
+    @pytest.mark.integration
     def test_repos_empty(self, tmp_path):
         ws = Workspace(tmp_path)
         assert ws.repos == []
 
+    @pytest.mark.integration
     def test_repo_index_dir(self, tmp_path):
         ws = Workspace(tmp_path)
         assert ws.repo_index_dir("myrepo") == ws.repos_dir / "myrepo"
 
 
 class TestWorkspacePersistence:
+    @pytest.mark.integration
     def test_save_creates_files(self, tmp_path):
         ws = Workspace(tmp_path)
         result_path = ws.save()
@@ -138,6 +141,7 @@ class TestWorkspacePersistence:
         assert data["version"] == "1.0.0"
         assert data["repos"] == []
 
+    @pytest.mark.integration
     def test_load_roundtrip(self, tmp_path):
         ws = Workspace(tmp_path)
         repo_dir = tmp_path / "myrepo"
@@ -149,15 +153,18 @@ class TestWorkspacePersistence:
         assert len(loaded.repos) == 1
         assert loaded.repos[0].name == "myrepo"
 
+    @pytest.mark.integration
     def test_load_nonexistent_raises(self, tmp_path):
         with pytest.raises(FileNotFoundError, match="No workspace found"):
             Workspace.load(tmp_path / "nope")
 
+    @pytest.mark.integration
     def test_load_or_create_new(self, tmp_path):
         ws = Workspace.load_or_create(tmp_path)
         assert ws.manifest_path.exists()
         assert ws.repos == []
 
+    @pytest.mark.integration
     def test_load_or_create_existing(self, tmp_path):
         ws = Workspace(tmp_path)
         repo_dir = tmp_path / "r"
@@ -170,6 +177,7 @@ class TestWorkspacePersistence:
 
 
 class TestWorkspaceRepoManagement:
+    @pytest.mark.integration
     def test_add_repo(self, tmp_path):
         ws = Workspace(tmp_path)
         repo_dir = tmp_path / "repo_a"
@@ -179,6 +187,7 @@ class TestWorkspaceRepoManagement:
         assert entry.path == str(repo_dir.resolve())
         assert len(ws.repos) == 1
 
+    @pytest.mark.integration
     def test_add_duplicate_raises(self, tmp_path):
         ws = Workspace(tmp_path)
         repo_dir = tmp_path / "d"
@@ -187,11 +196,13 @@ class TestWorkspaceRepoManagement:
         with pytest.raises(ValueError, match="already registered"):
             ws.add_repo("d", repo_dir)
 
+    @pytest.mark.integration
     def test_add_nonexistent_dir_raises(self, tmp_path):
         ws = Workspace(tmp_path)
         with pytest.raises(FileNotFoundError, match="Directory not found"):
             ws.add_repo("missing", tmp_path / "nope")
 
+    @pytest.mark.integration
     def test_remove_repo(self, tmp_path):
         ws = Workspace(tmp_path)
         repo_dir = tmp_path / "rem"
@@ -200,10 +211,12 @@ class TestWorkspaceRepoManagement:
         assert ws.remove_repo("rem") is True
         assert len(ws.repos) == 0
 
+    @pytest.mark.integration
     def test_remove_nonexistent(self, tmp_path):
         ws = Workspace(tmp_path)
         assert ws.remove_repo("ghost") is False
 
+    @pytest.mark.integration
     def test_get_repo(self, tmp_path):
         ws = Workspace(tmp_path)
         repo_dir = tmp_path / "g"
@@ -213,6 +226,7 @@ class TestWorkspaceRepoManagement:
         assert ws.get_repo("g").name == "g"
         assert ws.get_repo("nope") is None
 
+    @pytest.mark.integration
     def test_multiple_repos(self, tmp_path):
         ws = Workspace(tmp_path)
         for name in ["a", "b", "c"]:
@@ -225,6 +239,7 @@ class TestWorkspaceRepoManagement:
 
 
 class TestWorkspaceSummary:
+    @pytest.mark.integration
     def test_summary_structure(self, tmp_path):
         ws = Workspace(tmp_path)
         repo_dir = tmp_path / "s"
@@ -239,6 +254,7 @@ class TestWorkspaceSummary:
 
 
 class TestWorkspaceIndexing:
+    @pytest.mark.integration
     def test_index_repo_not_registered(self, tmp_path):
         ws = Workspace(tmp_path)
         with pytest.raises(KeyError, match="not registered"):
@@ -246,6 +262,7 @@ class TestWorkspaceIndexing:
 
     @patch("semantic_code_intelligence.workspace.generate_embeddings")
     @patch("semantic_code_intelligence.workspace.scan_repository")
+    @pytest.mark.integration
     def test_index_repo_empty(self, mock_scan, mock_embed, tmp_path):
         """Indexing a repo with no files produces zero vectors."""
         mock_scan.return_value = []
@@ -260,6 +277,7 @@ class TestWorkspaceIndexing:
 
 
 class TestWorkspaceSearch:
+    @pytest.mark.integration
     def test_search_no_repos(self, tmp_path):
         """Searching with no repos returns empty list."""
         ws = Workspace(tmp_path)
@@ -299,6 +317,7 @@ class TestWorkspaceCLI:
         assert result.exit_code == 0
         assert (tmp_path / ".codexa" / WORKSPACE_FILE).exists()
 
+    @pytest.mark.integration
     def test_add_without_init_fails(self, tmp_path):
         from click.testing import CliRunner
         runner = CliRunner()
@@ -308,6 +327,7 @@ class TestWorkspaceCLI:
         assert result.exit_code == 0  # click still exits 0 but prints error
         assert "not initialised" in result.output.lower() or "error" in result.output.lower()
 
+    @pytest.mark.integration
     def test_add_and_list(self, tmp_path):
         from click.testing import CliRunner
         runner = CliRunner()
@@ -324,6 +344,7 @@ class TestWorkspaceCLI:
         data = json.loads(result.output)
         assert data["repo_count"] == 1
 
+    @pytest.mark.integration
     def test_remove_repo(self, tmp_path):
         from click.testing import CliRunner
         runner = CliRunner()
@@ -338,6 +359,7 @@ class TestWorkspaceCLI:
         data = json.loads(result.output)
         assert data["repo_count"] == 0
 
+    @pytest.mark.integration
     def test_remove_nonexistent_warns(self, tmp_path):
         from click.testing import CliRunner
         runner = CliRunner()

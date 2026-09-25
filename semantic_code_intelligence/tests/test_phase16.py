@@ -119,6 +119,7 @@ class TestSessionStore:
         store = SessionStore(tmp_path)
         assert (tmp_path / ".codexa" / "sessions").is_dir()
 
+    @pytest.mark.integration
     def test_save_and_load(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import (
             ConversationSession,
@@ -138,12 +139,14 @@ class TestSessionStore:
         assert loaded.title == "Test Chat"
         assert len(loaded.messages) == 2
 
+    @pytest.mark.integration
     def test_load_nonexistent(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import SessionStore
 
         store = SessionStore(tmp_path)
         assert store.load("nonexistent") is None
 
+    @pytest.mark.integration
     def test_list_sessions(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import (
             ConversationSession,
@@ -165,6 +168,7 @@ class TestSessionStore:
         assert s1.session_id in ids
         assert s2.session_id in ids
 
+    @pytest.mark.integration
     def test_delete_session(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import (
             ConversationSession,
@@ -178,6 +182,7 @@ class TestSessionStore:
         assert store.load(session.session_id) is None
         assert store.delete(session.session_id) is False
 
+    @pytest.mark.integration
     def test_get_or_create_new(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import SessionStore
 
@@ -186,6 +191,7 @@ class TestSessionStore:
         assert session is not None
         assert len(session.messages) == 0
 
+    @pytest.mark.integration
     def test_get_or_create_existing(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import (
             ConversationSession,
@@ -201,6 +207,7 @@ class TestSessionStore:
         assert resumed.title == "Existing"
         assert len(resumed.messages) == 1
 
+    @pytest.mark.integration
     def test_path_traversal_prevention(self, tmp_path):
         from semantic_code_intelligence.llm.conversation import SessionStore
 
@@ -219,6 +226,7 @@ class TestSessionStore:
 class TestInvestigationChain:
     """Tests for autonomous investigation chains."""
 
+    @pytest.mark.integration
     def test_simple_conclude(self, tmp_path):
         from semantic_code_intelligence.llm.investigation import InvestigationChain
         from semantic_code_intelligence.llm.mock_provider import MockProvider
@@ -237,6 +245,7 @@ class TestInvestigationChain:
         assert result.total_steps == 1
         assert result.chain_id != ""
 
+    @pytest.mark.integration
     def test_search_then_conclude(self, tmp_path):
         from semantic_code_intelligence.llm.investigation import InvestigationChain
         from semantic_code_intelligence.llm.mock_provider import MockProvider
@@ -261,6 +270,7 @@ class TestInvestigationChain:
         assert result.total_steps == 2
         assert "auth.py" in result.conclusion
 
+    @pytest.mark.integration
     def test_max_steps_forces_conclusion(self, tmp_path):
         from semantic_code_intelligence.llm.investigation import InvestigationChain
         from semantic_code_intelligence.llm.mock_provider import MockProvider
@@ -282,6 +292,7 @@ class TestInvestigationChain:
         # Should have 3 search steps, then forced conclusion
         assert result.total_steps == 3
 
+    @pytest.mark.integration
     def test_result_to_dict(self, tmp_path):
         from semantic_code_intelligence.llm.investigation import InvestigationResult
 
@@ -296,6 +307,7 @@ class TestInvestigationChain:
         assert d["question"] == "Why?"
         assert d["total_steps"] == 2
 
+    @pytest.mark.integration
     def test_parse_fallback(self, tmp_path):
         from semantic_code_intelligence.llm.investigation import InvestigationChain
         from semantic_code_intelligence.llm.mock_provider import MockProvider
@@ -319,6 +331,7 @@ class TestInvestigationChain:
 class TestCrossRefactor:
     """Tests for cross-repo refactoring analysis."""
 
+    @pytest.mark.integration
     def test_empty_workspace(self, tmp_path):
         from semantic_code_intelligence.llm.cross_refactor import analyze_cross_repo
 
@@ -525,6 +538,7 @@ class TestChatCLI:
         result = runner.invoke(chat_cmd, ["--help"])
         assert "--max-turns" in result.output
 
+    @pytest.mark.integration
     def test_json_output(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.chat_cmd import chat_cmd
 
@@ -536,6 +550,7 @@ class TestChatCLI:
         assert "session_id" in data
         assert "answer" in data
 
+    @pytest.mark.integration
     def test_pipe_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.chat_cmd import chat_cmd
 
@@ -545,6 +560,7 @@ class TestChatCLI:
         assert result.exit_code == 0
         assert len(result.output.strip()) > 0
 
+    @pytest.mark.integration
     def test_list_sessions_json(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.chat_cmd import chat_cmd
 
@@ -576,6 +592,7 @@ class TestInvestigateCLI:
         result = runner.invoke(investigate_cmd, ["--help"])
         assert "--max-steps" in result.output
 
+    @pytest.mark.integration
     def test_json_output(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.investigate_cmd import investigate_cmd
 
@@ -588,6 +605,7 @@ class TestInvestigateCLI:
         assert "conclusion" in data
         assert "steps" in data
 
+    @pytest.mark.integration
     def test_pipe_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.investigate_cmd import investigate_cmd
 
@@ -618,6 +636,7 @@ class TestCrossRefactorCLI:
         result = runner.invoke(cross_refactor_cmd, ["--help"])
         assert "--threshold" in result.output
 
+    @pytest.mark.integration
     def test_json_empty_workspace(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.cross_refactor_cmd import cross_refactor_cmd
 
@@ -628,6 +647,7 @@ class TestCrossRefactorCLI:
         data = json.loads(result.output)
         assert data["repos_analyzed"] == []
 
+    @pytest.mark.integration
     def test_pipe_mode(self, runner, tmp_path):
         from semantic_code_intelligence.cli.commands.cross_refactor_cmd import cross_refactor_cmd
 
@@ -734,6 +754,7 @@ class TestDocsGenerator:
         assert "stream_chat" in md
         assert "ON_STREAM" in md
 
+    @pytest.mark.integration
     def test_generate_all_docs_includes_ai(self, tmp_path):
         from semantic_code_intelligence.docs import generate_all_docs
 
