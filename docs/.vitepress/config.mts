@@ -93,6 +93,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Contributing', link: '/guide/contributing' },
+            { text: 'Testing', link: '/guide/testing' },
             { text: 'Roadmap', link: '/guide/roadmap' },
             { text: 'Upcoming Changes', link: '/guide/upcoming-changes' },
             { text: 'Upgrade Guide', link: '/guide/upgrade' },

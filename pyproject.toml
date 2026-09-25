@@ -95,6 +95,16 @@ include = ["semantic_code_intelligence*"]
 testpaths = ["semantic_code_intelligence/tests"]
 pythonpath = ["."]
 addopts = "-v --tb=short"
+markers = [
+    "unit: pure in-process logic with no external process, network or model",
+    "integration: multiple in-process components exercised together (index and search, vector store, plugins)",
+    "e2e: full user journeys across the CLI and indexing pipeline",
+    "model: loads a real sentence-transformers model; slow and needs the model artifact on first run",
+    "http: starts an HTTP server or issues HTTP requests",
+    "platform: behaviour that is specific to an operating system or runtime",
+    "compat: Python version compatibility surface",
+    "slow: cross-cutting marker for tests expected to take roughly 30 seconds or more",
+]
 
 [tool.mypy]
 strict = true
