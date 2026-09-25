@@ -7,9 +7,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -247,6 +252,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -261,6 +267,7 @@ jobs:
   ci-required:
     name: ci-required
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [test, lint]
     if: always()
     steps:
