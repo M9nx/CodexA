@@ -329,10 +329,11 @@ class TestNoStaleTypeIgnore:
     @pytest.mark.integration
     def test_plugins_no_unused_ignore(self) -> None:
         src = (_SRC / "plugins" / "__init__.py").read_text(encoding="utf-8")
-        # The exec_module line should NOT have type: ignore
-        for line in src.splitlines():
-            if "exec_module" in line:
-                assert "type: ignore" not in line, f"Stale type:ignore: {line}"
+        target_lines = [line for line in src.splitlines() if "exec_module" in line]
+        # fail if the construct is renamed away, rather than passing silently
+        assert target_lines, "expected an exec_module call in plugins/__init__.py"
+        for line in target_lines:
+            assert "type: ignore" not in line, f"Stale type:ignore: {line}"
 
     @pytest.mark.integration
     def test_openai_no_unused_ignore(self) -> None:

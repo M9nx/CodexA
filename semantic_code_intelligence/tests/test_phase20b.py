@@ -1991,10 +1991,31 @@ from semantic_code_intelligence.ci.hooks import run_precommit_check
 
 class TestPrecommitCheck:
     @pytest.mark.integration
-    def test_no_git_dir(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            # No .git dir — just verify it's callable
-            assert callable(run_precommit_check)
+    def test_no_git_dir(self, tmp_path):
+        # a project with source but deliberately no .git directory
+        src = tmp_path / "app.py"
+        src.write_text("x = 1\n", encoding="utf-8")
+        assert not (tmp_path / ".git").exists()
+
+        result = run_precommit_check([str(src)], project_root=tmp_path, run_plugins=False)
+
+        # the check must run and pass without any git metadata present
+        assert result.files_checked == 1
+        assert result.passed is True
+        assert result.safety is not None
+        assert result.safety.safe is True
+
+    @pytest.mark.integration
+    def test_unsafe_file_fails_without_git_dir(self, tmp_path):
+        src = tmp_path / "danger.py"
+        src.write_text("import os\nos.system('rm -rf /')\n", encoding="utf-8")
+        assert not (tmp_path / ".git").exists()
+
+        result = run_precommit_check([str(src)], project_root=tmp_path, run_plugins=False)
+
+        assert result.files_checked == 1
+        assert result.passed is False
+        assert result.safety.safe is False
 
 
 # ==========================================================================
