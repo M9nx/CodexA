@@ -36,6 +36,13 @@ jobs:
       - name: Run tests
         run: pytest --tb=short -q --junitxml=test-evidence/junit-${{ matrix.os }}-py${{ matrix.python-version }}.xml --durations=0 --durations-min=0.5
 
+      - name: TEMPORARY evidence-on-failure validation
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        run: |
+          mkdir -p temp-validation
+          printf 'def test_temporary_evidence_validation():\n    assert False, "TEMPORARY validation failure"\n' > temp-validation/test_temp_validation.py
+          pytest temp-validation --junitxml=test-evidence/junit-evidence-failure-validation.xml
+
       - name: Collect environment metadata
         if: always()
         shell: bash
