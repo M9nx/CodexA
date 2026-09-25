@@ -765,20 +765,18 @@ class TestHookResult:
 
 class TestRunPrecommitCheck:
     @pytest.mark.integration
-    def test_safe_files(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write("x = 1\ny = 2\n")
-            f.flush()
-            result = run_precommit_check([f.name], run_plugins=False)
-            assert result.passed is True
-            assert result.files_checked == 1
+    def test_safe_files(self, tmp_path):
+        src_file = tmp_path / "safe.py"
+        src_file.write_text("x = 1\ny = 2\n", encoding="utf-8")
+        result = run_precommit_check([str(src_file)], run_plugins=False)
+        assert result.passed is True
+        assert result.files_checked == 1
 
-    def test_unsafe_files(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write("import os\nos.system('rm -rf /')\n")
-            f.flush()
-            result = run_precommit_check([f.name], run_plugins=False)
-            assert result.passed is False
+    def test_unsafe_files(self, tmp_path):
+        src_file = tmp_path / "unsafe.py"
+        src_file.write_text("import os\nos.system('rm -rf /')\n", encoding="utf-8")
+        result = run_precommit_check([str(src_file)], run_plugins=False)
+        assert result.passed is False
 
     def test_empty_files(self):
         result = run_precommit_check([], run_plugins=False)
@@ -2095,21 +2093,19 @@ class TestParserSymbol:
 
 class TestParseFile:
     @pytest.mark.integration
-    def test_python_file(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write("def hello():\n  pass\n\nclass World:\n  def method(self):\n    pass\n")
-            f.flush()
-            syms = parser_parse_file(f.name)
-            names = [s.name for s in syms]
-            assert "hello" in names
+    def test_python_file(self, tmp_path):
+        src_file = tmp_path / "sample.py"
+        src_file.write_text("def hello():\n  pass\n\nclass World:\n  def method(self):\n    pass\n", encoding="utf-8")
+        syms = parser_parse_file(str(src_file))
+        names = [s.name for s in syms]
+        assert "hello" in names
 
     @pytest.mark.integration
-    def test_empty_file(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write("")
-            f.flush()
-            syms = parser_parse_file(f.name)
-            assert isinstance(syms, list)
+    def test_empty_file(self, tmp_path):
+        src_file = tmp_path / "empty.py"
+        src_file.write_text("", encoding="utf-8")
+        syms = parser_parse_file(str(src_file))
+        assert isinstance(syms, list)
 
 
 # ---------------------------------------------------------------------------
@@ -2132,14 +2128,13 @@ class TestScannedFile:
 
 class TestComputeFileHash:
     @pytest.mark.integration
-    def test_deterministic(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write("hello world")
-            f.flush()
-            h1 = compute_file_hash(f.name)
-            h2 = compute_file_hash(f.name)
-            assert h1 == h2
-            assert len(h1) > 0
+    def test_deterministic(self, tmp_path):
+        src_file = tmp_path / "content.py"
+        src_file.write_text("hello world", encoding="utf-8")
+        h1 = compute_file_hash(str(src_file))
+        h2 = compute_file_hash(str(src_file))
+        assert h1 == h2
+        assert len(h1) > 0
 
 
 class TestShouldIgnore:
@@ -2647,14 +2642,13 @@ class TestDependencyMapBasic:
         assert dm is not None
 
     @pytest.mark.integration
-    def test_add_file(self):
+    def test_add_file(self, tmp_path):
         dm = DependencyMap()
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write("import os\nimport sys\n")
-            f.flush()
-            dm.add_file(f.name)
-            deps = dm.get_dependencies(f.name)
-            assert isinstance(deps, list)
+        src_file = tmp_path / "deps.py"
+        src_file.write_text("import os\nimport sys\n", encoding="utf-8")
+        dm.add_file(str(src_file))
+        deps = dm.get_dependencies(str(src_file))
+        assert isinstance(deps, list)
 
     def test_get_all_files(self):
         dm = DependencyMap()
@@ -2665,13 +2659,12 @@ class TestBuildChangeSummary:
     """Test build_change_summary from ci.pr."""
 
     @pytest.mark.integration
-    def test_with_python_file(self):
+    def test_with_python_file(self, tmp_path):
         from semantic_code_intelligence.ci.pr import build_change_summary
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write("def hello():\n  pass\n")
-            f.flush()
-            summary = build_change_summary([f.name])
-            assert summary.files_changed == 1
+        src_file = tmp_path / "changed.py"
+        src_file.write_text("def hello():\n  pass\n", encoding="utf-8")
+        summary = build_change_summary([str(src_file)])
+        assert summary.files_changed == 1
 
     def test_with_nonexistent_file(self):
         from semantic_code_intelligence.ci.pr import build_change_summary

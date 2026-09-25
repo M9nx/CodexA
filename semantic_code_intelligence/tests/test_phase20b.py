@@ -840,23 +840,19 @@ class TestContextBuilder:
         assert matches == []
 
     @pytest.mark.integration
-    def test_index_file(self):
+    def test_index_file(self, tmp_path):
         cb = ContextBuilder()
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
-                                          delete=False, encoding="utf-8") as f:
-            f.write("def hello():\n    pass\n\nclass World:\n    pass\n")
-            f.flush()
-            syms = cb.index_file(f.name)
+        src_file = tmp_path / "indexed.py"
+        src_file.write_text("def hello():\n    pass\n\nclass World:\n    pass\n", encoding="utf-8")
+        syms = cb.index_file(str(src_file))
         assert isinstance(syms, list)
 
     @pytest.mark.integration
-    def test_find_after_index(self):
+    def test_find_after_index(self, tmp_path):
         cb = ContextBuilder()
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
-                                          delete=False, encoding="utf-8") as f:
-            f.write("def my_unique_fn():\n    return 42\n")
-            f.flush()
-            cb.index_file(f.name)
+        src_file = tmp_path / "findable.py"
+        src_file.write_text("def my_unique_fn():\n    return 42\n", encoding="utf-8")
+        cb.index_file(str(src_file))
         matches = cb.find_symbol("my_unique_fn")
         assert len(matches) >= 1
         assert matches[0].name == "my_unique_fn"
@@ -1161,23 +1157,19 @@ from semantic_code_intelligence.indexing.scanner import (
 
 class TestComputeFileHash:
     @pytest.mark.integration
-    def test_basic(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
-                                          delete=False, encoding="utf-8") as f:
-            f.write("x = 1\n")
-            f.flush()
-            h = compute_file_hash(Path(f.name))
+    def test_basic(self, tmp_path):
+        src_file = tmp_path / "hashed.py"
+        src_file.write_text("x = 1\n", encoding="utf-8")
+        h = compute_file_hash(src_file)
         assert isinstance(h, str)
         assert len(h) > 0
 
     @pytest.mark.integration
-    def test_deterministic(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
-                                          delete=False, encoding="utf-8") as f:
-            f.write("deterministic content\n")
-            f.flush()
-            h1 = compute_file_hash(Path(f.name))
-            h2 = compute_file_hash(Path(f.name))
+    def test_deterministic(self, tmp_path):
+        src_file = tmp_path / "stable.py"
+        src_file.write_text("deterministic content\n", encoding="utf-8")
+        h1 = compute_file_hash(src_file)
+        h2 = compute_file_hash(src_file)
         assert h1 == h2
 
 
@@ -1288,24 +1280,20 @@ class TestParserSymbol:
 
 class TestParseFile:
     @pytest.mark.integration
-    def test_python_file(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
-                                          delete=False, encoding="utf-8") as f:
-            f.write("def greet(name):\n    print(f'Hello {name}')\n\nclass Greeter:\n    pass\n")
-            f.flush()
-            symbols = parse_file(f.name)
+    def test_python_file(self, tmp_path):
+        src_file = tmp_path / "greet.py"
+        src_file.write_text("def greet(name):\n    print(f'Hello {name}')\n\nclass Greeter:\n    pass\n", encoding="utf-8")
+        symbols = parse_file(str(src_file))
         assert len(symbols) >= 2
         names = [s.name for s in symbols]
         assert "greet" in names
         assert "Greeter" in names
 
     @pytest.mark.integration
-    def test_empty_file(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py",
-                                          delete=False, encoding="utf-8") as f:
-            f.write("")
-            f.flush()
-            symbols = parse_file(f.name)
+    def test_empty_file(self, tmp_path):
+        src_file = tmp_path / "blank.py"
+        src_file.write_text("", encoding="utf-8")
+        symbols = parse_file(str(src_file))
         assert isinstance(symbols, list)
 
     def test_with_content(self):
