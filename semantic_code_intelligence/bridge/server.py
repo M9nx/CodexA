@@ -365,6 +365,10 @@ class BridgeServer:
         _BridgeHandler.tool_executor = self._executor
         _BridgeHandler.session_manager = self._session_manager
         httpd = HTTPServer((self._host, self._port), _BridgeHandler)
+        # Record the port the OS actually bound. Passing port=0 asks the OS for an
+        # ephemeral port; without this, `url` would advertise the requested 0
+        # instead of the real one.
+        self._port = httpd.server_address[1]
         return httpd
 
     def start(self) -> None:

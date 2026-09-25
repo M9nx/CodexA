@@ -333,6 +333,30 @@ class TestDispatch:
 class TestBridgeServer:
     """BridgeServer lifecycle and direct dispatch."""
 
+    @staticmethod
+    def _wait_for_health(server: BridgeServer, timeout: float = 5.0) -> None:
+        """Block until /health answers, or fail the test.
+
+        Replaces a fixed sleep. HTTPServer binds and listens inside its
+        constructor, so the socket is already accepting once
+        ``start_background`` returns and this normally succeeds immediately; the
+        bounded poll only matters on a loaded machine.
+        """
+        deadline = time.monotonic() + timeout
+        last_error: Exception | None = None
+        while time.monotonic() < deadline:
+            try:
+                with urllib.request.urlopen(f"{server.url}/health", timeout=0.5) as resp:
+                    if resp.status == 200:
+                        return
+            except Exception as exc:  # retried until the deadline
+                last_error = exc
+            time.sleep(0.02)
+        raise AssertionError(
+            f"bridge server was not healthy within {timeout}s "
+            f"(url={server.url}): {last_error!r}"
+        )
+
     @pytest.mark.integration
     def test_init(self, tmp_path: Path):
         server = BridgeServer(tmp_path)
@@ -368,12 +392,12 @@ class TestBridgeServer:
     @pytest.mark.http
     def test_background_start_stop(self, tmp_path: Path):
         """Start, query, and stop a background server."""
+        # port=0 asks the OS for a free ephemeral port, so parallel or
+        # repeated runs can never collide on a hardcoded one.
         server = BridgeServer(tmp_path, port=0)
-        # port=0 will fail because HTTPServer needs a real port, pick a high one
-        server = BridgeServer(tmp_path, port=39871)
         server.start_background()
         try:
-            time.sleep(0.3)  # let the server thread start
+            self._wait_for_health(server)
             # Health check
             url = f"{server.url}/health"
             req = urllib.request.Request(url)
@@ -408,10 +432,10 @@ class TestBridgeServer:
 
     @pytest.mark.http
     def test_background_post_invalid_json(self, tmp_path: Path):
-        server = BridgeServer(tmp_path, port=39872)
+        server = BridgeServer(tmp_path, port=0)
         server.start_background()
         try:
-            time.sleep(0.3)
+            self._wait_for_health(server)
             post_data = b"this is not json"
             req = urllib.request.Request(
                 f"{server.url}/request",
@@ -428,10 +452,10 @@ class TestBridgeServer:
 
     @pytest.mark.http
     def test_background_404(self, tmp_path: Path):
-        server = BridgeServer(tmp_path, port=39873)
+        server = BridgeServer(tmp_path, port=0)
         server.start_background()
         try:
-            time.sleep(0.3)
+            self._wait_for_health(server)
             req = urllib.request.Request(f"{server.url}/nonexistent")
             try:
                 urllib.request.urlopen(req, timeout=2)
