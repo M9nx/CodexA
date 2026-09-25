@@ -36,10 +36,6 @@ jobs:
       - name: Run tests
         run: pytest --tb=short -q
 
-      - name: TEMPORARY aggregate failure validation
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-        run: exit 1
-
   lint:
     runs-on: ubuntu-latest
     steps:
