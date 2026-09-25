@@ -34,7 +34,216 @@ jobs:
           python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer('all-MiniLM-L6-v2'); print('Model downloaded/cached successfully'); print(f'Embedding dimension: {model.get_sentence_embedding_dimension()}')"
 
       - name: Run tests
-        run: pytest --tb=short -q
+        run: pytest --tb=short -q --junitxml=test-evidence/junit-${{ matrix.os }}-py${{ matrix.python-version }}.xml --durations=0 --durations-min=0.5
+
+      - name: Collect environment metadata
+        if: always()
+        shell: bash
+        env:
+          MATRIX_JSON: ${{ toJSON(matrix) }}
+        run: |
+          mkdir -p test-evidence
+          python - <<'PY'
+          import datetime
+          import importlib.metadata as importlib_metadata
+          import json
+          import os
+          import platform
+
+          EVIDENCE_DIR = "test-evidence"
+          SCHEMA = "codexa-ci-test-evidence/v1"
+
+          def optional(label, producer, warnings):
+              try:
+                  return producer()
+              except Exception as exc:
+                  warnings.append(f"{label} unavailable: {exc}")
+                  return None
+
+          def main():
+              warnings = []
+              raw_matrix = os.environ.get("MATRIX_JSON") or "{}"
+              try:
+                  matrix = json.loads(raw_matrix)
+              except Exception:
+                  matrix = {"raw": raw_matrix}
+                  warnings.append("MATRIX_JSON could not be parsed")
+
+              meta = {
+                  "schema": SCHEMA,
+                  "commit_sha": os.environ.get("GITHUB_SHA"),
+                  "run_id": os.environ.get("GITHUB_RUN_ID"),
+                  "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+                  "job_id": os.environ.get("GITHUB_JOB"),
+                  "workflow": os.environ.get("GITHUB_WORKFLOW"),
+                  "matrix": matrix,
+                  "runner_os": os.environ.get("RUNNER_OS"),
+                  "runner_arch": os.environ.get("RUNNER_ARCH"),
+                  "runner_environment": os.environ.get("RUNNER_ENVIRONMENT"),
+                  "python_version": platform.python_version(),
+                  "python_implementation": platform.python_implementation(),
+                  "platform": platform.platform(),
+                  "collected_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+                  "pytest_version": optional("pytest_version", lambda: importlib_metadata.version("pytest"), warnings),
+                  "project_name": None,
+                  "project_version": None,
+              }
+
+              try:
+                  import tomllib
+                  with open("pyproject.toml", "rb") as handle:
+                      project = tomllib.load(handle).get("project", {})
+                  meta["project_name"] = project.get("name")
+                  meta["project_version"] = project.get("version")
+              except Exception as exc:
+                  warnings.append(f"project metadata unavailable: {exc}")
+
+              for message in warnings:
+                  print(f"::warning::{message}")
+
+              os.makedirs(EVIDENCE_DIR, exist_ok=True)
+              path = os.path.join(EVIDENCE_DIR, "environment.json")
+              with open(path, "w", encoding="utf-8") as handle:
+                  json.dump(meta, handle, indent=2, sort_keys=True)
+                  handle.write("\n")
+              print(json.dumps(meta, indent=2, sort_keys=True))
+
+          try:
+              main()
+          except Exception as exc:
+              print(f"::warning::environment metadata collection failed: {exc}")
+          PY
+
+      - name: Summarize test evidence
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import glob
+          import json
+          import os
+          import xml.etree.ElementTree as ElementTree
+
+          EVIDENCE_DIR = "test-evidence"
+          TOP_SLOWEST = 10
+
+          def load_metadata():
+              path = os.path.join(EVIDENCE_DIR, "environment.json")
+              try:
+                  with open(path, encoding="utf-8") as handle:
+                      return json.load(handle)
+              except FileNotFoundError:
+                  print("::warning::environment.json not found")
+                  return {}
+              except Exception as exc:
+                  print(f"::warning::could not read environment.json: {exc}")
+                  return {}
+
+          def load_junit():
+              matches = sorted(glob.glob(os.path.join(EVIDENCE_DIR, "junit-*.xml")))
+              if not matches:
+                  print("::warning::no JUnit XML found")
+                  return None, None
+              path = matches[0]
+              try:
+                  root = ElementTree.parse(path).getroot()
+              except Exception as exc:
+                  print(f"::warning::could not parse {path}: {exc}")
+                  return path, None
+              return path, next(root.iter("testsuite"), None)
+
+          def slowest_cases(suite, limit):
+              cases = []
+              for case in suite.iter("testcase"):
+                  try:
+                      seconds = float(case.get("time") or 0.0)
+                  except ValueError:
+                      seconds = 0.0
+                  cases.append((seconds, case.get("classname") or "?", case.get("name") or "?"))
+              cases.sort(key=lambda item: item[0], reverse=True)
+              return cases[:limit]
+
+          def render(meta, junit_path, suite):
+              matrix = meta.get("matrix") or {}
+              lines = ["## CI Test Evidence", ""]
+              fields = [
+                  ("OS", matrix.get("os") or meta.get("runner_os") or "unknown"),
+                  ("Python", f"{matrix.get('python-version') or 'unknown'} ({meta.get('python_implementation') or '?'} {meta.get('python_version') or '?'})"),
+                  ("Commit", meta.get("commit_sha") or "unknown"),
+                  ("Workflow run", f"{meta.get('run_id') or '?'} (attempt {meta.get('run_attempt') or '?'})"),
+                  ("Job", meta.get("job_id") or "?"),
+                  ("Runner", f"{meta.get('runner_os') or '?'} / {meta.get('runner_arch') or '?'}"),
+                  ("Platform", meta.get("platform") or "?"),
+                  ("pytest", meta.get("pytest_version") or "?"),
+                  ("Project", f"{meta.get('project_name') or '?'} {meta.get('project_version') or '?'}"),
+              ]
+              lines.append("| Field | Value |")
+              lines.append("| --- | --- |")
+              for label, value in fields:
+                  lines.append(f"| {label} | {value} |")
+              lines.append("")
+
+              if suite is None:
+                  lines.append("**No usable JUnit XML was produced.** Inspect the job log for the pytest failure.")
+                  return "\n".join(lines) + "\n"
+
+              total = int(suite.get("tests") or 0)
+              failures = int(suite.get("failures") or 0)
+              errors = int(suite.get("errors") or 0)
+              skipped = int(suite.get("skipped") or 0)
+              passed = max(total - failures - errors - skipped, 0)
+              try:
+                  duration = float(suite.get("time") or 0.0)
+              except ValueError:
+                  duration = 0.0
+
+              lines.append("| Result | Count |")
+              lines.append("| --- | --- |")
+              lines.append(f"| Collected | {total} |")
+              lines.append(f"| Passed | {passed} |")
+              lines.append(f"| Failed | {failures} |")
+              lines.append(f"| Errors | {errors} |")
+              lines.append(f"| Skipped (includes xfail) | {skipped} |")
+              lines.append(f"| Suite duration | {duration:.1f}s |")
+              lines.append("")
+
+              slowest = slowest_cases(suite, TOP_SLOWEST)
+              if slowest:
+                  lines.append(f"### Slowest {len(slowest)} tests")
+                  lines.append("")
+                  lines.append("| Seconds | Test |")
+                  lines.append("| --- | --- |")
+                  for seconds, classname, name in slowest:
+                      lines.append(f"| {seconds:.3f} | `{classname}::{name}` |")
+                  lines.append("")
+
+              lines.append(f"Evidence files: `{junit_path}` and `environment.json` (uploaded as a workflow artifact).")
+              return "\n".join(lines) + "\n"
+
+          def main():
+              meta = load_metadata()
+              junit_path, suite = load_junit()
+              report = render(meta, junit_path, suite)
+              summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+              if summary_path:
+                  with open(summary_path, "a", encoding="utf-8") as handle:
+                      handle.write(report)
+              print(report)
+
+          try:
+              main()
+          except Exception as exc:
+              print(f"::warning::test evidence summary failed: {exc}")
+          PY
+
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-evidence-${{ matrix.os }}-py${{ matrix.python-version }}-${{ github.sha }}
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 30
 
   lint:
     runs-on: ubuntu-latest
