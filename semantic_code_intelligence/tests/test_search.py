@@ -82,6 +82,7 @@ class TestSearchCodebase:
         assert len(results) == 1
         assert "jwt" in results[0].content.lower() or "token" in results[0].content.lower()
 
+    @pytest.mark.integration
     def test_search_no_index_raises(self, tmp_path: Path):
         init_project(tmp_path)
         with pytest.raises(FileNotFoundError):

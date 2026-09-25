@@ -181,11 +181,13 @@ class TestContextProvider:
         assert provider._builder is None
         assert provider._validator is not None
 
+    @pytest.mark.integration
     def test_validate_code_safe(self, provider: ContextProvider):
         report = provider.validate_code("x = 1 + 2")
         assert isinstance(report, dict)
         assert "safe" in report
 
+    @pytest.mark.integration
     def test_validate_code_unsafe(self, provider: ContextProvider):
         report = provider.validate_code("eval(input())")
         assert isinstance(report, dict)
@@ -193,6 +195,7 @@ class TestContextProvider:
         assert report.get("is_safe") is False or len(report.get("issues", [])) > 0
 
     @patch("semantic_code_intelligence.bridge.context_provider.search_codebase")
+    @pytest.mark.integration
     def test_context_for_query_empty(self, mock_search, provider):
         mock_search.return_value = []
         result = provider.context_for_query(query="test")
@@ -200,6 +203,7 @@ class TestContextProvider:
         assert result["snippet_count"] == 0
 
     @patch("semantic_code_intelligence.bridge.context_provider.search_codebase")
+    @pytest.mark.integration
     def test_context_for_query_with_results(self, mock_search, provider):
         mock_result = MagicMock()
         mock_result.to_dict.return_value = {"file": "a.py", "score": 0.9}
@@ -209,11 +213,13 @@ class TestContextProvider:
         assert result["snippets"][0]["file"] == "a.py"
 
     @patch("semantic_code_intelligence.bridge.context_provider.search_codebase")
+    @pytest.mark.integration
     def test_context_for_query_exception(self, mock_search, provider):
         mock_search.side_effect = Exception("oops")
         result = provider.context_for_query(query="fail")
         assert result["snippet_count"] == 0
 
+    @pytest.mark.integration
     def test_context_for_symbol_not_found(self, provider):
         """Symbol not found returns found=False."""
         with patch.object(provider, "_ensure_indexed") as mock_idx:
@@ -223,6 +229,7 @@ class TestContextProvider:
             result = provider.context_for_symbol("nonexistent")
             assert result["found"] is False
 
+    @pytest.mark.integration
     def test_context_for_repo(self, provider):
         """Repo summary delegates to summarize_repository."""
         with patch.object(provider, "_ensure_indexed") as mock_idx:
@@ -237,6 +244,7 @@ class TestContextProvider:
                 result = provider.context_for_repo()
                 assert result["total_files"] == 10
 
+    @pytest.mark.integration
     def test_get_dependencies(self, provider):
         """get_dependencies returns dict with expected keys."""
         with patch.object(provider, "_ensure_indexed") as mock_idx:
@@ -247,6 +255,7 @@ class TestContextProvider:
             assert "file_path" in result
             assert "dependencies" in result
 
+    @pytest.mark.integration
     def test_get_call_graph(self, provider):
         """get_call_graph returns expected structure."""
         with patch.object(provider, "_ensure_indexed") as mock_idx:
@@ -258,6 +267,7 @@ class TestContextProvider:
             assert "callers" in result
             assert "callees" in result
 
+    @pytest.mark.integration
     def test_find_references(self, provider):
         """find_references returns expected structure."""
         with patch.object(provider, "_ensure_indexed") as mock_idx:
@@ -323,14 +333,17 @@ class TestDispatch:
 class TestBridgeServer:
     """BridgeServer lifecycle and direct dispatch."""
 
+    @pytest.mark.integration
     def test_init(self, tmp_path: Path):
         server = BridgeServer(tmp_path)
         assert server.url == "http://127.0.0.1:24842"
 
+    @pytest.mark.integration
     def test_custom_host_port(self, tmp_path: Path):
         server = BridgeServer(tmp_path, host="0.0.0.0", port=9999)
         assert server.url == "http://0.0.0.0:9999"
 
+    @pytest.mark.integration
     def test_direct_dispatch(self, tmp_path: Path):
         server = BridgeServer(tmp_path)
         req = AgentRequest(
@@ -342,6 +355,7 @@ class TestBridgeServer:
         assert resp.request_id == "test-1"
         assert resp.elapsed_ms >= 0
 
+    @pytest.mark.integration
     def test_direct_dispatch_validate(self, tmp_path: Path):
         server = BridgeServer(tmp_path)
         req = AgentRequest(
@@ -351,6 +365,7 @@ class TestBridgeServer:
         resp = server.dispatch(req)
         assert resp.success is True
 
+    @pytest.mark.http
     def test_background_start_stop(self, tmp_path: Path):
         """Start, query, and stop a background server."""
         server = BridgeServer(tmp_path, port=0)
@@ -391,6 +406,7 @@ class TestBridgeServer:
         finally:
             server.stop()
 
+    @pytest.mark.http
     def test_background_post_invalid_json(self, tmp_path: Path):
         server = BridgeServer(tmp_path, port=39872)
         server.start_background()
@@ -410,6 +426,7 @@ class TestBridgeServer:
         finally:
             server.stop()
 
+    @pytest.mark.http
     def test_background_404(self, tmp_path: Path):
         server = BridgeServer(tmp_path, port=39873)
         server.start_background()
@@ -491,30 +508,36 @@ class TestVSCodeBridge:
         provider = ContextProvider(tmp_path)
         return VSCodeBridge(provider=provider)
 
+    @pytest.mark.integration
     def test_diagnostics_safe(self, bridge):
         diags = bridge.diagnostics("x = 1")
         assert isinstance(diags, list)
 
+    @pytest.mark.integration
     def test_diagnostics_unsafe(self, bridge):
         diags = bridge.diagnostics("eval(input())")
         assert len(diags) > 0
         assert diags[0]["source"] == "CodexA"
 
     @patch("semantic_code_intelligence.bridge.context_provider.search_codebase")
+    @pytest.mark.integration
     def test_completions(self, mock_search, bridge):
         mock_search.return_value = []
         items = bridge.completions("auth")
         assert isinstance(items, list)
 
+    @pytest.mark.integration
     def test_code_actions_safe(self, bridge):
         actions = bridge.code_actions("x = 1")
         assert isinstance(actions, list)
 
+    @pytest.mark.integration
     def test_code_actions_unsafe(self, bridge):
         actions = bridge.code_actions("eval(input())")
         assert len(actions) > 0
         assert "CodexA" in actions[0]["title"]
 
+    @pytest.mark.integration
     def test_hover_not_found(self, bridge):
         with patch.object(bridge.provider, "_ensure_indexed") as mock_idx:
             mock_builder = MagicMock()
@@ -592,6 +615,7 @@ class TestContextCLI:
         assert "--json" in result.output
 
     @patch("semantic_code_intelligence.bridge.context_provider.search_codebase")
+    @pytest.mark.integration
     def test_context_query_json(self, mock_search, tmp_path):
         mock_search.return_value = []
         from semantic_code_intelligence.cli.commands.context_cmd import context_cmd
@@ -604,6 +628,7 @@ class TestContextCLI:
         data = json.loads(result.output)
         assert data["query"] == "test"
 
+    @pytest.mark.integration
     def test_context_repo_json(self, tmp_path):
         from semantic_code_intelligence.cli.commands.context_cmd import context_cmd
         runner = CliRunner()

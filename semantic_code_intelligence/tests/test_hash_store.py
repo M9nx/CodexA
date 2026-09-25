@@ -65,12 +65,14 @@ class TestHashStore:
 class TestHashStorePersistence:
     """Tests for save/load."""
 
+    @pytest.mark.integration
     def test_save_creates_file(self, tmp_path: Path):
         store = HashStore()
         store.set("file.py", "hash1")
         store.save(tmp_path)
         assert (tmp_path / "file_hashes.json").exists()
 
+    @pytest.mark.integration
     def test_load_roundtrip(self, tmp_path: Path):
         store = HashStore()
         store.set("a.py", "h1")
@@ -82,6 +84,7 @@ class TestHashStorePersistence:
         assert loaded.get("a.py") == "h1"
         assert loaded.get("b.py") == "h2"
 
+    @pytest.mark.integration
     def test_load_nonexistent_returns_empty(self, tmp_path: Path):
         loaded = HashStore.load(tmp_path / "nope")
         assert loaded.count == 0

@@ -148,6 +148,7 @@ class TestModelsCLI:
         result = runner.invoke(cli, ["models", "switch", "--help"])
         assert result.exit_code == 0
 
+    @pytest.mark.model
     def test_models_list_json(self):
         runner = CliRunner()
         result = runner.invoke(cli, ["models", "list", "--json"])
@@ -177,6 +178,7 @@ class TestModelsCLI:
 class TestModelRegistry:
     """Test model registry helper functions."""
 
+    @pytest.mark.model
     def test_resolve_alias(self):
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
         assert resolve_model_name("minilm") == "all-MiniLM-L6-v2"
@@ -225,6 +227,7 @@ class TestVSCodeExtension:
         p = Path("vscode-extension/src/extension.ts")
         assert p.exists() or Path("d:/mounir/CodexA/vscode-extension/src/extension.ts").exists()
 
+    @pytest.mark.integration
     def test_package_json_valid(self):
         p = Path("vscode-extension/package.json")
         if not p.exists():

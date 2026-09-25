@@ -471,10 +471,12 @@ class TestEdgeCases:
         assert len(funcs) == 1
         assert funcs[0].name == "greet"
 
+    @pytest.mark.integration
     def test_nonexistent_file_returns_empty(self, tmp_path):
         symbols = parse_file(str(tmp_path / "does_not_exist.py"))
         assert symbols == []
 
+    @pytest.mark.integration
     def test_read_from_disk(self, tmp_path):
         f = tmp_path / "hello.py"
         f.write_text("def disk_func():\n    pass\n", encoding="utf-8")

@@ -138,22 +138,26 @@ class TestFileWatcher:
 # ---------------------------------------------------------------------------
 
 class TestAsyncIndexer:
+    @pytest.mark.integration
     def test_init(self, tmp_path):
         indexer = AsyncIndexer(tmp_path)
         assert indexer.pending_count == 0
         assert indexer.tasks_processed == 0
 
+    @pytest.mark.integration
     def test_enqueue(self, tmp_path):
         indexer = AsyncIndexer(tmp_path)
         indexer.enqueue(["file1.py", "file2.py"])
         assert indexer.pending_count == 1
 
+    @pytest.mark.integration
     def test_enqueue_multiple(self, tmp_path):
         indexer = AsyncIndexer(tmp_path)
         indexer.enqueue(["f1.py"])
         indexer.enqueue(["f2.py"])
         assert indexer.pending_count == 2
 
+    @pytest.mark.integration
     def test_callbacks(self, tmp_path):
         indexer = AsyncIndexer(tmp_path)
         completed = []

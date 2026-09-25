@@ -258,17 +258,20 @@ class TestSemanticChunkCode:
 # ---------------------------------------------------------------------------
 
 class TestSemanticChunkFile:
+    @pytest.mark.integration
     def test_existing_file(self, tmp_path):
         f = tmp_path / "sample.py"
         f.write_text(SAMPLE_PYTHON, encoding="utf-8")
         chunks = semantic_chunk_file(f)
         assert len(chunks) > 0
 
+    @pytest.mark.integration
     def test_nonexistent_file(self, tmp_path):
         f = tmp_path / "nope.py"
         chunks = semantic_chunk_file(f)
         assert chunks == []
 
+    @pytest.mark.integration
     def test_empty_file(self, tmp_path):
         f = tmp_path / "empty.py"
         f.write_text("", encoding="utf-8")

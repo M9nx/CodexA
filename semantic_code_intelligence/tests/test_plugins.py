@@ -278,16 +278,19 @@ class TestPluginManagerInfo:
 # ---------------------------------------------------------------------------
 
 class TestPluginDiscovery:
+    @pytest.mark.integration
     def test_discover_empty_dir(self, tmp_path):
         mgr = PluginManager()
         count = mgr.discover_from_directory(tmp_path)
         assert count == 0
 
+    @pytest.mark.integration
     def test_discover_nonexistent_dir(self, tmp_path):
         mgr = PluginManager()
         count = mgr.discover_from_directory(tmp_path / "nope")
         assert count == 0
 
+    @pytest.mark.integration
     def test_discover_valid_plugin(self, tmp_path):
         plugin_code = '''\
 from semantic_code_intelligence.plugins import PluginBase, PluginMetadata, PluginHook
@@ -306,6 +309,7 @@ def create_plugin():
         assert count == 1
         assert "discovered" in mgr.registered_plugins
 
+    @pytest.mark.integration
     def test_discover_skips_underscore_files(self, tmp_path):
         (tmp_path / "_private.py").write_text("x = 1", encoding="utf-8")
         mgr = PluginManager()

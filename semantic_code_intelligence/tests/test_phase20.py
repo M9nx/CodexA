@@ -764,6 +764,7 @@ class TestHookResult:
 
 
 class TestRunPrecommitCheck:
+    @pytest.mark.integration
     def test_safe_files(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("x = 1\ny = 2\n")
@@ -1118,6 +1119,7 @@ class TestSafetyValidator:
         report = v.validate("DROP TABLE users")
         assert report.safe is False
 
+    @pytest.mark.integration
     def test_path_traversal(self):
         v = SafetyValidator()
         report = v.validate("open('../../etc/passwd')")
@@ -1148,6 +1150,7 @@ class TestSafetyValidator:
         report = v.validate("url = 'http://localhost:8080'")
         assert report.safe is True
 
+    @pytest.mark.http
     def test_verify_false(self):
         v = SafetyValidator()
         report = v.validate("requests.get(url, verify=False)")
@@ -1974,6 +1977,7 @@ from semantic_code_intelligence.config.settings import (
 
 
 class TestEmbeddingConfig:
+    @pytest.mark.model
     def test_defaults(self):
         ec = EmbeddingConfig()
         assert ec.model_name == "all-MiniLM-L6-v2"
@@ -2090,6 +2094,7 @@ class TestParserSymbol:
 
 
 class TestParseFile:
+    @pytest.mark.integration
     def test_python_file(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("def hello():\n  pass\n\nclass World:\n  def method(self):\n    pass\n")
@@ -2098,6 +2103,7 @@ class TestParseFile:
             names = [s.name for s in syms]
             assert "hello" in names
 
+    @pytest.mark.integration
     def test_empty_file(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("")
@@ -2125,6 +2131,7 @@ class TestScannedFile:
 
 
 class TestComputeFileHash:
+    @pytest.mark.integration
     def test_deterministic(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("hello world")
@@ -2247,28 +2254,33 @@ from semantic_code_intelligence.docs import generate_all_docs
 
 
 class TestDocsGeneration:
+    @pytest.mark.integration
     def test_generate_all_docs(self):
         with tempfile.TemporaryDirectory() as tmp:
             docs = generate_all_docs(Path(tmp))
             assert isinstance(docs, list)
 
+    @pytest.mark.integration
     def test_all_docs_are_strings(self):
         with tempfile.TemporaryDirectory() as tmp:
             docs = generate_all_docs(Path(tmp))
             for name in docs:
                 assert isinstance(name, str)
 
+    @pytest.mark.integration
     def test_cli_reference_exists(self):
         with tempfile.TemporaryDirectory() as tmp:
             docs = generate_all_docs(Path(tmp))
             assert any("CLI" in k or "cli" in k for k in docs)
 
+    @pytest.mark.integration
     def test_architecture_exists(self):
         with tempfile.TemporaryDirectory() as tmp:
             docs = generate_all_docs(Path(tmp))
             # May generate PLUGINS, BRIDGE, WEB, CI, etc.
             assert isinstance(docs, list)
 
+    @pytest.mark.integration
     def test_tool_protocol_exists(self):
         with tempfile.TemporaryDirectory() as tmp:
             docs = generate_all_docs(Path(tmp))
@@ -2312,6 +2324,7 @@ class TestBatchProcessorDeep:
 
 
 class TestMemoryAwareEmbedder:
+    @pytest.mark.model
     def test_create(self):
         mae = MemoryAwareEmbedder(model_name="all-MiniLM-L6-v2", batch_size=32)
         assert mae is not None
@@ -2361,11 +2374,13 @@ class TestWorkspaceManifest:
 
 
 class TestWorkspace:
+    @pytest.mark.integration
     def test_create(self):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace(Path(tmp))
             assert ws is not None
 
+    @pytest.mark.integration
     def test_repos_empty(self):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Workspace(Path(tmp))
@@ -2393,11 +2408,13 @@ class TestFileChangeEvent:
 
 
 class TestFileWatcherDeep:
+    @pytest.mark.integration
     def test_create(self):
         with tempfile.TemporaryDirectory() as tmp:
             fw = FileWatcher(Path(tmp))
             assert fw is not None
 
+    @pytest.mark.integration
     def test_has_start_stop(self):
         with tempfile.TemporaryDirectory() as tmp:
             fw = FileWatcher(Path(tmp))
@@ -2468,15 +2485,18 @@ class TestCopilotInstructionsExists:
     def test_file_exists(self):
         assert self._ci_path.exists()
 
+    @pytest.mark.integration
     def test_contains_codex_commands(self):
         content = self._ci_path.read_text(encoding="utf-8")
         assert "codexa search" in content
         assert "codexa tool run" in content
 
+    @pytest.mark.integration
     def test_contains_rules(self):
         content = self._ci_path.read_text(encoding="utf-8")
         assert "--json" in content
 
+    @pytest.mark.integration
     def test_contains_project_structure(self):
         content = self._ci_path.read_text(encoding="utf-8")
         assert "cli/" in content
@@ -2577,6 +2597,8 @@ class TestLogging:
 class TestToolRegistryInvocations:
     """Test ToolRegistry invoke for each built-in tool (error paths)."""
 
+    @pytest.mark.slow
+    @pytest.mark.model
     def test_invoke_semantic_search_no_index(self):
         tr = ToolRegistry(Path("."))
         result = tr.invoke("semantic_search", query="test")
@@ -2624,6 +2646,7 @@ class TestDependencyMapBasic:
         dm = DependencyMap()
         assert dm is not None
 
+    @pytest.mark.integration
     def test_add_file(self):
         dm = DependencyMap()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
@@ -2641,6 +2664,7 @@ class TestDependencyMapBasic:
 class TestBuildChangeSummary:
     """Test build_change_summary from ci.pr."""
 
+    @pytest.mark.integration
     def test_with_python_file(self):
         from semantic_code_intelligence.ci.pr import build_change_summary
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:

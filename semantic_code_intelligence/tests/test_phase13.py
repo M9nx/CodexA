@@ -194,18 +194,21 @@ class TestToolReferenceGenerator:
 class TestGenerateAllDocs:
     """Tests for the combined documentation generator."""
 
+    @pytest.mark.integration
     def test_creates_output_directory(self, tmp_path):
         out = tmp_path / "docs"
         generated = generate_all_docs(out)
         assert out.is_dir()
         assert len(generated) >= 3
 
+    @pytest.mark.integration
     def test_generates_plugin_md(self, tmp_path):
         out = tmp_path / "docs"
         generated = generate_all_docs(out)
         assert "PLUGINS.md" in generated
         assert (out / "PLUGINS.md").is_file()
 
+    @pytest.mark.integration
     def test_generates_bridge_md(self, tmp_path):
         out = tmp_path / "docs"
         generated = generate_all_docs(out)
@@ -213,11 +216,13 @@ class TestGenerateAllDocs:
         content = (out / "BRIDGE.md").read_text()
         assert "Bridge Protocol" in content
 
+    @pytest.mark.integration
     def test_generates_tools_md(self, tmp_path):
         out = tmp_path / "docs"
         generated = generate_all_docs(out)
         assert "TOOLS.md" in generated
 
+    @pytest.mark.integration
     def test_generates_cli_md(self, tmp_path):
         out = tmp_path / "docs"
         generated = generate_all_docs(out)
@@ -236,17 +241,20 @@ from semantic_code_intelligence.cli.commands.doctor_cmd import run_checks, docto
 class TestDoctorChecks:
     """Tests for the doctor health check system."""
 
+    @pytest.mark.integration
     def test_returns_list(self, tmp_path):
         checks = run_checks(tmp_path)
         assert isinstance(checks, list)
         assert len(checks) > 0
 
+    @pytest.mark.integration
     def test_python_check(self, tmp_path):
         checks = run_checks(tmp_path)
         py_check = next(c for c in checks if c["name"] == "Python")
         assert py_check["ok"] is True
         assert "3." in py_check["version"]
 
+    @pytest.mark.integration
     def test_codex_version_check(self, tmp_path):
         from semantic_code_intelligence import __version__
         checks = run_checks(tmp_path)
@@ -254,11 +262,13 @@ class TestDoctorChecks:
         assert codex_check["ok"] is True
         assert codex_check["version"] == __version__
 
+    @pytest.mark.integration
     def test_click_check(self, tmp_path):
         checks = run_checks(tmp_path)
         click_check = next(c for c in checks if c["name"] == "click")
         assert click_check["ok"] is True
 
+    @pytest.mark.integration
     def test_project_not_initialized(self, tmp_path):
         checks = run_checks(tmp_path)
         proj = next(c for c in checks if c["name"] == "Project")
@@ -271,6 +281,7 @@ class TestDoctorChecks:
         proj = next(c for c in checks if c["name"] == "Project")
         assert proj["ok"] is True
 
+    @pytest.mark.model
     def test_project_indexed(self, tmp_path):
         idx = tmp_path / ".codexa" / "index"
         idx.mkdir(parents=True)
@@ -316,12 +327,14 @@ from semantic_code_intelligence.cli.commands.docs_cmd import docs_cmd
 class TestDocsCLI:
     """Tests for the docs CLI command."""
 
+    @pytest.mark.integration
     def test_generates_all_docs(self, tmp_path):
         runner = CliRunner()
         out = str(tmp_path / "docs")
         result = runner.invoke(docs_cmd, ["--output", out])
         assert result.exit_code == 0
 
+    @pytest.mark.integration
     def test_generates_specific_section(self, tmp_path):
         runner = CliRunner()
         out = str(tmp_path / "docs")
@@ -329,6 +342,7 @@ class TestDocsCLI:
         assert result.exit_code == 0
         assert (tmp_path / "docs" / "PLUGINS.md").is_file()
 
+    @pytest.mark.integration
     def test_json_output(self, tmp_path):
         runner = CliRunner()
         out = str(tmp_path / "docs")
@@ -339,6 +353,7 @@ class TestDocsCLI:
         assert "files" in data
         assert len(data["files"]) > 0
 
+    @pytest.mark.integration
     def test_section_cli(self, tmp_path):
         runner = CliRunner()
         out = str(tmp_path / "docs")
@@ -346,6 +361,7 @@ class TestDocsCLI:
         assert result.exit_code == 0
         assert (tmp_path / "docs" / "CLI.md").is_file()
 
+    @pytest.mark.integration
     def test_section_bridge(self, tmp_path):
         runner = CliRunner()
         out = str(tmp_path / "docs")
@@ -353,6 +369,7 @@ class TestDocsCLI:
         assert result.exit_code == 0
         assert (tmp_path / "docs" / "BRIDGE.md").is_file()
 
+    @pytest.mark.integration
     def test_section_tools(self, tmp_path):
         runner = CliRunner()
         out = str(tmp_path / "docs")
@@ -371,12 +388,14 @@ from semantic_code_intelligence.cli.commands.plugin_cmd import plugin_cmd
 class TestPluginNewCLI:
     """Tests for the plugin scaffold command."""
 
+    @pytest.mark.integration
     def test_creates_plugin_file(self, tmp_path):
         runner = CliRunner()
         result = runner.invoke(plugin_cmd, ["new", "my-test", "--output", str(tmp_path)])
         assert result.exit_code == 0
         assert (tmp_path / "my_test.py").is_file()
 
+    @pytest.mark.integration
     def test_plugin_file_content(self, tmp_path):
         runner = CliRunner()
         runner.invoke(plugin_cmd, ["new", "my-test", "--output", str(tmp_path)])
@@ -385,6 +404,7 @@ class TestPluginNewCLI:
         assert "def create_plugin()" in content
         assert "def metadata(self)" in content
 
+    @pytest.mark.integration
     def test_custom_hooks(self, tmp_path):
         runner = CliRunner()
         runner.invoke(plugin_cmd, [
@@ -396,6 +416,7 @@ class TestPluginNewCLI:
         assert "PluginHook.CUSTOM_VALIDATION" in content
         assert "PluginHook.POST_AI" in content
 
+    @pytest.mark.integration
     def test_custom_description(self, tmp_path):
         runner = CliRunner()
         runner.invoke(plugin_cmd, [
@@ -406,6 +427,7 @@ class TestPluginNewCLI:
         content = (tmp_path / "fmt.py").read_text()
         assert "Formats code output" in content
 
+    @pytest.mark.integration
     def test_custom_author(self, tmp_path):
         runner = CliRunner()
         runner.invoke(plugin_cmd, [
@@ -416,6 +438,7 @@ class TestPluginNewCLI:
         content = (tmp_path / "fmt.py").read_text()
         assert "Test Author" in content
 
+    @pytest.mark.integration
     def test_rejects_invalid_hooks(self, tmp_path):
         runner = CliRunner()
         result = runner.invoke(plugin_cmd, [
@@ -425,6 +448,7 @@ class TestPluginNewCLI:
         ])
         assert "Unknown hook" in result.output
 
+    @pytest.mark.integration
     def test_rejects_existing_file(self, tmp_path):
         # Create file first
         (tmp_path / "dup.py").write_text("existing")
@@ -432,6 +456,7 @@ class TestPluginNewCLI:
         result = runner.invoke(plugin_cmd, ["new", "dup", "--output", str(tmp_path)])
         assert "already exists" in result.output
 
+    @pytest.mark.integration
     def test_generated_plugin_is_importable(self, tmp_path):
         """Generated plugin scaffolds should be valid Python."""
         runner = CliRunner()
@@ -445,12 +470,14 @@ class TestPluginNewCLI:
 class TestPluginListCLI:
     """Tests for the plugin list command."""
 
+    @pytest.mark.integration
     def test_no_plugins(self, tmp_path):
         runner = CliRunner()
         result = runner.invoke(plugin_cmd, ["list", "--path", str(tmp_path)])
         assert result.exit_code == 0
         assert "No plugins found" in result.output
 
+    @pytest.mark.integration
     def test_json_no_plugins(self, tmp_path):
         runner = CliRunner()
         result = runner.invoke(plugin_cmd, ["list", "--path", str(tmp_path), "--json"])
@@ -463,6 +490,7 @@ class TestPluginListCLI:
 class TestPluginInfoCLI:
     """Tests for the plugin info command."""
 
+    @pytest.mark.integration
     def test_unknown_plugin(self, tmp_path):
         runner = CliRunner()
         result = runner.invoke(plugin_cmd, ["info", "nonexistent", "--path", str(tmp_path)])
@@ -609,6 +637,7 @@ class TestOSSFiles:
     def test_license_exists(self):
         assert (self._project_root() / "LICENSE").is_file()
 
+    @pytest.mark.integration
     def test_license_is_mit(self):
         content = (self._project_root() / "LICENSE").read_text()
         assert "MIT License" in content
@@ -616,6 +645,7 @@ class TestOSSFiles:
     def test_contributing_exists(self):
         assert (self._project_root() / "CONTRIBUTING.md").is_file()
 
+    @pytest.mark.integration
     def test_contributing_has_content(self):
         content = (self._project_root() / "CONTRIBUTING.md").read_text()
         assert "Contributing" in content

@@ -19,6 +19,7 @@ from semantic_code_intelligence.embeddings.generator import (
 class TestGetModel:
     """Tests for model loading."""
 
+    @pytest.mark.model
     def test_jina_model_uses_supported_attention_implementation(self, monkeypatch: pytest.MonkeyPatch):
         calls: list[dict] = []
 
@@ -55,10 +56,12 @@ class TestGetModel:
             }
         ]
 
+    @pytest.mark.model
     def test_loads_model(self):
         model = get_model("all-MiniLM-L6-v2")
         assert model is not None
 
+    @pytest.mark.model
     def test_model_cached(self):
         m1 = get_model("all-MiniLM-L6-v2")
         m2 = get_model("all-MiniLM-L6-v2")

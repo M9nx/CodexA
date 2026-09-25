@@ -107,6 +107,7 @@ class TestBudgetGuard:
         assert g.can_continue() is False
         assert "iteration" in g.stop_reason().lower()
 
+    @pytest.mark.integration
     def test_stop_on_time_limit(self):
         g = BudgetGuard(max_seconds=0.01)
         g.start()
@@ -573,6 +574,7 @@ class TestEvolutionResult:
 class TestEvolutionEngineOrchestration:
     """Tests for the EvolutionEngine loop with mocked components."""
 
+    @pytest.mark.integration
     def test_engine_runs_iterations(self, tmp_path):
         """Engine should run iterations and respect budget."""
         provider = MockProvider()

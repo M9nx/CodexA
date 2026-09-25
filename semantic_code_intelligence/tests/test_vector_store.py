@@ -102,6 +102,7 @@ class TestVectorStore:
 class TestVectorStorePersistence:
     """Tests for save/load functionality."""
 
+    @pytest.mark.model
     def test_save_creates_files(self, tmp_path: Path):
         store = VectorStore(128)
         emb = _random_embeddings(5)
@@ -112,6 +113,7 @@ class TestVectorStorePersistence:
         assert (tmp_path / "index" / "vectors.faiss").exists()
         assert (tmp_path / "index" / "metadata.json").exists()
 
+    @pytest.mark.integration
     def test_load_roundtrip(self, tmp_path: Path):
         store = VectorStore(128)
         emb = _random_embeddings(5)
@@ -125,10 +127,12 @@ class TestVectorStorePersistence:
         assert len(loaded.metadata) == 5
         assert loaded.metadata[0].file_path == "file_0.py"
 
+    @pytest.mark.integration
     def test_load_nonexistent_raises(self, tmp_path: Path):
         with pytest.raises(FileNotFoundError):
             VectorStore.load(tmp_path / "nonexistent")
 
+    @pytest.mark.integration
     def test_search_after_load(self, tmp_path: Path):
         store = VectorStore(128)
         emb = _random_embeddings(10)

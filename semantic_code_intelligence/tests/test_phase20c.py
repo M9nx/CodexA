@@ -559,17 +559,20 @@ class TestSessionMemoryExtended:
 class TestWorkspaceMemory:
     """WorkspaceMemory – 8 tests."""
 
+    @pytest.mark.integration
     def test_create(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))
             assert wm is not None
 
+    @pytest.mark.integration
     def test_add_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))
             me = wm.add("k1", "c1")
             assert me.key == "k1"
 
+    @pytest.mark.integration
     def test_get_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))
@@ -577,11 +580,13 @@ class TestWorkspaceMemory:
             entry = wm.get("k1")
             assert entry is not None
 
+    @pytest.mark.integration
     def test_get_missing(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))
             assert wm.get("nokey") is None
 
+    @pytest.mark.integration
     def test_search(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))
@@ -589,6 +594,7 @@ class TestWorkspaceMemory:
             results = wm.search("python")
             assert len(results) >= 1
 
+    @pytest.mark.integration
     def test_remove(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))
@@ -596,6 +602,7 @@ class TestWorkspaceMemory:
             assert wm.remove("k1") is True
             assert wm.get("k1") is None
 
+    @pytest.mark.integration
     def test_clear(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))
@@ -603,6 +610,7 @@ class TestWorkspaceMemory:
             wm.clear()
             assert len(wm.entries) == 0
 
+    @pytest.mark.integration
     def test_to_dict(self):
         with tempfile.TemporaryDirectory() as tmp:
             wm = WorkspaceMemory(Path(tmp))

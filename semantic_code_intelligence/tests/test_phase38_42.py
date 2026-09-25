@@ -49,6 +49,7 @@ def _write_sample_project(root: Path) -> None:
 class TestPhase38ModelRegistry:
     """Model registry extensions for Phase 38."""
 
+    @pytest.mark.model
     def test_model_index_subdir_default(self) -> None:
         from semantic_code_intelligence.embeddings.model_registry import model_index_subdir
         result = model_index_subdir("all-MiniLM-L6-v2")
@@ -70,15 +71,18 @@ class TestPhase38ModelRegistry:
         result = verify_model_integrity("nonexistent/model-xyz-999")
         assert result is False
 
+    @pytest.mark.model
     def test_model_checksums_dict_exists(self) -> None:
         from semantic_code_intelligence.embeddings.model_registry import MODEL_CHECKSUMS
         assert len(MODEL_CHECKSUMS) == 5
         assert "all-MiniLM-L6-v2" in MODEL_CHECKSUMS
 
+    @pytest.mark.model
     def test_resolve_model_name_unchanged(self) -> None:
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
         assert resolve_model_name("all-MiniLM-L6-v2") == "all-MiniLM-L6-v2"
 
+    @pytest.mark.model
     def test_resolve_model_alias(self) -> None:
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
         assert resolve_model_name("minilm") == "all-MiniLM-L6-v2"
@@ -91,6 +95,7 @@ class TestPhase38ModelRegistry:
 class TestPhase38IndexSwitchModel:
     """--switch-model flag on the index command."""
 
+    @pytest.mark.model
     def test_switch_model_updates_config(self, tmp_path: Path) -> None:
         _write_sample_project(tmp_path)
         from semantic_code_intelligence.config.settings import load_config, save_config
@@ -138,6 +143,7 @@ class TestPhase39Distribution:
         workflow = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "build-wheels.yml"
         assert workflow.exists(), f"Missing: {workflow}"
 
+    @pytest.mark.integration
     def test_scoop_manifest_exists(self) -> None:
         manifest = Path(__file__).resolve().parents[2] / "packaging" / "scoop" / "codexa.json"
         assert manifest.exists()
@@ -145,18 +151,21 @@ class TestPhase39Distribution:
         assert data["version"] == "0.5.0"
         assert "64bit" in data["architecture"]
 
+    @pytest.mark.integration
     def test_chocolatey_nuspec_exists(self) -> None:
         nuspec = Path(__file__).resolve().parents[2] / "packaging" / "chocolatey" / "codexa.nuspec"
         assert nuspec.exists()
         content = nuspec.read_text(encoding="utf-8")
         assert "<id>codexa</id>" in content
 
+    @pytest.mark.integration
     def test_dockerfile_version_updated(self) -> None:
         dockerfile = Path(__file__).resolve().parents[2] / "Dockerfile"
         assert dockerfile.exists()
         content = dockerfile.read_text(encoding="utf-8")
         assert 'version="0.5.0"' in content
 
+    @pytest.mark.integration
     def test_build_wheels_workflow_valid_yaml(self) -> None:
         workflow = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "build-wheels.yml"
         content = workflow.read_text(encoding="utf-8")
@@ -178,6 +187,7 @@ class TestPhase40EditorPlugins:
     def test_editors_readme(self) -> None:
         assert (self._editors_root / "README.md").exists()
 
+    @pytest.mark.integration
     def test_zed_extension(self) -> None:
         zed = self._editors_root / "zed" / "extension.json"
         assert zed.exists()
@@ -191,6 +201,7 @@ class TestPhase40EditorPlugins:
         content = plugin_xml.read_text(encoding="utf-8")
         assert "com.codexa.intellij" in content
 
+    @pytest.mark.integration
     def test_jetbrains_kotlin_source(self) -> None:
         kt = self._editors_root / "jetbrains" / "src" / "main" / "kotlin" / "com" / "codexa" / "intellij" / "CodexaToolWindowFactory.kt"
         assert kt.exists()
@@ -201,6 +212,7 @@ class TestPhase40EditorPlugins:
         gradle = self._editors_root / "jetbrains" / "build.gradle.kts"
         assert gradle.exists()
 
+    @pytest.mark.integration
     def test_neovim_plugin(self) -> None:
         lua = self._editors_root / "neovim" / "lua" / "codexa" / "init.lua"
         assert lua.exists()
@@ -208,18 +220,21 @@ class TestPhase40EditorPlugins:
         assert "semantic_search" in content
         assert "telescope" in content
 
+    @pytest.mark.integration
     def test_vim_plugin(self) -> None:
         vim = self._editors_root / "vim" / "plugin" / "codexa.vim"
         assert vim.exists()
         content = vim.read_text(encoding="utf-8")
         assert "CodexaSearch" in content
 
+    @pytest.mark.integration
     def test_sublime_plugin(self) -> None:
         sublime = self._editors_root / "sublime" / "codexa.py"
         assert sublime.exists()
         content = sublime.read_text(encoding="utf-8")
         assert "CodexaSearchCommand" in content
 
+    @pytest.mark.integration
     def test_emacs_package(self) -> None:
         el = self._editors_root / "emacs" / "codexa.el"
         assert el.exists()
@@ -227,6 +242,7 @@ class TestPhase40EditorPlugins:
         assert "codexa-search" in content
         assert "provide" in content
 
+    @pytest.mark.integration
     def test_helix_readme(self) -> None:
         readme = self._editors_root / "helix" / "README.md"
         assert readme.exists()
@@ -478,6 +494,7 @@ class TestPhase42CrossLanguage:
         d = dep.to_dict()
         assert d["target_language"] == "rust"
 
+    @pytest.mark.integration
     def test_resolver_index_file(self, tmp_path: Path) -> None:
         from semantic_code_intelligence.analysis.cross_language import CrossLanguageResolver
         py = tmp_path / "hello.py"
@@ -487,6 +504,7 @@ class TestPhase42CrossLanguage:
         assert "python" in resolver._symbols_by_lang
         assert "greet" in resolver._symbols_by_lang["python"]
 
+    @pytest.mark.integration
     def test_resolver_unknown_ext_skipped(self, tmp_path: Path) -> None:
         from semantic_code_intelligence.analysis.cross_language import CrossLanguageResolver
         txt = tmp_path / "notes.txt"
@@ -526,6 +544,7 @@ class TestPhase42CrossLanguage:
         assert d["total_symbols"] == 0
         assert "languages" in d
 
+    @pytest.mark.integration
     def test_resolver_index_multiple_languages(self, tmp_path: Path) -> None:
         from semantic_code_intelligence.analysis.cross_language import CrossLanguageResolver
         py = tmp_path / "main.py"
@@ -550,6 +569,7 @@ class TestPhase41BridgeSessionEndpoints:
         from semantic_code_intelligence.bridge.server import _BridgeHandler
         assert hasattr(_BridgeHandler, "session_manager")
 
+    @pytest.mark.model
     def test_bridge_server_initializes_session_manager(self, tmp_path: Path) -> None:
         _write_sample_project(tmp_path)
         from semantic_code_intelligence.bridge.server import BridgeServer

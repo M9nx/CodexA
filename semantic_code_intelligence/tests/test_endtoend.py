@@ -176,6 +176,7 @@ class TestInitLifecycle:
         runner.invoke(cli, ["init", str(project)])
         assert (project / ".codexa" / "index").is_dir()
 
+    @pytest.mark.integration
     def test_init_idempotent(self, project: Path):
         """Running init twice should not error."""
         runner = CliRunner()
@@ -184,6 +185,7 @@ class TestInitLifecycle:
         assert result.exit_code == 0
         assert "already initialized" in result.output.lower()
 
+    @pytest.mark.integration
     def test_init_config_roundtrip(self, project: Path):
         """init → load_config → save_config → reload — data must survive."""
         from semantic_code_intelligence.config.settings import (
@@ -206,6 +208,7 @@ class TestInitLifecycle:
 class TestIndexing:
     """Test codexa index — second step in the user journey."""
 
+    @pytest.mark.integration
     def test_index_requires_init(self, project: Path):
         """index on an un-initialized dir should fail cleanly."""
         runner = CliRunner()
@@ -213,6 +216,7 @@ class TestIndexing:
         # Should tell the user to run init first
         assert "init" in result.output.lower()
 
+    @pytest.mark.integration
     def test_index_after_init(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
@@ -221,6 +225,7 @@ class TestIndexing:
         # Should report some files indexed
         assert "indexed" in result.output.lower() or "no indexable" in result.output.lower()
 
+    @pytest.mark.integration
     def test_index_force_flag(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
@@ -228,6 +233,7 @@ class TestIndexing:
         result = runner.invoke(cli, ["index", "--force", str(project)])
         assert result.exit_code == 0
 
+    @pytest.mark.model
     def test_index_creates_vectors(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
@@ -282,6 +288,7 @@ class TestSearchModes:
         ])
         assert result.exit_code == 0
 
+    @pytest.mark.integration
     def test_search_no_init_fails(self, tmp_path: Path):
         result = self.runner.invoke(cli, [
             "search", "anything", "-p", str(tmp_path),
@@ -449,6 +456,7 @@ class TestModelsCLI:
         for m in data:
             assert {"name", "dimension", "description", "is_default"} <= set(m.keys())
 
+    @pytest.mark.model
     def test_models_list_json_has_default(self):
         runner = CliRunner()
         result = runner.invoke(cli, ["models", "list", "--json"])
@@ -474,12 +482,14 @@ class TestModelsCLI:
         result = runner.invoke(cli, ["models", "info", "no-such-model"])
         assert result.exit_code != 0
 
+    @pytest.mark.integration
     def test_models_switch_requires_init(self, tmp_path: Path):
         runner = CliRunner()
         result = runner.invoke(cli, ["models", "switch", "minilm", "-p", str(tmp_path)])
         assert result.exit_code != 0
         assert "init" in result.output.lower()
 
+    @pytest.mark.integration
     def test_models_switch_updates_config(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])
@@ -498,6 +508,7 @@ class TestModelsCLI:
 class TestModelRegistryAPI:
     """Test the model_registry module as a library user would."""
 
+    @pytest.mark.model
     def test_resolve_known_aliases(self):
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
         assert resolve_model_name("minilm") == "all-MiniLM-L6-v2"
@@ -506,6 +517,7 @@ class TestModelRegistryAPI:
         assert resolve_model_name("jina-code") == "jinaai/jina-embeddings-v2-base-code"
         assert resolve_model_name("mxbai-xsmall") == "mixedbread-ai/mxbai-embed-xsmall-v1"
 
+    @pytest.mark.model
     def test_resolve_full_name_passthrough(self):
         from semantic_code_intelligence.embeddings.model_registry import resolve_model_name
         assert resolve_model_name("all-MiniLM-L6-v2") == "all-MiniLM-L6-v2"
@@ -529,6 +541,7 @@ class TestModelRegistryAPI:
         from semantic_code_intelligence.embeddings.model_registry import get_model_info
         assert get_model_info("nonexistent-xxx") is None
 
+    @pytest.mark.model
     def test_default_model_constant(self):
         from semantic_code_intelligence.embeddings.model_registry import DEFAULT_MODEL
         assert DEFAULT_MODEL == "all-MiniLM-L6-v2"
@@ -541,6 +554,7 @@ class TestModelRegistryAPI:
 class TestConfigAPI:
     """Test config machinery as a library consumer."""
 
+    @pytest.mark.model
     def test_appconfig_defaults(self):
         from semantic_code_intelligence.config.settings import AppConfig
         c = AppConfig()
@@ -554,11 +568,13 @@ class TestConfigAPI:
         assert AppConfig.config_path(tmp_path) == tmp_path / ".codexa" / "config.json"
         assert AppConfig.index_dir(tmp_path) == tmp_path / ".codexa" / "index"
 
+    @pytest.mark.model
     def test_load_config_default_when_missing(self, tmp_path: Path):
         from semantic_code_intelligence.config.settings import load_config
         cfg = load_config(tmp_path)
         assert cfg.embedding.model_name == "all-MiniLM-L6-v2"
 
+    @pytest.mark.integration
     def test_save_and_load_roundtrip(self, tmp_path: Path):
         from semantic_code_intelligence.config.settings import (
             AppConfig, save_config, load_config,
@@ -572,6 +588,7 @@ class TestConfigAPI:
         assert loaded.search.top_k == 42
         assert loaded.embedding.chunk_size == 256
 
+    @pytest.mark.integration
     def test_init_project_creates_everything(self, tmp_path: Path):
         from semantic_code_intelligence.config.settings import init_project, AppConfig
         config, config_path = init_project(tmp_path)
@@ -621,6 +638,7 @@ class TestVectorStoreE2E:
         assert results[0][0].chunk_index == 0
         assert results[0][1] > 0.9  # near-perfect cosine sim
 
+    @pytest.mark.model
     def test_save_and_load(self, tmp_path: Path):
         from semantic_code_intelligence.storage.vector_store import VectorStore
         store = VectorStore(32)
@@ -774,6 +792,7 @@ class TestFormatterAPI:
         assert content == "hello"
         assert start == 5
 
+    @pytest.mark.integration
     def test_expand_context_real_file(self, tmp_path: Path):
         from semantic_code_intelligence.search.formatter import _expand_context
         from semantic_code_intelligence.services.search_service import SearchResult
@@ -865,26 +884,32 @@ class TestVSCodeExtension:
     def test_package_json_exists(self):
         assert (self.VSCODE_DIR / "package.json").exists()
 
+    @pytest.mark.integration
     def test_package_json_valid_json(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         assert isinstance(data, dict)
 
+    @pytest.mark.integration
     def test_package_json_name(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         assert data["name"] == "codexa"
 
+    @pytest.mark.integration
     def test_package_json_version(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         assert "version" in data
 
+    @pytest.mark.integration
     def test_package_json_engine(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         assert data["engines"]["vscode"].startswith("^")
 
+    @pytest.mark.integration
     def test_package_json_main_entry(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         assert data["main"] == "./out/extension.js"
 
+    @pytest.mark.integration
     def test_package_json_4_commands(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         commands = data["contributes"]["commands"]
@@ -897,12 +922,14 @@ class TestVSCodeExtension:
             "codexa.doctor", "codexa.index",
         }
 
+    @pytest.mark.integration
     def test_package_json_activation_events(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         events = data["activationEvents"]
         assert "onCommand:codexa.search" in events
         assert "onView:codexaSearchView" in events
 
+    @pytest.mark.integration
     def test_package_json_sidebar_webview(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         views = data["contributes"]["views"]
@@ -910,6 +937,7 @@ class TestVSCodeExtension:
         view_ids = [v["id"] for v in views["codexa"]]
         assert "codexaSearchView" in view_ids
 
+    @pytest.mark.integration
     def test_package_json_keybinding(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         keybindings = data["contributes"]["keybindings"]
@@ -918,6 +946,7 @@ class TestVSCodeExtension:
         assert kb["command"] == "codexa.search"
         assert "ctrl+shift+f5" in kb.get("key", "")
 
+    @pytest.mark.integration
     def test_package_json_activity_bar(self):
         data = json.loads((self.VSCODE_DIR / "package.json").read_text("utf-8"))
         containers = data["contributes"]["viewsContainers"]["activitybar"]
@@ -928,36 +957,44 @@ class TestVSCodeExtension:
     def test_extension_ts_exists(self):
         assert (self.VSCODE_DIR / "src" / "extension.ts").exists()
 
+    @pytest.mark.integration
     def test_extension_ts_exports_activate(self):
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
         assert "export function activate" in src
 
+    @pytest.mark.integration
     def test_extension_ts_exports_deactivate(self):
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
         assert "export function deactivate" in src
 
+    @pytest.mark.integration
     def test_extension_ts_search_view_provider(self):
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
         assert "class SearchViewProvider" in src
 
+    @pytest.mark.integration
     def test_extension_ts_codex_bin_helper(self):
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
         assert "function codexBin" in src
 
+    @pytest.mark.integration
     def test_extension_ts_run_codex_helper(self):
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
         assert "async function runCodex" in src
 
+    @pytest.mark.integration
     def test_extension_ts_registers_4_commands(self):
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
         for cmd in ["codexa.search", "codexa.askCodexA", "codexa.callGraph", "codexa.models"]:
             assert cmd in src, f"Command {cmd} not registered in extension.ts"
 
+    @pytest.mark.integration
     def test_extension_ts_webview_html(self):
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
         assert "<!DOCTYPE html>" in src
         assert "acquireVsCodeApi" in src
 
+    @pytest.mark.integration
     def test_extension_ts_escape_html(self):
         """Extension must escape HTML in search results to prevent XSS."""
         src = (self.VSCODE_DIR / "src" / "extension.ts").read_text("utf-8")
@@ -968,6 +1005,7 @@ class TestVSCodeExtension:
     def test_tsconfig_json_exists(self):
         assert (self.VSCODE_DIR / "tsconfig.json").exists()
 
+    @pytest.mark.integration
     def test_tsconfig_json_valid(self):
         raw = (self.VSCODE_DIR / "tsconfig.json").read_text("utf-8")
         data = json.loads(raw)
@@ -978,6 +1016,7 @@ class TestVSCodeExtension:
     def test_readme_exists(self):
         assert (self.VSCODE_DIR / "README.md").exists()
 
+    @pytest.mark.integration
     def test_readme_not_empty(self):
         content = (self.VSCODE_DIR / "README.md").read_text("utf-8")
         assert len(content) > 50
@@ -1003,10 +1042,12 @@ class TestBuildScript:
         # Don't exec the module (it would try to build) — just check it
         assert mod is not None
 
+    @pytest.mark.integration
     def test_build_py_has_build_function(self):
         src = self.BUILD_PY.read_text("utf-8")
         assert "def build" in src
 
+    @pytest.mark.integration
     def test_build_py_supports_onefile(self):
         src = self.BUILD_PY.read_text("utf-8")
         assert "onefile" in src.lower()
@@ -1101,6 +1142,7 @@ class TestFullUserJourney:
         data = _extract_json(r.output)
         assert "results" in data
 
+    @pytest.mark.integration
     def test_doctor_in_initialized_project(self, project: Path):
         runner = CliRunner()
         runner.invoke(cli, ["init", str(project)])

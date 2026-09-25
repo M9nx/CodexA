@@ -115,17 +115,20 @@ class TestChunkCode:
 class TestChunkFile:
     """Tests for file-based chunking."""
 
+    @pytest.mark.integration
     def test_chunk_existing_file(self, tmp_path: Path):
         f = tmp_path / "test.py"
         f.write_text("def hello():\n    pass\n", encoding="utf-8")
         chunks = chunk_file(f, chunk_size=1000)
         assert len(chunks) == 1
 
+    @pytest.mark.integration
     def test_chunk_nonexistent_file(self, tmp_path: Path):
         f = tmp_path / "missing.py"
         chunks = chunk_file(f)
         assert chunks == []
 
+    @pytest.mark.integration
     def test_chunk_empty_file(self, tmp_path: Path):
         f = tmp_path / "empty.py"
         f.write_text("", encoding="utf-8")

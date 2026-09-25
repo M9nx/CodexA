@@ -152,6 +152,7 @@ class TestLLMCacheTTL:
 class TestLLMCacheEviction:
     """Max-entry eviction tests."""
 
+    @pytest.mark.integration
     def test_evicts_oldest_when_over_max(self) -> None:
         cache = LLMCache(max_entries=2)
         cache.put(LLMResponse(content="a"), "p", "m", prompt="q1")
@@ -215,6 +216,7 @@ class TestCacheStats:
 class TestLLMCachePersistence:
     """Disk persistence (save/load)."""
 
+    @pytest.mark.integration
     def test_save_and_load(self, tmp_path: Path) -> None:
         cache = LLMCache(cache_dir=str(tmp_path), ttl_hours=24)
         cache.put(LLMResponse(content="saved", model="m", provider="p"), "p", "m", prompt="q")
@@ -225,12 +227,14 @@ class TestLLMCachePersistence:
         assert result is not None
         assert result.content == "saved"
 
+    @pytest.mark.integration
     def test_save_creates_file(self, tmp_path: Path) -> None:
         cache = LLMCache(cache_dir=str(tmp_path))
         cache.put(LLMResponse(content="x"), "p", "m", prompt="q")
         cache.save()
         assert (tmp_path / "llm_cache.json").exists()
 
+    @pytest.mark.integration
     def test_load_skips_expired(self, tmp_path: Path) -> None:
         # Write a cache file with old timestamps
         data = {
@@ -245,11 +249,13 @@ class TestLLMCachePersistence:
         cache = LLMCache(cache_dir=str(tmp_path), ttl_hours=1)
         assert cache.size == 0  # expired entries not loaded
 
+    @pytest.mark.integration
     def test_load_invalid_json(self, tmp_path: Path) -> None:
         (tmp_path / "llm_cache.json").write_text("not json!")
         cache = LLMCache(cache_dir=str(tmp_path))
         assert cache.size == 0
 
+    @pytest.mark.integration
     def test_load_nonexistent_dir(self, tmp_path: Path) -> None:
         cache = LLMCache(cache_dir=str(tmp_path / "nonexistent"))
         assert cache.size == 0
@@ -477,6 +483,7 @@ class TestCachedProviderCaching:
         assert r1.content == "first"
         assert r2.content == "second"  # different prompt → different result
 
+    @pytest.mark.integration
     def test_save_cache_delegates(self, tmp_path: Path) -> None:
         mock = MockProvider()
         mock.enqueue_response("data")
@@ -606,6 +613,7 @@ class TestLLMConfigFields:
         assert hasattr(app.llm, "rate_limit_rpm")
         assert hasattr(app.llm, "rate_limit_tpm")
 
+    @pytest.mark.integration
     def test_config_json_persistence(self, tmp_path: Path) -> None:
         from semantic_code_intelligence.config.settings import AppConfig, save_config, load_config
         cfg = AppConfig(project_root=str(tmp_path))
@@ -758,6 +766,7 @@ class TestEndToEndFlow:
         assert r1.content == "reply1"
         assert r2.content == "reply1"
 
+    @pytest.mark.integration
     def test_full_flow_with_persistence(self, tmp_path: Path) -> None:
         mock = MockProvider()
         mock.enqueue_response("persisted")
