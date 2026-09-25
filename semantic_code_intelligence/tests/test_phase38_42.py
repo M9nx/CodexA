@@ -145,10 +145,12 @@ class TestPhase39Distribution:
 
     @pytest.mark.integration
     def test_scoop_manifest_exists(self) -> None:
+        from semantic_code_intelligence import __version__
+
         manifest = Path(__file__).resolve().parents[2] / "packaging" / "scoop" / "codexa.json"
         assert manifest.exists()
         data = json.loads(manifest.read_text(encoding="utf-8"))
-        assert data["version"] == "0.5.0"
+        assert data["version"] == __version__
         assert "64bit" in data["architecture"]
 
     @pytest.mark.integration
@@ -160,10 +162,43 @@ class TestPhase39Distribution:
 
     @pytest.mark.integration
     def test_dockerfile_version_updated(self) -> None:
+        from semantic_code_intelligence import __version__
+
         dockerfile = Path(__file__).resolve().parents[2] / "Dockerfile"
         assert dockerfile.exists()
         content = dockerfile.read_text(encoding="utf-8")
-        assert 'version="0.5.0"' in content
+        assert f'version="{__version__}"' in content
+
+    @pytest.mark.integration
+    def test_all_packaging_versions_agree(self) -> None:
+        """Every shipped manifest must carry the same version as the package.
+
+        Previously each file was compared against a hardcoded literal, so a
+        release could bump one manifest and leave the others stale.
+        """
+        import re
+
+        from semantic_code_intelligence import __version__
+
+        root = Path(__file__).resolve().parents[2]
+
+        scoop = json.loads(
+            (root / "packaging" / "scoop" / "codexa.json").read_text(encoding="utf-8")
+        )
+        nuspec_text = (root / "packaging" / "chocolatey" / "codexa.nuspec").read_text(encoding="utf-8")
+        dockerfile_text = (root / "Dockerfile").read_text(encoding="utf-8")
+
+        match = re.search(r"<version>([^<]+)</version>", nuspec_text)
+        assert match, "no <version> element in the chocolatey nuspec"
+        chocolatey_version = match.group(1)
+
+        docker_match = re.search(r'version="([^"]+)"', dockerfile_text)
+        assert docker_match, "no version=\"...\" label in the Dockerfile"
+        docker_version = docker_match.group(1)
+
+        assert scoop["version"] == __version__
+        assert chocolatey_version == __version__
+        assert docker_version == __version__
 
     @pytest.mark.integration
     def test_build_wheels_workflow_valid_yaml(self) -> None:

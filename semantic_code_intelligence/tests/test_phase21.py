@@ -222,37 +222,131 @@ class TestGetProviderAnnotated:
         assert "config" in hints, f"{mod_path}._get_provider missing config annotation"
 
 
-class TestDoctorCmdTypedDicts:
-    """doctor_cmd.py functions must return dict[str, Any], not bare dict."""
+class TestDoctorCmdCheckResults:
+    """doctor_cmd check functions must return a usable result dict."""
 
-    def test_check_python_return_annotation(self) -> None:
+    def test_check_python_reports_running_interpreter(self) -> None:
+        import platform
+
         from semantic_code_intelligence.cli.commands import doctor_cmd
-        hints = doctor_cmd._check_python.__annotations__
-        assert "return" in hints
 
-    def test_check_package_return_annotation(self) -> None:
+        result = doctor_cmd._check_python()
+        assert set(result) == {"name", "version", "ok", "detail"}
+        assert result["name"] == "Python"
+        assert result["version"] == platform.python_version()
+        assert result["ok"] is True
+        assert str(platform.python_version()) in result["detail"]
+
+    def test_check_package_reports_installed(self) -> None:
         from semantic_code_intelligence.cli.commands import doctor_cmd
-        hints = doctor_cmd._check_package.__annotations__
-        assert "return" in hints
 
-    def test_check_project_return_annotation(self) -> None:
+        result = doctor_cmd._check_package("click")
+        assert result["name"] == "click"
+        assert result["ok"] is True
+        assert result["version"] is not None
+
+    def test_check_package_reports_missing(self) -> None:
         from semantic_code_intelligence.cli.commands import doctor_cmd
-        hints = doctor_cmd._check_project.__annotations__
-        assert "return" in hints
 
-    def test_run_checks_return_annotation(self) -> None:
+        result = doctor_cmd._check_package("codexa_definitely_not_installed_xyz")
+        assert result["ok"] is False
+        assert result["version"] is None
+        assert "not installed" in result["detail"]
+
+    def test_check_project_reports_uninitialised(self, tmp_path: Path) -> None:
         from semantic_code_intelligence.cli.commands import doctor_cmd
-        hints = doctor_cmd.run_checks.__annotations__
-        assert "return" in hints
+
+        result = doctor_cmd._check_project(tmp_path)
+        assert result["name"] == "Project"
+        assert result["ok"] is False
+        assert "Not initialized" in result["detail"]
+
+    def test_check_project_distinguishes_indexed_state(self, tmp_path: Path) -> None:
+        from semantic_code_intelligence.cli.commands import doctor_cmd
+
+        (tmp_path / ".codexa").mkdir()
+        unindexed = doctor_cmd._check_project(tmp_path)
+        assert unindexed["ok"] is True
+        assert "not indexed" in unindexed["detail"]
+
+        index_dir = tmp_path / ".codexa" / "index"
+        index_dir.mkdir()
+        (index_dir / "vectors.faiss").write_bytes(b"")
+        indexed = doctor_cmd._check_project(tmp_path)
+        assert indexed["ok"] is True
+        assert "indexed" in indexed["detail"]
+        assert "not indexed" not in indexed["detail"]
+
+    def test_run_checks_returns_uniform_schema(self, tmp_path: Path) -> None:
+        from semantic_code_intelligence.cli.commands import doctor_cmd
+
+        checks = doctor_cmd.run_checks(tmp_path)
+        assert isinstance(checks, list) and checks
+        for check in checks:
+            assert set(check) == {"name", "version", "ok", "detail"}, check
+            assert isinstance(check["ok"], bool)
+            assert isinstance(check["detail"], str) and check["detail"]
+
+    def test_run_checks_includes_codexa_version(self, tmp_path: Path) -> None:
+        from semantic_code_intelligence import __version__
+        from semantic_code_intelligence.cli.commands import doctor_cmd
+
+        checks = doctor_cmd.run_checks(tmp_path)
+        codexa = [c for c in checks if c["name"] == "CodexA"]
+        assert len(codexa) == 1
+        assert codexa[0]["version"] == __version__
+        assert __version__ in codexa[0]["detail"]
 
 
-class TestSearchServiceTypedDict:
-    """search_service.SearchResult.to_dict must return dict[str, Any]."""
+class TestSearchServiceResultDict:
+    """search_service.SearchResult.to_dict must produce a usable payload."""
 
-    def test_to_dict_return_type(self) -> None:
+    def test_to_dict_contains_every_field(self) -> None:
         from semantic_code_intelligence.services.search_service import SearchResult
-        hints = SearchResult.to_dict.__annotations__
-        assert "return" in hints
+
+        result = SearchResult(
+            file_path="src/app.py",
+            start_line=10,
+            end_line=20,
+            language="python",
+            content="def main():\n    return 1\n",
+            score=0.87654321,
+            chunk_index=3,
+        )
+        d = result.to_dict()
+        assert set(d) == {
+            "file_path", "start_line", "end_line",
+            "language", "content", "score", "chunk_index",
+        }
+        assert d["file_path"] == "src/app.py"
+        assert d["start_line"] == 10
+        assert d["end_line"] == 20
+        assert d["language"] == "python"
+        assert d["content"] == "def main():\n    return 1\n"
+        assert d["chunk_index"] == 3
+
+    def test_to_dict_rounds_score(self) -> None:
+        """Scores are rounded to 4 places so output stays stable across runs."""
+        from semantic_code_intelligence.services.search_service import SearchResult
+
+        result = SearchResult(
+            file_path="a.py", start_line=1, end_line=1, language="python",
+            content="x = 1", score=0.87654321, chunk_index=0,
+        )
+        assert result.to_dict()["score"] == 0.8765
+
+    def test_to_dict_is_json_serialisable(self) -> None:
+        import json
+
+        from semantic_code_intelligence.services.search_service import SearchResult
+
+        result = SearchResult(
+            file_path="a.py", start_line=1, end_line=2, language="python",
+            content="x = 1", score=0.5, chunk_index=0,
+        )
+        payload = json.loads(json.dumps(result.to_dict()))
+        assert payload["file_path"] == "a.py"
+        assert payload["score"] == 0.5
 
 
 # ═══════════════════════════════════════════════════════════════════════════
