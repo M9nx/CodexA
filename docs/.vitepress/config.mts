@@ -10,6 +10,11 @@ export default defineConfig({
     ['meta', { name: 'og:type', content: 'website' }],
     ['meta', { name: 'og:title', content: 'CodexA — Developer Intelligence Engine' }],
     ['meta', { name: 'og:description', content: 'Semantic code search, AI-assisted understanding, and workspace tooling for developers and AI agents.' }],
+    ['script', { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-Q0ELMEF4DB' }],
+    ['script', {}, `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-Q0ELMEF4DB');`],
   ],
 
   cleanUrls: true,
