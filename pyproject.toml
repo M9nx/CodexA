@@ -61,14 +61,14 @@ dependencies = [
 [project.optional-dependencies]
 ml = [
     "sentence-transformers>=2.2.0,<7",
-    "transformers>=4.41.0,<5",
+    "transformers>=4.41.0,<6",
     "faiss-cpu>=1.7.4",
 ]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "sentence-transformers>=2.2.0,<7",
-    "transformers>=4.41.0,<5",
+    "transformers>=4.41.0,<6",
     "faiss-cpu>=1.7.4",
 ]
 tui = [
