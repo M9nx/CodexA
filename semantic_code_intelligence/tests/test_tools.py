@@ -191,3 +191,72 @@ class TestToolRegistry:
         registry = ToolRegistry(tmp_path)
         count = registry.index_directory()
         assert count >= 2
+
+
+# ---------------------------------------------------------------------------
+# Repo-wide tools index the project root automatically (issue #22)
+# ---------------------------------------------------------------------------
+
+php_factory = (
+    '<?php\n'
+    'namespace App\\Core\\Database;\n'
+    'class ConnectionFactory\n'
+    '{\n'
+    '    public static function make(string $dsn): self\n'
+    '    {\n'
+    '        return new ConnectionFactory($dsn);\n'
+    '    }\n'
+    '}\n'
+)
+
+php_task = (
+    '<?php\n'
+    'use App\\Core\\Database\\ConnectionFactory;\n'
+    'function boot(): ConnectionFactory\n'
+    '{\n'
+    '    $cf = ConnectionFactory::make("pg://db");\n'
+    '    assert($cf instanceof ConnectionFactory);\n'
+    '}\n'
+)
+
+
+class TestRepoAutoIndex:
+    """Repo-wide tools must see the whole project without an explicit
+    index_file/index_directory call (issue #22 regression)."""
+
+    @pytest.fixture
+    def php_project(self, tmp_path: Path) -> Path:
+        core = tmp_path / "app" / "Core"
+        core.mkdir(parents=True)
+        (core / "ConnectionFactory.php").write_text(php_factory, encoding="utf-8")
+        (tmp_path / "boot.php").write_text(php_task, encoding="utf-8")
+        return tmp_path
+
+    def test_find_references_without_explicit_index(self, php_project: Path):
+        registry = ToolRegistry(php_project)
+        result = registry.invoke("find_references", symbol_name="ConnectionFactory")
+        assert result.success is True
+        assert result.data["reference_count"] >= 3
+
+        files = {Path(r["file_path"]).name for r in result.data["references"]}
+        assert "ConnectionFactory.php" in files
+        assert "boot.php" in files
+
+    def test_get_call_graph_without_explicit_index(self, php_project: Path):
+        registry = ToolRegistry(php_project)
+        result = registry.invoke("get_call_graph", symbol_name="ConnectionFactory")
+        assert result.success is True
+        callers = {c["caller"] for c in result.data["callers"]}
+        assert any(c.endswith("boot.php:boot") for c in callers)
+
+    def test_summarize_repo_without_explicit_index(self, php_project: Path):
+        registry = ToolRegistry(php_project)
+        result = registry.invoke("summarize_repo")
+        assert result.success is True
+        assert result.data["total_files"] >= 2
+
+    def test_explain_symbol_without_explicit_index(self, php_project: Path):
+        registry = ToolRegistry(php_project)
+        result = registry.invoke("explain_symbol", symbol_name="ConnectionFactory")
+        assert result.success is True
+        assert len(result.data["explanations"]) >= 1

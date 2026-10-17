@@ -2,6 +2,31 @@
 
 All notable changes to CodexA are documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- **PHP cross-file references and call graphs (#22)**: repo-wide tools
+  (`find_references`, `get_call_graph`, `summarize_repo`, `get_context`,
+  `explain_symbol`, `find_duplicates`) now lazily scan and index the project
+  root before running — previously they read an empty in-memory index and
+  returned authoritative-looking empty results
+- **PHP call extraction**: `CallGraph` now understands tree-sitter-php's
+  call node shapes (`function_call_expression`, `scoped_call_expression`,
+  `member_call_expression`, `nullsafe_member_call_expression`) and treats
+  `new ClassName()` as an instantiation edge for PHP, Java, and C#.
+  Static calls (`Class::method()`) resolve to both the class and the
+  method, so class usages show up in `get_call_graph`.  Snippet bodies are
+  prefixed with the PHP opening tag so the merged grammar no longer parses
+  them as inline HTML
+- **Reference detection**: `find_references` (CLI tools and bridge) now
+  uses a tree-sitter identifier scan over indexed files instead of a bare
+  substring match: top-level script usages are found, word boundaries are
+  honoured (`MyConnectionFactory` does not match `ConnectionFactory`), and
+  each usage reports the precise line plus the enclosing symbol.  The scan
+  is shared between the tools layer and the bridge to keep both stacks in
+  sync
+
 ## [0.5.0] -- v0.5.0 Release
 
 ### Rust Search Engine Core (Phase 32)

@@ -23,6 +23,7 @@ from semantic_code_intelligence.context.engine import (
     CallGraph,
     ContextBuilder,
     DependencyMap,
+    find_references,
 )
 from semantic_code_intelligence.services.search_service import SearchResult, search_codebase
 from semantic_code_intelligence.utils.logging import get_logger
@@ -94,7 +95,7 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     },
     {
         "name": "find_references",
-        "description": "Find all references to a symbol across the codebase.",
+        "description": "Find all references to a symbol across the codebase (definitions plus AST-detected usages).",
         "parameters": {
             "symbol_name": {"type": "string", "required": True, "description": "Name to search for"},
         },
@@ -160,6 +161,7 @@ class ToolRegistry:
         self._root = project_root.resolve()
         self._builder: ContextBuilder | None = None
         self._indexed_files: set[str] = set()
+        self._repo_indexed = False
 
     @property
     def tool_definitions(self) -> list[dict[str, Any]]:
@@ -172,33 +174,41 @@ class ToolRegistry:
             self._builder = ContextBuilder()
         return self._builder
 
+    def _ensure_repo_builder(self) -> ContextBuilder:
+        """Builder pre-populated with a full index of the project root.
+
+        Repo-wide tools (search, references, graphs) run against the
+        scanned project, not merely the files touched so far.  The scan
+        happens lazily, exactly once per registry lifetime.
+        """
+        builder = self._ensure_builder()
+        if not self._repo_indexed:
+            from semantic_code_intelligence.indexing.repository import (
+                index_repository,
+            )
+
+            index_repository(builder, self._root)
+            self._repo_indexed = True
+        return builder
+
     def index_file(self, file_path: str, content: str | None = None) -> None:
         """Index a file for tools that need parsed symbol data."""
         builder = self._ensure_builder()
-        if file_path not in self._indexed_files:
+        if not builder.has_file(file_path):
             builder.index_file(file_path, content)
-            self._indexed_files.add(file_path)
+        self._indexed_files.add(file_path)
 
     def index_directory(self, directory: Path | None = None) -> int:
         """Index all supported files in a directory."""
-        from semantic_code_intelligence.config.settings import load_config
-        from semantic_code_intelligence.indexing.scanner import scan_repository
+        from semantic_code_intelligence.indexing.repository import (
+            index_repository,
+        )
 
         target = directory or self._root
-        config = load_config(self._root)
-        scanned = scan_repository(target, config.index)
-
         builder = self._ensure_builder()
-        count = 0
-        for sf in scanned:
-            full_path = str(target / sf.relative_path)
-            if full_path not in self._indexed_files:
-                try:
-                    builder.index_file(full_path)
-                    self._indexed_files.add(full_path)
-                    count += 1
-                except Exception:
-                    logger.debug("Failed to index %s", full_path)
+        count = index_repository(builder, target)
+        self._repo_indexed = self._repo_indexed or \
+            Path(target).resolve() == self._root
         return count
 
     def invoke(self, tool_name: str, **kwargs: Any) -> ToolResult:
@@ -242,7 +252,7 @@ class ToolRegistry:
     def _tool_explain_symbol(
         self, symbol_name: str, file_path: str | None = None
     ) -> ToolResult:
-        builder = self._ensure_builder()
+        builder = self._ensure_repo_builder()
 
         if file_path:
             self.index_file(file_path)
@@ -281,7 +291,7 @@ class ToolRegistry:
         )
 
     def _tool_summarize_repo(self) -> ToolResult:
-        builder = self._ensure_builder()
+        builder = self._ensure_repo_builder()
         summary = summarize_repository(builder)
         return ToolResult(
             tool_name="summarize_repo",
@@ -290,21 +300,8 @@ class ToolRegistry:
         )
 
     def _tool_find_references(self, symbol_name: str) -> ToolResult:
-        builder = self._ensure_builder()
-        all_syms = builder.get_all_symbols()
-
-        references: list[dict[str, Any]] = []
-        for sym in all_syms:
-            if sym.name == symbol_name:
-                references.append(sym.to_dict())
-            elif symbol_name in sym.body:
-                references.append({
-                    "referencing_symbol": sym.name,
-                    "kind": sym.kind,
-                    "file_path": sym.file_path,
-                    "start_line": sym.start_line,
-                    "end_line": sym.end_line,
-                })
+        builder = self._ensure_repo_builder()
+        references = find_references(builder, symbol_name)
 
         return ToolResult(
             tool_name="find_references",
@@ -334,7 +331,7 @@ class ToolRegistry:
         )
 
     def _tool_get_call_graph(self, symbol_name: str) -> ToolResult:
-        builder = self._ensure_builder()
+        builder = self._ensure_repo_builder()
         all_syms = builder.get_all_symbols()
         graph = CallGraph()
         graph.build(all_syms)
@@ -358,7 +355,7 @@ class ToolRegistry:
         )
 
     def _tool_get_context(self, symbol_name: str) -> ToolResult:
-        builder = self._ensure_builder()
+        builder = self._ensure_repo_builder()
         contexts = builder.build_context_for_name(symbol_name)
 
         if not contexts:
@@ -403,7 +400,7 @@ class ToolRegistry:
     def _tool_find_duplicates(self, threshold: float = 0.75) -> ToolResult:
         from semantic_code_intelligence.ci.quality import detect_duplicates
 
-        builder = self._ensure_builder()
+        builder = self._ensure_repo_builder()
         all_syms = builder.get_all_symbols()
         duplicates = detect_duplicates(all_syms, threshold=threshold)
 

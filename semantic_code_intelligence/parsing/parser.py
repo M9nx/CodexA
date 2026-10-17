@@ -27,6 +27,13 @@ _LANGUAGE_MODULES: dict[str, str] = {
     "php": "tree_sitter_php",
 }
 
+# Node types that carry an identifier name across languages
+# (constant=Ruby, name=PHP).  Shared by symbol naming and reference scans.
+NAME_NODE_TYPES: set[str] = {
+    "identifier", "property_identifier", "type_identifier",
+    "field_identifier", "constant", "name",
+}
+
 # Languages that require a special factory function name (not just `language()`)
 _LANGUAGE_FACTORY: dict[str, str] = {
     "typescript": "language_typescript",
@@ -178,18 +185,14 @@ def _get_node_text(node: tree_sitter.Node, source: bytes) -> str:
 
 def _find_name(node: tree_sitter.Node, source: bytes) -> str:
     """Find the name identifier within a definition node."""
-    _NAME_TYPES = {
-        "identifier", "property_identifier", "type_identifier",
-        "field_identifier", "constant", "name",  # constant=Ruby, name=PHP
-    }
     for child in node.children:
-        if child.type in _NAME_TYPES:
+        if child.type in NAME_NODE_TYPES:
             return _get_node_text(child, source)
     # C++: name may be inside a declarator child (e.g. function_declarator)
     for child in node.children:
         if child.type.endswith("_declarator"):
             for sub in child.children:
-                if sub.type in _NAME_TYPES:
+                if sub.type in NAME_NODE_TYPES:
                     return _get_node_text(sub, source)
     return "<anonymous>"
 

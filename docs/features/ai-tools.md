@@ -12,9 +12,9 @@ tools via CLI, HTTP, or MCP.
 | `explain_symbol` | Structural explanation of a function, class, or method |
 | `explain_file` | Explain all symbols in a source file |
 | `summarize_repo` | Structured summary of the entire repository |
-| `find_references` | Find all references to a symbol across the codebase |
+| `find_references` | Find all references to a symbol across the codebase (definitions plus AST-detected usages, with file and line) |
 | `get_dependencies` | Import/dependency map for a file |
-| `get_call_graph` | Callers and callees of a function |
+| `get_call_graph` | Callers and callees of a function, including static calls (`Class::method()`) and instantiations (`new Class()`) |
 | `get_context` | Rich context window for AI-assisted tasks |
 | `get_quality_score` | Code quality analysis — complexity, dead code, duplicates, safety |
 | `find_duplicates` | Detect near-duplicate code blocks across the codebase |

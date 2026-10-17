@@ -26,6 +26,7 @@ from semantic_code_intelligence.context.engine import (
     CallGraph,
     ContextBuilder,
     DependencyMap,
+    find_references,
 )
 from semantic_code_intelligence.llm.safety import SafetyValidator
 from semantic_code_intelligence.services.search_service import search_codebase
@@ -58,18 +59,12 @@ class ContextProvider:
         if self._builder is not None and self._indexed:
             return self._builder
 
-        from semantic_code_intelligence.config.settings import load_config
-        from semantic_code_intelligence.indexing.scanner import scan_repository
+        from semantic_code_intelligence.indexing.repository import (
+            index_repository,
+        )
 
         self._builder = ContextBuilder()
-        config = load_config(self._root)
-        scanned = scan_repository(self._root, config.index)
-        for sf in scanned:
-            full = str(self._root / sf.relative_path)
-            try:
-                self._builder.index_file(full)
-            except Exception:
-                logger.debug("Skip %s", full)
+        index_repository(self._builder, self._root)
         self._indexed = True
         return self._builder
 
@@ -229,17 +224,5 @@ class ContextProvider:
     def find_references(self, symbol_name: str) -> dict[str, Any]:
         """Find all references to a symbol."""
         builder = self._ensure_indexed()
-        all_syms = builder.get_all_symbols()
-        refs: list[dict[str, Any]] = []
-        for sym in all_syms:
-            if sym.name == symbol_name:
-                refs.append(sym.to_dict())
-            elif symbol_name in sym.body:
-                refs.append({
-                    "referencing_symbol": sym.name,
-                    "kind": sym.kind,
-                    "file_path": sym.file_path,
-                    "start_line": sym.start_line,
-                    "end_line": sym.end_line,
-                })
+        refs = find_references(builder, symbol_name)
         return {"symbol_name": symbol_name, "reference_count": len(refs), "references": refs}
