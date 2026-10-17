@@ -18,11 +18,22 @@ blocking ``sarif_om`` via ``sys.modules`` poisoning (independent of
 whether the package happens to be installed later) and re-executing the
 bandit entry-point loading with a fresh import, restoring module state
 afterwards.
+
+Environment awareness: CI installs only ``requirements.txt``, which does
+not ship bandit, so tests that re-execute bandit's machinery skip there
+(they lock the behavior for environments that DO ship bandit, such as the
+project venv, where bandit is a main dependency).  The clean-degradation
+contract straight from issue #21 — commands must degrade without an
+internal error, silently, at exit 0 — is covered in BOTH environments via
+subprocess wrappers that poison ``sys.modules['bandit']``, because the
+poison makes the ImportError path deterministic no matter what is
+installed.
 """
 
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import logging
 import subprocess
 import sys
@@ -33,6 +44,12 @@ import pytest
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 _SARIF_MARKER = "Could not load 'sarif'"
+
+# CI environments may lack bandit entirely (requirements.txt does not ship
+# it); the project venv always does.  Tests that re-execute bandit's
+# machinery are meaningful only where bandit is installed; the degraded
+# subprocess tests below cover the bandit-less world in both setups.
+_HAS_BANDIT_INSTALLED = importlib.util.find_spec("bandit") is not None
 
 
 # ---------------------------------------------------------------------------
@@ -87,12 +104,13 @@ def blocked_sarif_om():
 def bandit_reload_sandbox():
     """Remove bandit (and quality, which imports it) from ``sys.modules``.
 
-    Re-importing them inside a test re-executes the code paths that load
-    bandit's formatter entry points (including ``MANAGER = Manager()``),
-    instead of silently reusing already-imported modules.  Original
-    module objects are restored afterwards so later tests see the
-    pre-test state.  Yields the pre-test ``quality`` module (or ``None``
-    when quality had not been imported yet) as the baseline.
+    Requires bandit to be installed — the skipif guards on the forcing
+    tests already ensure they only run where it is; re-executing bandit's
+    entry-point machinery (including ``MANAGER = Manager()``) is
+    impossible without it.  Original module objects are restored
+    afterwards so later tests see the pre-test state.  Yields the
+    pre-test ``quality`` module (or ``None`` when quality had not been
+    imported yet) as the baseline.
     """
     import semantic_code_intelligence.ci as ci_pkg
 
@@ -152,6 +170,12 @@ def _codexa_executable() -> Path:
     return _PROJECT_ROOT / ".venv" / "bin" / "codexa"
 
 
+def _venv_python() -> Path:
+    if sys.platform == "win32":
+        return _PROJECT_ROOT / ".venv" / "Scripts" / "python.exe"
+    return _PROJECT_ROOT / ".venv" / "bin" / "python"
+
+
 def _assert_no_residual_sarif_suppression() -> None:
     """No ``_SuppressSarifFilter`` may remain attached anywhere covered."""
     import semantic_code_intelligence.ci.quality as quality_module
@@ -185,6 +209,10 @@ class TestImportScenarioSilence:
     """Importing bandit machinery must not leak sarif load errors."""
 
     @pytest.mark.unit
+    @pytest.mark.skipif(
+        not _HAS_BANDIT_INSTALLED,
+        reason="bandit not installed in this environment",
+    )
     def test_import_quality_and_bandit_manager_without_sarif_noise(
         self,
         root_capture: _RecordingHandler,
@@ -221,12 +249,20 @@ class TestImportScenarioSilence:
 
 class TestBanditStillFunctional:
     @pytest.mark.unit
+    @pytest.mark.skipif(
+        not _HAS_BANDIT_INSTALLED,
+        reason="bandit not installed in this environment",
+    )
     def test_has_bandit_true_with_bandit_installed(self) -> None:
         from semantic_code_intelligence.ci import quality
 
         assert quality._HAS_BANDIT is True
 
     @pytest.mark.unit
+    @pytest.mark.skipif(
+        not _HAS_BANDIT_INSTALLED,
+        reason="bandit not installed in this environment",
+    )
     def test_run_bandit_scan_returns_real_findings(self, tmp_path: Path) -> None:
         from semantic_code_intelligence.ci import quality
 
@@ -317,6 +353,10 @@ class TestAnalysisWindowSilence:
         )
 
     @pytest.mark.unit
+    @pytest.mark.skipif(
+        not _HAS_BANDIT_INSTALLED,
+        reason="bandit not installed in this environment",
+    )
     def test_no_surviving_sarif_noise_forced_reload_scan(
         self,
         root_capture: _RecordingHandler,
@@ -390,3 +430,98 @@ class TestCliSilenceContract:
         output = result.stdout + result.stderr
         assert _SARIF_MARKER not in output
         assert "No module named 'sarif_om'" not in output
+
+
+# ---------------------------------------------------------------------------
+# e) Degraded contract — no bandit installed anywhere in the chain
+# ---------------------------------------------------------------------------
+
+_NO_BANDIT_WRAPPER = """\
+import sys
+
+# Poison the import system: any `import bandit` / `bandit.*` now raises
+# ImportError (ModuleNotFoundError messages never appear either way).
+sys.modules["bandit"] = None
+
+sys.argv = {argv!r}
+
+from semantic_code_intelligence.cli.main import main
+
+sys.exit(main())
+"""
+
+
+def _assert_clean_degradation(result: subprocess.CompletedProcess[str], label: str) -> None:
+    """Issue #21 contract: degrade cleanly without an internal error."""
+    combined = result.stdout + result.stderr
+    assert result.returncode == 0, (
+        f"{label} exit {result.returncode}\nstdout: {result.stdout}\n"
+        f"stderr: {result.stderr}"
+    )
+    assert "Traceback" not in combined, f"{label} leaked a traceback:\n{combined}"
+    assert "ModuleNotFoundError" not in combined, (
+        f"{label} leaked a module error:\n{combined}"
+    )
+    assert _SARIF_MARKER not in combined, f"{label} leaked sarif noise:\n{combined}"
+    assert "No module named 'sarif_om'" not in combined, (
+        f"{label} leaked sarif noise:\n{combined}"
+    )
+
+
+class TestCliDegradedNoBanditContract:
+    """Commands must degrade cleanly when bandit is absent — in both worlds.
+
+    CI installs only ``requirements.txt`` (no bandit); the project venv
+    ships bandit as a main dependency.  The ``sys.modules['bandit']``
+    poison in the wrapper makes the ImportError degradation path of
+    ``quality`` deterministic in either environment, so this proves —
+    everywhere — that with bandit unavailable the commands still exit 0,
+    print no traceback/module error, and stay free of sarif noise.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _require_venv_python(self) -> None:
+        if not _venv_python().exists():
+            pytest.skip("venv interpreter not available")
+
+    def _run_degraded(
+        self, project: Path, args: list[str], tmp_path: Path
+    ) -> subprocess.CompletedProcess[str]:
+        # Keep the wrapper OUTSIDE the project so the safety scan under
+        # test only sees the clean fixture files.
+        wrapper = tmp_path / "_no_bandit_wrapper.py"
+        wrapper.write_text(
+            _NO_BANDIT_WRAPPER.format(argv=["codexa", *args]),
+            encoding="utf-8",
+        )
+        return subprocess.run(
+            [str(_venv_python()), str(wrapper)],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            cwd=str(project),
+        )
+
+    @pytest.mark.integration
+    def test_quality_degrades_cleanly_without_bandit(
+        self, clean_project: Path, tmp_path: Path
+    ) -> None:
+        result = self._run_degraded(
+            clean_project,
+            ["quality", "--path", str(clean_project), "--safety-only", "--pipe"],
+            tmp_path,
+        )
+        _assert_clean_degradation(result, "quality")
+        # Positive evidence the command really ran and scanned the project.
+        assert "PASS" in result.stdout and "1 files scanned" in result.stdout
+
+    @pytest.mark.integration
+    def test_metrics_degrades_cleanly_without_bandit(
+        self, clean_project: Path, tmp_path: Path
+    ) -> None:
+        result = self._run_degraded(
+            clean_project,
+            ["metrics", "--path", str(clean_project), "--history", "1", "--pipe"],
+            tmp_path,
+        )
+        _assert_clean_degradation(result, "metrics")
