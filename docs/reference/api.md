@@ -28,7 +28,7 @@ print(result.execution_time_ms)
 | `explain_symbol` | `symbol_name: str`, `file_path: str` | Symbol explanation |
 | `explain_file` | `file_path: str` | All symbols in file |
 | `summarize_repo` | *(none)* | Repository summary |
-| `find_references` | `symbol_name: str` | All references |
+| `find_references` | `symbol_name: str` | Definitions plus identifier usages: AST-detected when a grammar is available, otherwise word-boundary text matches (which may include comments or strings); enclosing symbol reported only when available |
 | `get_dependencies` | `file_path: str` | Import/dependency map |
 | `get_call_graph` | `symbol_name: str` | Callers and callees |
 | `get_context` | `symbol_name: str`, `file_path: str` | Rich context window |

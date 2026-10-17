@@ -16,6 +16,7 @@ from typing import Any
 import tree_sitter
 
 from semantic_code_intelligence.parsing.parser import (
+    NAME_NODE_TYPES,
     Symbol,
     detect_language,
     extract_imports,
@@ -109,6 +110,10 @@ class ContextBuilder:
             result.extend(symbols)
         return result
 
+    def has_file(self, file_path: str) -> bool:
+        """Return True if *file_path* is already indexed."""
+        return file_path in self._file_contents
+
     def find_symbol(self, name: str, kind: str | None = None) -> list[Symbol]:
         """Find symbols by name, optionally filtered by kind."""
         results: list[Symbol] = []
@@ -168,10 +173,12 @@ class CallEdge:
 class CallGraph:
     """AST-based call graph built from tree-sitter function-call nodes.
 
-    Walks the AST of each callable symbol's body to find ``call`` nodes
-    (function/method invocations).  The callee name is resolved from the
-    AST node (``identifier`` / ``attribute`` / ``field_expression``) and
-    matched against indexed symbol names to produce precise edges.
+    Walks the AST of each callable symbol's body to find call nodes
+    (function/method invocations, static calls, and instantiations).
+    The callee name(s) are resolved from the AST node — ``identifier``,
+    attribute/member access chains, PHP ``Class::method()`` scopes, and
+    ``new ClassName()`` targets — and matched against indexed symbol
+    names to produce precise edges.
 
     Falls back to the regex heuristic only when tree-sitter cannot parse
     the file (e.g. unsupported language).
@@ -179,10 +186,15 @@ class CallGraph:
 
     # Node types that represent a function/method call across languages
     _CALL_NODE_TYPES: set[str] = {
-        "call",                     # Python, Ruby, PHP
-        "call_expression",          # JS, TS, Go, Rust, C#, C++, Java
-        "method_invocation",        # Java
-        "invocation_expression",    # C#
+        "call",                             # Python, Ruby
+        "call_expression",                  # JS, TS, Go, Rust, C++, Java
+        "function_call_expression",         # PHP: plain function calls
+        "scoped_call_expression",           # PHP: Class::method()
+        "member_call_expression",           # PHP: $obj->method()
+        "nullsafe_member_call_expression",  # PHP: $obj?->method()
+        "method_invocation",                # Java
+        "invocation_expression",            # C#
+        "object_creation_expression",       # PHP, Java, C#: new ClassName()
     }
 
     def __init__(self) -> None:
@@ -217,6 +229,7 @@ class CallGraph:
                 if language_obj is not None:
                     call_names = self._extract_calls_ast(
                         sym.body, language_obj, callee_names, sym.name,
+                        lang_name,
                     )
                 else:
                     # Fallback: regex heuristic for unsupported languages
@@ -243,12 +256,19 @@ class CallGraph:
         language: tree_sitter.Language,
         known_names: set[str],
         self_name: str,
+        lang_name: str | None = None,
     ) -> set[str]:
-        """Extract function/method call names from *body* via tree-sitter AST.
+        """Extract function/method call names from *body* via tree-sitter.
 
         Returns the set of *known* callee names that appear as call
         targets in the AST (excluding self-references).
         """
+        # PHP's merged grammar treats a bare snippet without an opening
+        # tag as inline HTML, silently hiding every call node.  Symbol
+        # bodies are snippets, so restore the program context.
+        if lang_name == "php" and not body.lstrip().startswith("<?php"):
+            body = "<?php\n" + body
+
         source = body.encode("utf-8")
         parser = tree_sitter.Parser(language)
         tree = parser.parse(source)
@@ -265,25 +285,72 @@ class CallGraph:
         self_name: str,
         found: set[str],
     ) -> None:
-        """Recursively walk the AST collecting call-target names."""
-        if node.type in self._CALL_NODE_TYPES:
-            name = self._resolve_call_name(node, source)
-            if name and name != self_name and name in known_names:
-                found.add(name)
+        """Collect call-target names from the AST into *found*.
 
-        for child in node.children:
-            self._walk_calls(child, source, known_names, self_name, found)
+        Uses an explicit stack instead of recursion: deeply nested trees
+        (generated or minified files) must not trip Python's recursion
+        limit, which would fail the whole call-graph build.
+        """
+        stack = [node]
+        while stack:
+            current = stack.pop()
+            if current.type in self._CALL_NODE_TYPES:
+                for candidate in self._resolve_call_candidates(current, source):
+                    if candidate and candidate != self_name and candidate in known_names:
+                        found.add(candidate)
+            stack.extend(current.children)
 
     @staticmethod
-    def _resolve_call_name(call_node: tree_sitter.Node, source: bytes) -> str | None:
-        """Resolve the callee name from a call/call_expression node.
+    def _resolve_call_candidates(
+        call_node: tree_sitter.Node, source: bytes
+    ) -> list[str]:
+        """Resolve the callee name candidates from a call node.
 
-        Handles:
-        - ``foo()``: direct identifier call
-        - ``obj.method()``: attribute/member access — returns ``method``
-        - ``pkg::func()``: scoped identifier (Rust/C++) — returns ``func``
+        Some call shapes name more than one target, e.g. PHP's
+        ``ConnectionFactory::make()`` names both the class (scope) and the
+        method — both are useful callees, so all candidates are returned
+        and the caller keeps only those matching indexed symbol names.
         """
-        # The function/target is typically the first named child
+        def text(node: tree_sitter.Node) -> str:
+            return source[node.start_byte:node.end_byte].decode(
+                "utf-8", errors="replace"
+            )
+
+        def last_segment(qualified: str) -> str:
+            # ``App\Namespace\Class``, ``pkg::func`` -> trailing name
+            return re.split(r"[:\\]+", qualified.strip())[-1]
+
+        node_type = call_node.type
+
+        if node_type == "scoped_call_expression":
+            candidates: list[str] = []
+            scope = call_node.child_by_field_name("scope")
+            if scope is not None:
+                candidates.append(last_segment(text(scope)))
+            member = call_node.child_by_field_name("name")
+            if member is not None:
+                candidates.append(text(member))
+            return candidates
+
+        if node_type in ("member_call_expression",
+                         "nullsafe_member_call_expression"):
+            member = call_node.child_by_field_name("name")
+            return [text(member)] if member is not None else []
+
+        if node_type == "object_creation_expression":
+            # Java / C# carry the instantiated type in a "type" field
+            type_node = call_node.child_by_field_name("type")
+            if type_node is not None:
+                return [last_segment(text(type_node))]
+            # PHP has no fields here: the class name is the first named
+            # child before the argument list.
+            for child in call_node.named_children:
+                if child.type not in ("arguments", "argument_list"):
+                    return [last_segment(text(child))]
+            return []
+
+        # Generic shapes: call / call_expression / function_call_expression /
+        # method_invocation / invocation_expression
         func = call_node.child_by_field_name("function")
         if func is None:
             # Java method_invocation uses "name" field
@@ -291,7 +358,7 @@ class CallGraph:
         if func is None and call_node.children:
             func = call_node.children[0]
         if func is None:
-            return None
+            return []
 
         # Drill through attribute access to get the final name
         if func.type in ("attribute", "member_expression", "field_expression",
@@ -299,17 +366,21 @@ class CallGraph:
             # The method name is the last named child / field "attribute"/"field"
             attr = func.child_by_field_name("attribute") or func.child_by_field_name("field")
             if attr is not None:
-                return source[attr.start_byte:attr.end_byte].decode("utf-8", errors="replace")
+                return [source[attr.start_byte:attr.end_byte].decode(
+                    "utf-8", errors="replace")]
             # Fallback: last named child
             for ch in reversed(func.children):
                 if ch.is_named:
-                    return source[ch.start_byte:ch.end_byte].decode("utf-8", errors="replace")
-            return None
+                    return [last_segment(
+                        source[ch.start_byte:ch.end_byte].decode(
+                            "utf-8", errors="replace"))]
+            return []
 
-        if func.type == "identifier":
-            return source[func.start_byte:func.end_byte].decode("utf-8", errors="replace")
+        if func.type in NAME_NODE_TYPES:
+            return [last_segment(source[func.start_byte:func.end_byte].decode(
+                "utf-8", errors="replace"))]
 
-        return None
+        return []
 
     # ----- regex fallback -----
 
@@ -353,6 +424,145 @@ class CallGraph:
 
     def __repr__(self) -> str:
         return f"CallGraph(edges={len(self._edges)})"
+
+
+# ---------------------------------------------------------------------------
+# Symbol References (tree-sitter identifier scan)
+# ---------------------------------------------------------------------------
+
+def find_references(
+    builder: ContextBuilder, symbol_name: str
+) -> list[dict[str, Any]]:
+    """Find definitions and usages of *symbol_name* across indexed files.
+
+    Definitions are exact symbol-name matches already indexed by the
+    builder.  Usages are detected by scanning every indexed file with
+    tree-sitter for identifier nodes whose text is exactly *symbol_name*
+    (word-complete: ``MyConnectionFactory`` does not match
+    ``ConnectionFactory``), with a line-oriented word-boundary regex
+    fallback for languages whose grammar is unavailable.
+
+    Each returned entry has a ``match`` key — ``definition`` or ``usage``.
+    Usage entries carry the precise occurrence ``line`` plus the smallest
+    enclosing symbol (``referencing_symbol`` / ``kind`` / ``start_line`` /
+    ``end_line``) or ``referencing_symbol: None`` for top-level code.
+    """
+    definitions = builder.find_symbol(symbol_name)
+
+    usage_entries: list[dict[str, Any]] = []
+    def_positions = {
+        (sym.file_path, sym.start_line, sym.name_column)
+        for sym in definitions
+    }
+
+    for file_path in sorted(builder._file_contents):
+        content = builder._file_contents[file_path]
+        lines = content.split("\n")
+        line_symbols = builder.get_symbols(file_path)
+
+        for line_no, col in _scan_identifiers(file_path, content, symbol_name):
+            if (file_path, line_no, col) in def_positions:
+                # The definition's own name token only — other hits on the
+                # same line (one-liner usages, type hints) are references.
+                continue
+            entry: dict[str, Any] = {
+                "match": "usage",
+                "file_path": file_path,
+                "line": line_no,
+                "column": _char_column(content, line_no, col) + 1,
+            }
+            enclosing = _enclosing_symbol(line_symbols, line_no)
+            if enclosing is not None:
+                entry.update({
+                    "referencing_symbol": enclosing.name,
+                    "kind": enclosing.kind,
+                    "start_line": enclosing.start_line,
+                    "end_line": enclosing.end_line,
+                })
+            else:
+                entry.update({
+                    "referencing_symbol": None,
+                    "kind": lines[line_no - 1].strip()[:80] if line_no <= len(lines) else "",
+                    "start_line": line_no,
+                    "end_line": line_no,
+                })
+            usage_entries.append(entry)
+
+    result = [{**s.to_dict(), "match": "definition"} for s in definitions]
+    result.extend(usage_entries)
+    return result
+
+
+def _scan_identifiers(
+    file_path: str, content: str, symbol_name: str
+) -> list[tuple[int, int]]:
+    """Return (line, byte column) of *symbol_name* identifier occurrences.
+
+    Uses tree-sitter name nodes when a grammar is available for the file
+    type (tree-sitter columns are byte offsets); falls back to a
+    word-boundary regex scan otherwise, converted to the same byte
+    columns.  Byte columns make the definition-token skip directly
+    comparable with the byte-based ``Symbol.name_column``; user-facing
+    values are converted to character offsets by ``_char_column``.
+    """
+    lang_name = detect_language(file_path)
+    language_obj = get_language(lang_name) if lang_name else None
+    if language_obj is None:
+        pattern = re.compile(r"\b" + re.escape(symbol_name) + r"\b")
+        regex_hits: list[tuple[int, int]] = []
+        for idx, line in enumerate(content.split("\n"), start=1):
+            for m in pattern.finditer(line):
+                # Match offsets are character offsets; report byte columns
+                # for consistency with the tree-sitter path.
+                regex_hits.append((idx, len(line[:m.start()].encode("utf-8"))))
+        return regex_hits
+
+    hits: list[tuple[int, int]] = []
+    source = content.encode("utf-8")
+    parser = tree_sitter.Parser(language_obj)
+    tree = parser.parse(source)
+
+    # Explicit stack instead of recursion: deeply nested trees (generated
+    # or minified files) must not trip Python's recursion limit.
+    stack = [tree.root_node]
+    while stack:
+        node = stack.pop()
+        if node.type in NAME_NODE_TYPES:
+            text = source[node.start_byte:node.end_byte].decode(
+                "utf-8", errors="replace")
+            if text == symbol_name:
+                hits.append((node.start_point[0] + 1, node.start_point[1]))
+        stack.extend(reversed(node.children))
+    return hits
+
+
+def _char_column(content: str, line_no: int, byte_col: int) -> int:
+    """Convert a 0-based byte offset into a 0-based character offset.
+
+    Both `_scan_identifiers` paths report byte columns: tree-sitter
+    columns are byte offsets and the regex paths converts its character
+    match offsets to bytes, keeping definition-token comparison against
+    ``Symbol.name_column`` (byte-based) consistent.  User-facing values
+    are converted to character offsets only here.
+    """
+    lines = content.split("\n")
+    if line_no < 1 or line_no > len(lines):
+        return byte_col
+    return len(lines[line_no - 1].encode("utf-8")[:byte_col].decode(
+        "utf-8", errors="replace"))
+
+
+def _enclosing_symbol(symbols: list[Symbol], line: int) -> Symbol | None:
+    """Return the innermost symbol whose line span contains *line*."""
+    best: Symbol | None = None
+    for sym in symbols:
+        if sym.kind == "import":
+            continue
+        if sym.start_line <= line <= sym.end_line:
+            if best is None or sym.end_line - sym.start_line < (
+                    best.end_line - best.start_line):
+                best = sym
+    return best
 
 
 # ---------------------------------------------------------------------------
