@@ -23,9 +23,12 @@ All notable changes to CodexA are documented in this file.
   uses a tree-sitter identifier scan over indexed files instead of a bare
   substring match: top-level script usages are found, word boundaries are
   honoured (`MyConnectionFactory` does not match `ConnectionFactory`), and
-  each usage reports the precise line plus the enclosing symbol.  The scan
-  is shared between the tools layer and the bridge to keep both stacks in
-  sync
+  each usage reports the precise line plus the enclosing symbol (when one
+  exists).  The scan is shared between the tools layer and the bridge to
+  keep both stacks in sync.  Only the definition's own name token is
+  excluded, so same-line usages are preserved; scans use an explicit
+  stack (no recursion limit) and report compared positions in consistent
+  byte offsets with character offsets for display
 
 ## [0.5.0] -- v0.5.0 Release
 

@@ -444,8 +444,9 @@ def find_references(
     definitions = builder.find_symbol(symbol_name)
 
     usage_entries: list[dict[str, Any]] = []
-    def_lines = {
-        (sym.file_path, sym.start_line) for sym in definitions
+    def_positions = {
+        (sym.file_path, sym.start_line, sym.name_column)
+        for sym in definitions
     }
 
     for file_path in sorted(builder._file_contents):
@@ -454,14 +455,15 @@ def find_references(
         line_symbols = builder.get_symbols(file_path)
 
         for line_no, col in _scan_identifiers(file_path, content, symbol_name):
-            if (file_path, line_no) in def_lines:
-                # The name token of the definition itself
+            if (file_path, line_no, col) in def_positions:
+                # The definition's own name token only — other hits on the
+                # same line (one-liner usages, type hints) are references.
                 continue
             entry: dict[str, Any] = {
                 "match": "usage",
                 "file_path": file_path,
                 "line": line_no,
-                "column": col + 1,
+                "column": _char_column(content, line_no, col) + 1,
             }
             enclosing = _enclosing_symbol(line_symbols, line_no)
             if enclosing is not None:
@@ -488,10 +490,14 @@ def find_references(
 def _scan_identifiers(
     file_path: str, content: str, symbol_name: str
 ) -> list[tuple[int, int]]:
-    """Return (line, column) of *symbol_name* identifier occurrences.
+    """Return (line, byte column) of *symbol_name* identifier occurrences.
 
     Uses tree-sitter name nodes when a grammar is available for the file
-    type; falls back to a word-boundary regex scan otherwise.
+    type (tree-sitter columns are byte offsets); falls back to a
+    word-boundary regex scan otherwise, converted to the same byte
+    columns.  Byte columns make the definition-token skip directly
+    comparable with the byte-based ``Symbol.name_column``; user-facing
+    values are converted to character offsets by ``_char_column``.
     """
     lang_name = detect_language(file_path)
     language_obj = get_language(lang_name) if lang_name else None
@@ -500,7 +506,9 @@ def _scan_identifiers(
         regex_hits: list[tuple[int, int]] = []
         for idx, line in enumerate(content.split("\n"), start=1):
             for m in pattern.finditer(line):
-                regex_hits.append((idx, m.start()))
+                # Match offsets are character offsets; report byte columns
+                # for consistency with the tree-sitter path.
+                regex_hits.append((idx, len(line[:m.start()].encode("utf-8"))))
         return regex_hits
 
     hits: list[tuple[int, int]] = []
@@ -508,17 +516,34 @@ def _scan_identifiers(
     parser = tree_sitter.Parser(language_obj)
     tree = parser.parse(source)
 
-    def walk(node: tree_sitter.Node) -> None:
+    # Explicit stack instead of recursion: deeply nested trees (generated
+    # or minified files) must not trip Python's recursion limit.
+    stack = [tree.root_node]
+    while stack:
+        node = stack.pop()
         if node.type in NAME_NODE_TYPES:
             text = source[node.start_byte:node.end_byte].decode(
                 "utf-8", errors="replace")
             if text == symbol_name:
                 hits.append((node.start_point[0] + 1, node.start_point[1]))
-        for child in node.children:
-            walk(child)
-
-    walk(tree.root_node)
+        stack.extend(reversed(node.children))
     return hits
+
+
+def _char_column(content: str, line_no: int, byte_col: int) -> int:
+    """Convert a 0-based byte offset into a 0-based character offset.
+
+    Both `_scan_identifiers` paths report byte columns: tree-sitter
+    columns are byte offsets and the regex paths converts its character
+    match offsets to bytes, keeping definition-token comparison against
+    ``Symbol.name_column`` (byte-based) consistent.  User-facing values
+    are converted to character offsets only here.
+    """
+    lines = content.split("\n")
+    if line_no < 1 or line_no > len(lines):
+        return byte_col
+    return len(lines[line_no - 1].encode("utf-8")[:byte_col].decode(
+        "utf-8", errors="replace"))
 
 
 def _enclosing_symbol(symbols: list[Symbol], line: int) -> Symbol | None:

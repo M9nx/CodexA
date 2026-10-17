@@ -12,7 +12,7 @@ tools via CLI, HTTP, or MCP.
 | `explain_symbol` | Structural explanation of a function, class, or method |
 | `explain_file` | Explain all symbols in a source file |
 | `summarize_repo` | Structured summary of the entire repository |
-| `find_references` | Find all references to a symbol across the codebase (definitions plus AST-detected usages, with file and line) |
+| `find_references` | Find all references to a symbol: indexed definitions plus identifier usages with file and line (tree-sitter AST scan where a grammar loads, word-boundary text fallback otherwise) |
 | `get_dependencies` | Import/dependency map for a file |
 | `get_call_graph` | Callers and callees of a function, including static calls (`Class::method()`) and instantiations (`new Class()`) |
 | `get_context` | Rich context window for AI-assisted tasks |

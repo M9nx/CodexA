@@ -643,6 +643,56 @@ class TestFindReferences:
         )
 
     @pytest.mark.unit
+    def test_same_line_usage_is_preserved(self):
+        # A one-liner: the definition name token must be skipped
+        # precisely, not the whole definition line.
+        builder = ContextBuilder()
+        builder.index_file("loop.py", "def helper(): return helper()\n")
+        usages = [
+            r for r in find_references(builder, "helper")
+            if r["match"] == "usage"
+        ]
+        assert len(usages) == 1
+        assert usages[0]["line"] == 1
+        # The one-liner call sits inside the function's own line span
+        assert usages[0]["referencing_symbol"] == "helper"
+
+    @pytest.mark.unit
+    def test_same_line_usage_is_preserved_php(self):
+        builder = ContextBuilder()
+        builder.index_file(
+            "tiny.php",
+            '<?php\nclass ConnectionFactory { public function x(): void { ConnectionFactory::make("y"); } }\n',
+        )
+        usages = [
+            r for r in find_references(builder, "ConnectionFactory")
+            if r["match"] == "usage"
+        ]
+        assert len(usages) == 1
+        assert usages[0]["line"] == 2
+        assert usages[0]["column"] > 45  # the scoped-call scope, not the class name
+
+    @pytest.mark.unit
+    def test_fallback_reports_character_columns(self):
+        # No grammar for the extension -> word-boundary regex fallback.
+        # The match sits after a multibyte char, so byte and character
+        # offsets disagree; the reported column must be a char offset.
+        builder = ContextBuilder()
+        builder.index_file(
+            "legacy.nolang",
+            "é note; ConnectionFactory referenced\n",
+        )
+        usages = [
+            r for r in find_references(builder, "ConnectionFactory")
+            if r["match"] == "usage"
+        ]
+        assert len(usages) == 1
+        assert usages[0]["line"] == 1
+        # 'é' occupies two bytes, so the byte offset (9) differs from the
+        # character offset (8); 1-based char column is 9.
+        assert usages[0]["column"] == 9
+
+    @pytest.mark.unit
     def test_reference_count_matches_list(self):
         assert isinstance(self.refs, list)
         assert all("file_path" in r for r in self.refs)

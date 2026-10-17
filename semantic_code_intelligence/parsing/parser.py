@@ -124,6 +124,10 @@ class Symbol:
     parent: str | None = None  # Parent class name for methods
     parameters: list[str] = field(default_factory=list)
     decorators: list[str] = field(default_factory=list)
+    # 0-based column of the name identifier on start_line (0 when unknown,
+    # e.g. import statements).  Lets reference scans skip only the
+    # definition's own name token instead of the whole line.
+    name_column: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to a JSON-serializable dictionary."""
@@ -183,18 +187,24 @@ def _get_node_text(node: tree_sitter.Node, source: bytes) -> str:
     return source[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
 
 
-def _find_name(node: tree_sitter.Node, source: bytes) -> str:
-    """Find the name identifier within a definition node."""
+def _find_name_node(node: tree_sitter.Node) -> tree_sitter.Node | None:
+    """Find the name identifier node within a definition node."""
     for child in node.children:
         if child.type in NAME_NODE_TYPES:
-            return _get_node_text(child, source)
+            return child
     # C++: name may be inside a declarator child (e.g. function_declarator)
     for child in node.children:
         if child.type.endswith("_declarator"):
             for sub in child.children:
                 if sub.type in NAME_NODE_TYPES:
-                    return _get_node_text(sub, source)
-    return "<anonymous>"
+                    return sub
+    return None
+
+
+def _find_name(node: tree_sitter.Node, source: bytes) -> str:
+    """Find the name identifier within a definition node."""
+    name_node = _find_name_node(node)
+    return _get_node_text(name_node, source) if name_node is not None else "<anonymous>"
 
 
 def _find_parameters(node: tree_sitter.Node, source: bytes) -> list[str]:
@@ -254,7 +264,11 @@ def _extract_symbols_recursive(
                     break
 
         if actual.type in func_types:
-            name = _find_name(actual, source)
+            name_node = _find_name_node(actual)
+            name = (
+                _get_node_text(name_node, source)
+                if name_node is not None else "<anonymous>"
+            )
             # Some languages have dedicated method node types (e.g. Go method_declaration,
             # JS method_definition) that indicate a method even without a parent class.
             _method_node_types = {
@@ -277,11 +291,16 @@ def _extract_symbols_recursive(
                     parent=parent_class,
                     parameters=_find_parameters(actual, source),
                     decorators=_find_decorators(actual, source),
+                    name_column=name_node.start_point[1] if name_node is not None else 0,
                 )
             )
 
         elif actual.type in class_types:
-            name = _find_name(actual, source)
+            name_node = _find_name_node(actual)
+            name = (
+                _get_node_text(name_node, source)
+                if name_node is not None else "<anonymous>"
+            )
             symbols.append(
                 Symbol(
                     name=name,
@@ -292,6 +311,7 @@ def _extract_symbols_recursive(
                     start_col=actual.start_point[1],
                     end_col=actual.end_point[1],
                     body=_get_node_text(actual, source),
+                    name_column=name_node.start_point[1] if name_node is not None else 0,
                 )
             )
             # Recurse into class body for methods
