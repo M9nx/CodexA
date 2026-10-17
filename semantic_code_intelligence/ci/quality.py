@@ -14,9 +14,10 @@ from __future__ import annotations
 
 import math
 import re
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from semantic_code_intelligence.parsing.parser import Symbol, parse_file
 from semantic_code_intelligence.config.settings import IndexConfig
@@ -355,63 +356,99 @@ def detect_duplicates(
 
 # ── Bandit security linting (optional) ───────────────────────────────
 
-try:
-    import logging as _logging
+# SARIF output is an optional bandit formatter codexa never requests, so
+# `sarif_om` (and its own helper `jschema_to_python`) are deliberately not
+# codexa dependencies — do not add them.  But bandit eagerly loads all its
+# formatter entry points via stevedore when `bandit.core.manager` is first
+# imported, and the SARIF entry-point module does `import sarif_om` at
+# module import time.  When that package is absent, stevedore logs
+# `ERROR Could not load 'sarif': ...` through the `stevedore.extension`
+# logger, which looks like a failure of the command being run.  Because it
+# would only ever surface from bandit machinery that codexa itself put in
+# motion, suppress exactly that message for as long as that machinery is
+# in use — the import below (which builds bandit's module-global
+# `MANAGER`) and the analysis window in `run_bandit_scan` — and restore
+# the prior logger state afterwards.
+import logging as _logging
 
-    # Bandit eagerly loads all its formatters at import time, including a
-    # SARIF formatter that requires the optional `sarif_om` package.  When
-    # `sarif_om` is absent bandit logs an ERROR that appears on every run
-    # even when SARIF output was never requested.  Suppress that specific
-    # message during the import so users only see errors that are relevant
-    # to them.
-    class _SuppressSarifFilter(_logging.Filter):
-        def filter(self, record: _logging.LogRecord) -> bool:
-            return "Could not load 'sarif'" not in record.getMessage()
 
-    def _logger_ancestry(logger: _logging.Logger) -> list[_logging.Logger]:
-        ancestry: list[_logging.Logger] = []
-        current: _logging.Logger | None = logger
-        while current is not None:
-            ancestry.append(current)
-            if not current.propagate:
-                break
-            parent = current.parent
-            current = parent if isinstance(parent, _logging.Logger) else None
-        return ancestry
+class _SuppressSarifFilter(_logging.Filter):
+    def filter(self, record: _logging.LogRecord) -> bool:
+        return "Could not load 'sarif'" not in record.getMessage()
 
-    def _add_filter_to_handlers(
-        logger: _logging.Logger,
-        log_filter: _logging.Filter,
-    ) -> list[_logging.Handler]:
-        filtered_handlers: list[_logging.Handler] = []
-        seen_handlers: set[int] = set()
-        for current_logger in _logger_ancestry(logger):
-            for handler in current_logger.handlers:
-                handler_id = id(handler)
-                if handler_id in seen_handlers:
-                    continue
-                handler.addFilter(log_filter)
-                filtered_handlers.append(handler)
-                seen_handlers.add(handler_id)
-        return filtered_handlers
 
-    def _remove_filter_from_handlers(
-        handlers: list[_logging.Handler],
-        log_filter: _logging.Filter,
-    ) -> None:
-        for handler in handlers:
-            handler.removeFilter(log_filter)
+def _logger_ancestry(logger: _logging.Logger) -> list[_logging.Logger]:
+    ancestry: list[_logging.Logger] = []
+    current: _logging.Logger | None = logger
+    while current is not None:
+        ancestry.append(current)
+        if not current.propagate:
+            break
+        parent = current.parent
+        current = parent if isinstance(parent, _logging.Logger) else None
+    return ancestry
 
-    _bandit_root = _logging.getLogger("bandit")
-    _sarif_filter = _SuppressSarifFilter()
-    _filtered_handlers = _add_filter_to_handlers(_bandit_root, _sarif_filter)
-    _bandit_root.addFilter(_sarif_filter)
+
+# Loggers whose records the suppression covers: bandit code itself and the
+# stevedore machinery that loads bandit's optional entry points.
+_SARIF_NOISE_LOGGERS = ("bandit", "stevedore.extension")
+
+
+def _add_filter_to_handlers(
+    logger: _logging.Logger,
+    log_filter: _logging.Filter,
+) -> list[_logging.Handler]:
+    filtered_handlers: list[_logging.Handler] = []
+    seen_handlers: set[int] = set()
+    for current_logger in _logger_ancestry(logger):
+        for handler in current_logger.handlers:
+            handler_id = id(handler)
+            if handler_id in seen_handlers:
+                continue
+            handler.addFilter(log_filter)
+            filtered_handlers.append(handler)
+            seen_handlers.add(handler_id)
+    return filtered_handlers
+
+
+def _remove_filter_from_handlers(
+    handlers: list[_logging.Handler],
+    log_filter: _logging.Filter,
+) -> None:
+    for handler in handlers:
+        handler.removeFilter(log_filter)
+
+
+@contextmanager
+def _suppress_sarif_noise() -> Iterator[None]:
+    """Silence only the optional-SARIF entry-point error while active.
+
+    Attaches a fresh filter to the bandit and stevedore.extension loggers
+    plus every handler along their ancestries, yields, then removes the
+    filter so prior logger state is restored.
+    """
+    sarif_noise_filter = _SuppressSarifFilter()
+    filtered_loggers: list[_logging.Logger] = []
+    filtered_handlers: list[_logging.Handler] = []
     try:
+        for name in _SARIF_NOISE_LOGGERS:
+            noise_logger = _logging.getLogger(name)
+            noise_logger.addFilter(sarif_noise_filter)
+            filtered_loggers.append(noise_logger)
+            filtered_handlers.extend(
+                _add_filter_to_handlers(noise_logger, sarif_noise_filter)
+            )
+        yield
+    finally:
+        for noise_logger in filtered_loggers:
+            noise_logger.removeFilter(sarif_noise_filter)
+        _remove_filter_from_handlers(filtered_handlers, sarif_noise_filter)
+
+
+try:
+    with _suppress_sarif_noise():
         from bandit.core import manager as _bandit_manager
         from bandit.core import config as _bandit_config
-    finally:
-        _bandit_root.removeFilter(_sarif_filter)
-        _remove_filter_from_handlers(_filtered_handlers, _sarif_filter)
 
     _HAS_BANDIT = True
 except ImportError:  # pragma: no cover
@@ -447,10 +484,11 @@ def run_bandit_scan(file_paths: list[str]) -> list[BanditIssue]:
         return []
 
     try:
-        conf = _bandit_config.BanditConfig()
-        mgr = _bandit_manager.BanditManager(conf, "file")
-        mgr.discover_files(py_files)
-        mgr.run_tests()
+        with _suppress_sarif_noise():
+            conf = _bandit_config.BanditConfig()
+            mgr = _bandit_manager.BanditManager(conf, "file")
+            mgr.discover_files(py_files)
+            mgr.run_tests()
         return [
             BanditIssue(
                 test_id=iss.test_id,
