@@ -285,14 +285,20 @@ class CallGraph:
         self_name: str,
         found: set[str],
     ) -> None:
-        """Recursively walk the AST collecting call-target names."""
-        if node.type in self._CALL_NODE_TYPES:
-            for candidate in self._resolve_call_candidates(node, source):
-                if candidate and candidate != self_name and candidate in known_names:
-                    found.add(candidate)
+        """Collect call-target names from the AST into *found*.
 
-        for child in node.children:
-            self._walk_calls(child, source, known_names, self_name, found)
+        Uses an explicit stack instead of recursion: deeply nested trees
+        (generated or minified files) must not trip Python's recursion
+        limit, which would fail the whole call-graph build.
+        """
+        stack = [node]
+        while stack:
+            current = stack.pop()
+            if current.type in self._CALL_NODE_TYPES:
+                for candidate in self._resolve_call_candidates(current, source):
+                    if candidate and candidate != self_name and candidate in known_names:
+                        found.add(candidate)
+            stack.extend(current.children)
 
     @staticmethod
     def _resolve_call_candidates(
