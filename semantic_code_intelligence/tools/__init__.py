@@ -95,7 +95,7 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     },
     {
         "name": "find_references",
-        "description": "Find all references to a symbol across the codebase (definitions plus AST-detected usages).",
+        "description": "Find all references to a symbol: indexed definitions plus identifier usages (tree-sitter AST scan where a grammar loads, otherwise word-boundary text matching, which may match comments or strings).",
         "parameters": {
             "symbol_name": {"type": "string", "required": True, "description": "Name to search for"},
         },
