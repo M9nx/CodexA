@@ -35,6 +35,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import logging
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -80,24 +81,16 @@ def root_capture():
 
 
 @pytest.fixture
-def blocked_sarif_om():
+def blocked_sarif_om(monkeypatch: pytest.MonkeyPatch) -> None:
     """Make ``import sarif_om`` fail exactly as if the package were absent.
 
     Poisoning ``sys.modules`` with ``None`` raises ImportError("import of
     sarif_om halted; None in sys.modules") regardless of whether someone
     later installs ``sarif_om`` into this venv, so the scenario stays
-    deterministic.
+    deterministic.  ``monkeypatch`` restores the pre-test state (removing
+    the entry when none existed).
     """
-    was_present = "sarif_om" in sys.modules
-    prior = sys.modules.get("sarif_om")
-    sys.modules["sarif_om"] = None
-    try:
-        yield
-    finally:
-        if was_present:
-            sys.modules["sarif_om"] = prior
-        else:
-            sys.modules.pop("sarif_om", None)
+    monkeypatch.setitem(sys.modules, "sarif_om", None)
 
 
 @pytest.fixture
@@ -170,10 +163,23 @@ def _codexa_executable() -> Path:
     return _PROJECT_ROOT / ".venv" / "bin" / "codexa"
 
 
-def _venv_python() -> Path:
-    if sys.platform == "win32":
-        return _PROJECT_ROOT / ".venv" / "Scripts" / "python.exe"
-    return _PROJECT_ROOT / ".venv" / "bin" / "python"
+def _subprocess_env() -> dict[str, str]:
+    """Propagate the package's import location into wrapper subprocesses.
+
+    CI runs the suite with the package importable via pytest's
+    ``pythonpath = ["."]`` ini option, which does not transfer to child
+    processes (nothing pip-installs the package there); injecting the
+    project root into ``PYTHONPATH`` makes ``sys.executable`` wrappers
+    import ``semantic_code_intelligence`` wherever the suite already runs.
+    """
+    env = dict(os.environ)
+    existing = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = (
+        str(_PROJECT_ROOT) + os.pathsep + existing
+        if existing
+        else str(_PROJECT_ROOT)
+    )
+    return env
 
 
 def _assert_no_residual_sarif_suppression() -> None:
@@ -475,14 +481,10 @@ class TestCliDegradedNoBanditContract:
     ships bandit as a main dependency.  The ``sys.modules['bandit']``
     poison in the wrapper makes the ImportError degradation path of
     ``quality`` deterministic in either environment, so this proves —
-    everywhere — that with bandit unavailable the commands still exit 0,
-    print no traceback/module error, and stay free of sarif noise.
+    everywhere, on the interpreter already running the tests — that with
+    bandit unavailable the commands still exit 0, print no
+    traceback/module error, and stay free of sarif noise.
     """
-
-    @pytest.fixture(autouse=True)
-    def _require_venv_python(self) -> None:
-        if not _venv_python().exists():
-            pytest.skip("venv interpreter not available")
 
     def _run_degraded(
         self, project: Path, args: list[str], tmp_path: Path
@@ -495,11 +497,12 @@ class TestCliDegradedNoBanditContract:
             encoding="utf-8",
         )
         return subprocess.run(
-            [str(_venv_python()), str(wrapper)],
+            [sys.executable, str(wrapper)],
             capture_output=True,
             text=True,
             timeout=120,
             cwd=str(project),
+            env=_subprocess_env(),
         )
 
     @pytest.mark.integration
